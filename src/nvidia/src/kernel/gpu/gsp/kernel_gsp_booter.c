@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,7 +24,6 @@
 #include "gpu/gsp/kernel_gsp.h"
 
 #include "gpu/mem_mgr/mem_mgr.h"
-#include "gpu/nvdec/kernel_nvdec.h"
 #include "gpu/sec2/kernel_sec2.h"
 #include "core/bin_data.h"
 
@@ -133,12 +132,11 @@ static NV_STATUS
 s_patchBooterUcodeSignature
 (
     OBJGPU *pGpu,
-    NvBool bIsForNvdec,
     NvU32 ucodeId,
     NvU8 *pImage,
     NvU32 sigDestOffset,
     NvU32 imageSize,
-    NvU32 *pSignatures,
+    const void *pSignatures,
     NvU32 signaturesTotalSize,
     NvU32 numSigs
 )
@@ -153,19 +151,9 @@ s_patchBooterUcodeSignature
     NV_ASSERT_OR_RETURN(pSignatures != NULL, NV_ERR_INVALID_STATE);
     NV_ASSERT_OR_RETURN(numSigs > 0, NV_ERR_INVALID_DATA);
 
-    // Booter Reload is on NVDEC0, all other Booters are on SEC2
-    if (bIsForNvdec)
-    {
-        KernelNvdec *pKernelNvdec = GPU_GET_KERNEL_NVDEC(pGpu);
-        NV_ASSERT_OR_RETURN(pKernelNvdec != NULL, NV_ERR_INVALID_STATE);
-        fuseVer = knvdecReadUcodeFuseVersion_HAL(pGpu, pKernelNvdec, ucodeId);
-    }
-    else
-    {
-        KernelSec2 *pKernelSec2 = GPU_GET_KERNEL_SEC2(pGpu);
-        NV_ASSERT_OR_RETURN(pKernelSec2 != NULL, NV_ERR_INVALID_STATE);
-        fuseVer = ksec2ReadUcodeFuseVersion_HAL(pGpu, pKernelSec2, ucodeId);
-    }
+    KernelSec2 *pKernelSec2 = GPU_GET_KERNEL_SEC2(pGpu);
+    NV_ASSERT_OR_RETURN(pKernelSec2 != NULL, NV_ERR_INVALID_STATE);
+    fuseVer = ksec2ReadUcodeFuseVersion_HAL(pGpu, pKernelSec2, ucodeId);
 
     if (numSigs > 1)
     {
@@ -187,7 +175,6 @@ s_allocateUcodeFromBinArchive
     OBJGPU *pGpu,
     KernelGsp *pKernelGsp,
     const BINDATA_ARCHIVE *pBinArchive,
-    const NvBool bIsForNvdec,
     KernelGspFlcnUcode **ppFlcnUcode  // out
 )
 {
@@ -216,7 +203,7 @@ s_allocateUcodeFromBinArchive
     NvU32 patchSig;
     NvU32 numSigs;
     NvU32 signaturesTotalSize;
-    NvU32 *pSignatures = NULL;
+    const void *pSignatures = NULL;
 
     const BINDATA_STORAGE *pBinImage;
     const BINDATA_STORAGE *pBinHeader;
@@ -315,15 +302,8 @@ s_allocateUcodeFromBinArchive
         goto out;
     }
 
-    pSignatures = portMemAllocNonPaged(signaturesTotalSize);
-    if (pSignatures == NULL)
-    {
-        status = NV_ERR_NO_MEMORY;
-        goto out;
-    }
-
     NV_ASSERT_OK_OR_GOTO(status,
-        bindataWriteToBuffer(pBinSig, (NvU8 *) pSignatures, signaturesTotalSize),
+        bindataStorageAcquireData(pBinSig, &pSignatures),
         out);
 
     // Populate KernelGspFlcnUcode structure
@@ -354,7 +334,8 @@ s_allocateUcodeFromBinArchive
             memdescCreate(&pUcode->pUcodeMemDesc, pGpu, pUcode->size,
                           16, NV_TRUE, ADDR_SYSMEM, NV_MEMORY_UNCACHED, MEMDESC_FLAGS_NONE), out);
 
-        status = memdescAlloc(pUcode->pUcodeMemDesc);
+        memdescTagAlloc(status, NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_57, 
+                    pUcode->pUcodeMemDesc);
         if (status != NV_OK)
         {
             goto out;
@@ -375,7 +356,7 @@ s_allocateUcodeFromBinArchive
         if (status == NV_OK)
         {
             status = s_patchBooterUcodeSignature(pGpu,
-                bIsForNvdec, patchMeta.ucodeId,
+                patchMeta.ucodeId,
                 pMappedUcodeMem, patchLoc, pUcode->size,
                 pSignatures, signaturesTotalSize, numSigs);
             NV_ASSERT(status == NV_OK);
@@ -413,6 +394,9 @@ s_allocateUcodeFromBinArchive
             goto out;
         }
 
+        // We are not using zero copy api bindataStorageAcquireData here because s_patchBooterUcodeSignature
+        // writes to pUcode->pImage to patch the signatures. Since this path is taken once, the risk
+        // of accidentally overwriting original bindata buffer may not be worth the performance gains.
         // Copy in the whole image
         NV_ASSERT_OK_OR_GOTO(status,
             bindataWriteToBuffer(pBinImage, pUcode->pImage, pUcode->size),
@@ -421,14 +405,14 @@ s_allocateUcodeFromBinArchive
         // Patch signatures
         NV_ASSERT_OK_OR_GOTO(status,
             s_patchBooterUcodeSignature(pGpu,
-                bIsForNvdec, patchMeta.ucodeId,
+                patchMeta.ucodeId,
                 pUcode->pImage, patchLoc, pUcode->size,
                 pSignatures, signaturesTotalSize, numSigs),
             out);
     }
 
 out:
-    portMemFree(pSignatures);
+    bindataStorageReleaseData((void*)pSignatures);
     pSignatures = NULL;
 
     if (status == NV_OK)
@@ -459,27 +443,7 @@ kgspAllocateBooterLoadUcodeImage_IMPL
     pBinArchive = kgspGetBinArchiveBooterLoadUcode_HAL(pKernelGsp);
     NV_ASSERT_OR_RETURN(pBinArchive != NULL, NV_ERR_NOT_SUPPORTED);
 
-    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive,
-                                         NV_FALSE /* i.e. not NVDEC */, ppBooterLoadUcode);
-}
-
-NV_STATUS
-kgspAllocateBooterReloadUcodeImage_IMPL
-(
-    OBJGPU *pGpu,
-    KernelGsp *pKernelGsp,
-    KernelGspFlcnUcode **ppBooterReloadUcode  // out
-)
-{
-    const BINDATA_ARCHIVE *pBinArchive;
-
-    NV_ASSERT_OR_RETURN(ppBooterReloadUcode != NULL, NV_ERR_INVALID_ARGUMENT);
-
-    pBinArchive = kgspGetBinArchiveBooterReloadUcode_HAL(pKernelGsp);
-    NV_ASSERT_OR_RETURN(pBinArchive != NULL, NV_ERR_NOT_SUPPORTED);
-
-    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive,
-                                         NV_TRUE /* i.e. NVDEC */, ppBooterReloadUcode);
+    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive, ppBooterLoadUcode);
 }
 
 NV_STATUS
@@ -497,6 +461,30 @@ kgspAllocateBooterUnloadUcodeImage_IMPL
     pBinArchive = kgspGetBinArchiveBooterUnloadUcode_HAL(pKernelGsp);
     NV_ASSERT_OR_RETURN(pBinArchive != NULL, NV_ERR_NOT_SUPPORTED);
 
-    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive,
-                                         NV_FALSE /* i.e. not NVDEC */, ppBooterUnloadUcode);
+    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive, ppBooterUnloadUcode);
+}
+
+//
+// Note: Scrubber is not a Booter ucode, however it is a SEC2 ucode that uses
+// a similar loading and signature patching scheme, so we may use the same
+// helper functions.
+//
+NV_STATUS
+kgspAllocateScrubberUcodeImage_IMPL
+(
+    OBJGPU *pGpu,
+    KernelGsp *pKernelGsp,
+    KernelGspFlcnUcode **ppScrubberUcode  // out
+)
+{
+    KernelSec2 *pKernelSec2 = GPU_GET_KERNEL_SEC2(pGpu);
+    const BINDATA_ARCHIVE *pBinArchive;
+
+    NV_ASSERT_OR_RETURN(pKernelSec2 != NULL, NV_ERR_INVALID_STATE);
+    NV_ASSERT_OR_RETURN(ppScrubberUcode != NULL, NV_ERR_INVALID_ARGUMENT);
+
+    pBinArchive = ksec2GetBinArchiveSecurescrubUcode_HAL(pGpu, pKernelSec2);
+    NV_ASSERT_OR_RETURN(pBinArchive != NULL, NV_ERR_NOT_SUPPORTED);
+
+    return s_allocateUcodeFromBinArchive(pGpu, pKernelGsp, pBinArchive, ppScrubberUcode);
 }

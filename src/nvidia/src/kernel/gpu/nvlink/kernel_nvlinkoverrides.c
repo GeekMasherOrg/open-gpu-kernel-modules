@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2020-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2020-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,9 +21,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define NVOC_KERNEL_NVLINK_H_PRIVATE_ACCESS_ALLOWED
+
 #include "kernel/gpu/nvlink/kernel_nvlink.h"
 #include "kernel/gpu/nvlink/kernel_ioctrl.h"
-#include "nvRmReg.h"
+#include "nvrm_registry.h"
 #include "os/os.h"
 
 /*!
@@ -59,8 +61,10 @@ knvlinkApplyRegkeyOverrides_IMPL
     pKernelNvlink->nvlinkLinkSpeed = NV_REG_STR_RM_NVLINK_SPEED_CONTROL_SPEED_DEFAULT;
 
     // Power management settings
-    pKernelNvlink->bDisableSingleLaneMode = NV_FALSE;
     pKernelNvlink->bDisableL2Mode         = NV_FALSE;
+
+    // Debug Settings
+    pKernelNvlink->bLinkTrainingDebugSpew = NV_FALSE;
 
     // Registry overrides for forcing NVLINK on/off
     if (NV_OK == osReadRegistryDword(pGpu,
@@ -152,6 +156,15 @@ knvlinkApplyRegkeyOverrides_IMPL
         {
             pKernelNvlink->bForceAutoconfig = NV_FALSE;
         }
+
+        if (FLD_TEST_DRF(_REG_STR_RM, _NVLINK_CONTROL, _LINK_TRAINING_DEBUG_SPEW, _ON,
+                         pKernelNvlink->registryControl))
+        {
+            pKernelNvlink->bLinkTrainingDebugSpew = NV_TRUE;
+            NV_PRINTF(LEVEL_INFO,
+                "Link training debug spew turned on!\n");
+        }
+
     }
     else if (!knvlinkIsNvlinkDefaultEnabled(pGpu, pKernelNvlink))
     {
@@ -213,15 +226,6 @@ knvlinkApplyRegkeyOverrides_IMPL
     {
         NV_PRINTF(LEVEL_INFO, "RM NVLink Link PM controlled via regkey\n");
 
-        // Whether one-eighth mode has been disabled by regkey
-        if (FLD_TEST_DRF(_REG_STR_RM, _NVLINK_LINK_PM_CONTROL, _SINGLE_LANE_MODE,
-                        _DISABLE, regdata))
-        {
-            NV_PRINTF(LEVEL_INFO,
-                      "NVLink single-lane power state disabled via regkey\n");
-            pKernelNvlink->bDisableSingleLaneMode = NV_TRUE;
-        }
-
         // Whether L2 power state has been disabled by regkey
         if (FLD_TEST_DRF(_REG_STR_RM, _NVLINK_LINK_PM_CONTROL, _L2_MODE,
                          _DISABLE, regdata))
@@ -257,6 +261,29 @@ knvlinkApplyRegkeyOverrides_IMPL
     else
     {
         pKernelNvlink->forcedSysmemDeviceType = NV2080_CTRL_NVLINK_DEVICE_INFO_DEVICE_TYPE_EBRIDGE;
+    }
+
+    if (NV_OK == osReadRegistryDword(pGpu,
+                 NV_REG_STR_RM_NVLINK_FORCED_LOOPBACK_ON_SWITCH, &regdata))
+    {
+        if (FLD_TEST_DRF(_REG_STR_RM, _NVLINK_FORCED_LOOPBACK_ON_SWITCH, _MODE, _ENABLED, regdata))
+        {
+            pKernelNvlink->setProperty(pGpu, PDB_PROP_KNVLINK_FORCED_LOOPBACK_ON_SWITCH_MODE_ENABLED, NV_TRUE);
+            NV_PRINTF(LEVEL_INFO,
+                      "Forced Loopback on switch is enabled\n");
+        }        
+    }
+
+    // Registry override to enable nvlink encryption
+    if (NV_OK == osReadRegistryDword(pGpu,
+                 NV_REG_STR_RM_NVLINK_ENCRYPTION, &regdata))
+    {
+        if (FLD_TEST_DRF(_REG_STR_RM, _NVLINK_ENCRYPTION, _MODE, _ENABLE, regdata))
+        {
+            pKernelNvlink->setProperty(pGpu, PDB_PROP_KNVLINK_ENCRYPTION_ENABLED, NV_TRUE);
+            NV_PRINTF(LEVEL_INFO,
+                      "Nvlink Encryption is enabled\n");
+        }        
     }
 
     return NV_OK;

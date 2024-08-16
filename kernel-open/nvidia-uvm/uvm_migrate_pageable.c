@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2018-2022 NVIDIA Corporation
+    Copyright (c) 2018-2024 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -52,10 +52,6 @@ static NV_STATUS migrate_vma_page_copy_address(struct page *page,
     uvm_gpu_t *owning_gpu = UVM_ID_IS_CPU(resident_id)? NULL: uvm_va_space_get_gpu(va_space, resident_id);
     const bool can_copy_from = uvm_processor_mask_test(&va_space->can_copy_from[uvm_id_value(copying_gpu->id)],
                                                        resident_id);
-    const bool direct_peer = owning_gpu &&
-                             (owning_gpu != copying_gpu) &&
-                             can_copy_from &&
-                             !uvm_gpu_peer_caps(owning_gpu, copying_gpu)->is_indirect_peer;
 
     UVM_ASSERT(page_index < state->num_pages);
 
@@ -63,18 +59,16 @@ static NV_STATUS migrate_vma_page_copy_address(struct page *page,
 
     if (owning_gpu == copying_gpu) {
         // Local vidmem address
-        *gpu_addr = uvm_gpu_address_from_phys(uvm_gpu_page_to_phys_address(owning_gpu, page));
+        *gpu_addr = uvm_gpu_address_copy(owning_gpu, uvm_gpu_page_to_phys_address(owning_gpu, page));
     }
-    else if (direct_peer) {
-        // Direct GPU peer
+    else if (owning_gpu && can_copy_from) {
         uvm_gpu_identity_mapping_t *gpu_peer_mappings = uvm_gpu_get_peer_mapping(copying_gpu, owning_gpu->id);
         uvm_gpu_phys_address_t phys_addr = uvm_gpu_page_to_phys_address(owning_gpu, page);
 
         *gpu_addr = uvm_gpu_address_virtual(gpu_peer_mappings->base + phys_addr.address);
     }
     else {
-        // Sysmem/Indirect Peer
-        NV_STATUS status = uvm_gpu_map_cpu_page(copying_gpu, page, &state->dma.addrs[page_index]);
+        NV_STATUS status = uvm_parent_gpu_map_cpu_page(copying_gpu->parent, page, &state->dma.addrs[page_index]);
 
         if (status != NV_OK)
             return status;
@@ -88,23 +82,11 @@ static NV_STATUS migrate_vma_page_copy_address(struct page *page,
 
         __set_bit(page_index, state->dma.page_mask);
 
-        *gpu_addr = uvm_gpu_address_physical(UVM_APERTURE_SYS, state->dma.addrs[page_index]);
+        *gpu_addr = uvm_gpu_address_copy(copying_gpu,
+                                         uvm_gpu_phys_address(UVM_APERTURE_SYS, state->dma.addrs[page_index]));
     }
 
     return NV_OK;
-}
-
-// Return the GPU identified with the given NUMA node id
-static uvm_gpu_t *get_gpu_from_node_id(uvm_va_space_t *va_space, int node_id)
-{
-    uvm_gpu_t *gpu;
-
-    for_each_va_space_gpu(gpu, va_space) {
-        if (uvm_gpu_numa_info(gpu)->node_id == node_id)
-            return gpu;
-    }
-
-    return NULL;
 }
 
 // Create a new push to zero pages on dst_id
@@ -169,7 +151,7 @@ static NV_STATUS migrate_vma_copy_begin_push(uvm_va_space_t *va_space,
     // NUMA-enabled GPUs can copy to any other NUMA node in the system even if
     // P2P access has not been explicitly enabled (ie va_space->can_copy_from
     // is not set).
-    if (!gpu->parent->numa_info.enabled) {
+    if (!gpu->mem_info.numa.enabled) {
         UVM_ASSERT_MSG(uvm_processor_mask_test(&va_space->can_copy_from[uvm_id_value(gpu->id)], dst_id),
                        "GPU %s dst %s src %s\n",
                        uvm_va_space_processor_name(va_space, gpu->id),
@@ -281,7 +263,7 @@ static void migrate_vma_compute_masks(struct vm_area_struct *vma, const unsigned
             continue;
         }
 
-        src_gpu = get_gpu_from_node_id(uvm_migrate_args->va_space, src_nid);
+        src_gpu = uvm_va_space_find_gpu_with_memory_node_id(uvm_migrate_args->va_space, src_nid);
 
         // Already resident on a node with no CPUs that doesn't belong to a
         // GPU, don't move
@@ -519,7 +501,23 @@ static NV_STATUS migrate_vma_copy_pages(struct vm_area_struct *vma,
     return NV_OK;
 }
 
-void uvm_migrate_vma_alloc_and_copy(struct migrate_vma *args, migrate_vma_state_t *state)
+static void migrate_vma_cleanup_pages(unsigned long *dst, unsigned long npages)
+{
+    unsigned long i;
+
+    for (i = 0; i < npages; i++) {
+        struct page *dst_page = migrate_pfn_to_page(dst[i]);
+
+        if (!dst_page)
+            continue;
+
+        unlock_page(dst_page);
+        __free_page(dst_page);
+        dst[i] = 0;
+    }
+}
+
+static void migrate_vma_alloc_and_copy(struct migrate_vma *args, migrate_vma_state_t *state)
 {
     struct vm_area_struct *vma = args->vma;
     unsigned long start = args->start;
@@ -543,14 +541,19 @@ void uvm_migrate_vma_alloc_and_copy(struct migrate_vma *args, migrate_vma_state_
 
     if (state->status == NV_OK)
         state->status = tracker_status;
+
+    // Mark all pages as not migrating if we're failing
+    if (state->status != NV_OK)
+        migrate_vma_cleanup_pages(args->dst, state->num_pages);
 }
 
-void uvm_migrate_vma_alloc_and_copy_helper(struct vm_area_struct *vma,
-                                const unsigned long *src,
-                                unsigned long *dst,
-                                unsigned long start,
-                                unsigned long end,
-                                void *private)
+#if defined(CONFIG_MIGRATE_VMA_HELPER)
+static void migrate_vma_alloc_and_copy_helper(struct vm_area_struct *vma,
+                                              const unsigned long *src,
+                                              unsigned long *dst,
+                                              unsigned long start,
+                                              unsigned long end,
+                                              void *private)
 {
     struct migrate_vma args =
     {
@@ -561,10 +564,11 @@ void uvm_migrate_vma_alloc_and_copy_helper(struct vm_area_struct *vma,
         .end = end,
     };
 
-    uvm_migrate_vma_alloc_and_copy(&args, (migrate_vma_state_t *) private);
+    migrate_vma_alloc_and_copy(&args, (migrate_vma_state_t *) private);
 }
+#endif
 
-void uvm_migrate_vma_finalize_and_map(struct migrate_vma *args, migrate_vma_state_t *state)
+static void uvm_migrate_vma_finalize_and_map(struct migrate_vma *args, migrate_vma_state_t *state)
 {
     unsigned long i;
 
@@ -628,18 +632,19 @@ void uvm_migrate_vma_finalize_and_map(struct migrate_vma *args, migrate_vma_stat
     if (state->dma.num_pages > 0) {
 
         for_each_set_bit(i, state->dma.page_mask, state->num_pages)
-            uvm_gpu_unmap_cpu_page(state->dma.addrs_gpus[i], state->dma.addrs[i]);
+            uvm_parent_gpu_unmap_cpu_page(state->dma.addrs_gpus[i]->parent, state->dma.addrs[i]);
     }
 
     UVM_ASSERT(!bitmap_intersects(state->populate_pages_mask, state->allocation_failed_mask, state->num_pages));
 }
 
-void uvm_migrate_vma_finalize_and_map_helper(struct vm_area_struct *vma,
-                                             const unsigned long *src,
-                                             const unsigned long *dst,
-                                             unsigned long start,
-                                             unsigned long end,
-                                             void *private)
+#if defined(CONFIG_MIGRATE_VMA_HELPER)
+static void migrate_vma_finalize_and_map_helper(struct vm_area_struct *vma,
+                                                const unsigned long *src,
+                                                const unsigned long *dst,
+                                                unsigned long start,
+                                                unsigned long end,
+                                                void *private)
 {
     struct migrate_vma args =
     {
@@ -652,6 +657,7 @@ void uvm_migrate_vma_finalize_and_map_helper(struct vm_area_struct *vma,
 
     uvm_migrate_vma_finalize_and_map(&args, (migrate_vma_state_t *) private);
 }
+#endif
 
 static NV_STATUS nv_migrate_vma(struct migrate_vma *args, migrate_vma_state_t *state)
 {
@@ -660,8 +666,8 @@ static NV_STATUS nv_migrate_vma(struct migrate_vma *args, migrate_vma_state_t *s
 #if defined(CONFIG_MIGRATE_VMA_HELPER)
     static const struct migrate_vma_ops uvm_migrate_vma_ops =
     {
-        .alloc_and_copy = uvm_migrate_vma_alloc_and_copy_helper,
-        .finalize_and_map = uvm_migrate_vma_finalize_and_map_helper,
+        .alloc_and_copy = migrate_vma_alloc_and_copy_helper,
+        .finalize_and_map = migrate_vma_finalize_and_map_helper,
     };
 
     ret = migrate_vma(&uvm_migrate_vma_ops, args->vma, args->start, args->end, args->src, args->dst, state);
@@ -677,7 +683,7 @@ static NV_STATUS nv_migrate_vma(struct migrate_vma *args, migrate_vma_state_t *s
     if (ret < 0)
         return errno_to_nv_status(ret);
 
-    uvm_migrate_vma_alloc_and_copy(args, state);
+    migrate_vma_alloc_and_copy(args, state);
     if (state->status == NV_OK) {
         migrate_vma_pages(args);
         uvm_migrate_vma_finalize_and_map(args, state);
@@ -814,7 +820,7 @@ static NV_STATUS migrate_pageable_vma_region(struct vm_area_struct *vma,
         // If the destination is the CPU, signal user-space to retry with a
         // different node. Otherwise, just try to populate anywhere in the
         // system
-        if (UVM_ID_IS_CPU(uvm_migrate_args->dst_id)) {
+        if (UVM_ID_IS_CPU(uvm_migrate_args->dst_id) && !uvm_migrate_args->populate_on_cpu_alloc_failures) {
             *next_addr = start + find_first_bit(state->scratch2_mask, num_pages) * PAGE_SIZE;
             return NV_ERR_MORE_PROCESSING_REQUIRED;
         }
@@ -824,6 +830,17 @@ static NV_STATUS migrate_pageable_vma_region(struct vm_area_struct *vma,
                 return status;
         }
     }
+
+    return NV_OK;
+}
+
+NV_STATUS uvm_test_skip_migrate_vma(UVM_TEST_SKIP_MIGRATE_VMA_PARAMS *params, struct file *filp)
+{
+    uvm_va_space_t *va_space = uvm_va_space_get(filp);
+
+    uvm_va_space_down_write(va_space);
+    va_space->test.skip_migrate_vma = params->skip;
+    uvm_va_space_up_write(va_space);
 
     return NV_OK;
 }
@@ -849,6 +866,9 @@ static NV_STATUS migrate_pageable_vma(struct vm_area_struct *vma,
     // Adjust to input range boundaries
     start = max(start, vma->vm_start);
     outer = min(outer, vma->vm_end);
+
+    if (va_space->test.skip_migrate_vma)
+        return NV_WARN_NOTHING_TO_DO;
 
     // TODO: Bug 2419180: support file-backed pages in migrate_vma, when
     //       support for it is added to the Linux kernel
@@ -899,15 +919,22 @@ static NV_STATUS migrate_pageable(migrate_vma_state_t *state)
 
     // VMAs are validated and migrated one at a time, since migrate_vma works
     // on one vma at a time
-    for (; vma->vm_start <= prev_outer; vma = vma->vm_next) {
+    for (; vma->vm_start <= prev_outer; vma = find_vma_intersection(mm, prev_outer, outer)) {
         unsigned long next_addr = 0;
-        NV_STATUS status = migrate_pageable_vma(vma, start, outer, state, &next_addr);
+        NV_STATUS status;
+
+        // Callers have already validated the range so the vma should be valid.
+        UVM_ASSERT(vma);
+
+        status = migrate_pageable_vma(vma, start, outer, state, &next_addr);
         if (status == NV_WARN_NOTHING_TO_DO) {
             NV_STATUS populate_status = NV_OK;
             bool touch = uvm_migrate_args->touch;
             uvm_populate_permissions_t populate_permissions = uvm_migrate_args->populate_permissions;
 
-            UVM_ASSERT(!vma_is_anonymous(vma) || uvm_processor_mask_empty(&va_space->registered_gpus));
+            UVM_ASSERT(va_space->test.skip_migrate_vma ||
+                       !vma_is_anonymous(vma) ||
+                       uvm_processor_mask_empty(&va_space->registered_gpus));
 
             // We can't use migrate_vma to move the pages as desired. Normally
             // this fallback path is supposed to populate the memory then inform
@@ -958,30 +985,19 @@ NV_STATUS uvm_migrate_pageable(uvm_migrate_args_t *uvm_migrate_args)
     NV_STATUS status;
     uvm_va_space_t *va_space = uvm_migrate_args->va_space;
     uvm_processor_id_t dst_id = uvm_migrate_args->dst_id;
-    int dst_node_id = uvm_migrate_args->dst_node_id;
 
     UVM_ASSERT(PAGE_ALIGNED(uvm_migrate_args->start));
     UVM_ASSERT(PAGE_ALIGNED(uvm_migrate_args->length));
     uvm_assert_mmap_lock_locked(uvm_migrate_args->mm);
 
     if (UVM_ID_IS_CPU(dst_id)) {
-        // We only check that dst_node_id is a valid node in the system and it
-        // doesn't correspond to a GPU node. This is fine because
-        // alloc_pages_node will clamp the allocation to
-        // cpuset_current_mems_allowed, and uvm_migrate_pageable is only called
-        // from process context (uvm_migrate) when dst_id is CPU. UVM bottom
-        // half never calls uvm_migrate_pageable when dst_id is CPU. So, assert
-        // that we're in a user thread. However, this would need to change if we
-        // wanted to call this function from a bottom half with CPU dst_id.
-        UVM_ASSERT(!(current->flags & PF_KTHREAD));
-
-        if (!nv_numa_node_has_memory(dst_node_id) || get_gpu_from_node_id(va_space, dst_node_id) != NULL)
+        if (uvm_migrate_args->dst_node_id == -1)
             return NV_ERR_INVALID_ARGUMENT;
     }
     else {
         // Incoming dst_node_id is only valid if dst_id belongs to the CPU. Use
         // dst_node_id as the GPU node id if dst_id doesn't belong to the CPU.
-        uvm_migrate_args->dst_node_id = uvm_gpu_numa_info(uvm_va_space_get_gpu(va_space, dst_id))->node_id;
+        uvm_migrate_args->dst_node_id = uvm_gpu_numa_node(uvm_va_space_get_gpu(va_space, dst_id));
     }
 
     state = kmem_cache_alloc(g_uvm_migrate_vma_state_cache, NV_UVM_GFP_FLAGS);
@@ -996,7 +1012,7 @@ NV_STATUS uvm_migrate_pageable(uvm_migrate_args_t *uvm_migrate_args)
     return status;
 }
 
-NV_STATUS uvm_migrate_pageable_init()
+NV_STATUS uvm_migrate_pageable_init(void)
 {
     g_uvm_migrate_vma_state_cache = NV_KMEM_CACHE_CREATE("migrate_vma_state_t", migrate_vma_state_t);
     if (!g_uvm_migrate_vma_state_cache)
@@ -1005,7 +1021,7 @@ NV_STATUS uvm_migrate_pageable_init()
     return NV_OK;
 }
 
-void uvm_migrate_pageable_exit()
+void uvm_migrate_pageable_exit(void)
 {
     kmem_cache_destroy_safe(&g_uvm_migrate_vma_state_cache);
 }

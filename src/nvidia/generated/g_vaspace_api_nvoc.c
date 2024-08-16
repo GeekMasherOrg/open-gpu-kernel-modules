@@ -93,94 +93,6 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_VaSpaceApi =
     /*pExportInfo=*/        &__nvoc_export_info_VaSpaceApi
 };
 
-static NvBool __nvoc_thunk_VaSpaceApi_resCanCopy(struct RsResource *pResource) {
-    return vaspaceapiCanCopy((struct VaSpaceApi *)(((unsigned char *)pResource) - __nvoc_rtti_VaSpaceApi_RsResource.offset));
-}
-
-static NvBool __nvoc_thunk_GpuResource_vaspaceapiShareCallback(struct VaSpaceApi *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return gpuresShareCallback((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiControl(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return gpuresControl((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiUnmap(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
-    return gpuresUnmap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pCpuMapping);
-}
-
-static NV_STATUS __nvoc_thunk_RmResource_vaspaceapiGetMemInterMapParams(struct VaSpaceApi *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pParams);
-}
-
-static NV_STATUS __nvoc_thunk_RmResource_vaspaceapiGetMemoryMappingDescriptor(struct VaSpaceApi *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
-    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), ppMemDesc);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiGetMapAddrSpace(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
-}
-
-static NvHandle __nvoc_thunk_GpuResource_vaspaceapiGetInternalObjectHandle(struct VaSpaceApi *pGpuResource) {
-    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_vaspaceapiControlFilter(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pCallContext, pParams);
-}
-
-static void __nvoc_thunk_RsResource_vaspaceapiAddAdditionalDependants(struct RsClient *pClient, struct VaSpaceApi *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pReference);
-}
-
-static NvU32 __nvoc_thunk_RsResource_vaspaceapiGetRefCount(struct VaSpaceApi *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_RmResource_vaspaceapiCheckMemInterUnmap(struct VaSpaceApi *pRmResource, NvBool bSubdeviceHandleProvided) {
-    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), bSubdeviceHandleProvided);
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_vaspaceapiMapTo(struct VaSpaceApi *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
-    return resMapTo((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pParams);
-}
-
-static NV_STATUS __nvoc_thunk_RmResource_vaspaceapiControl_Prologue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiGetRegBaseOffsetAndSize(struct VaSpaceApi *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
-    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pGpu, pOffset, pSize);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiInternalControlForward(struct VaSpaceApi *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
-    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), command, pParams, size);
-}
-
-static void __nvoc_thunk_RsResource_vaspaceapiPreDestruct(struct VaSpaceApi *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_vaspaceapiUnmapFrom(struct VaSpaceApi *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return resUnmapFrom((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pParams);
-}
-
-static void __nvoc_thunk_RmResource_vaspaceapiControl_Epilogue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_vaspaceapiControlLookup(struct VaSpaceApi *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pParams, ppEntry);
-}
-
-static NV_STATUS __nvoc_thunk_GpuResource_vaspaceapiMap(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
-    return gpuresMap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pParams, pCpuMapping);
-}
-
-static NvBool __nvoc_thunk_RmResource_vaspaceapiAccessCallback(struct VaSpaceApi *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
-}
-
 #if !defined(NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG)
 #define NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(x)      (0)
 #endif
@@ -203,12 +115,12 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_VaSpaceA
 #endif
     },
     {               /*  [1] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) vaspaceapiCtrlCmdVaspaceGetPageLevelInfo_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
-        /*flags=*/      0x0u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
+        /*flags=*/      0x8000u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0x90f10102u,
         /*paramSize=*/  sizeof(NV90F1_CTRL_VASPACE_GET_PAGE_LEVEL_INFO_PARAMS),
@@ -218,12 +130,12 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_VaSpaceA
 #endif
     },
     {               /*  [2] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) vaspaceapiCtrlCmdVaspaceReserveEntries_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
-        /*flags=*/      0x0u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
+        /*flags=*/      0x8000u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0x90f10103u,
         /*paramSize=*/  sizeof(NV90F1_CTRL_VASPACE_RESERVE_ENTRIES_PARAMS),
@@ -233,12 +145,12 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_VaSpaceA
 #endif
     },
     {               /*  [3] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) vaspaceapiCtrlCmdVaspaceReleaseEntries_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
-        /*flags=*/      0x0u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
+        /*flags=*/      0x8000u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0x90f10104u,
         /*paramSize=*/  sizeof(NV90F1_CTRL_VASPACE_RELEASE_ENTRIES_PARAMS),
@@ -248,12 +160,12 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_VaSpaceA
 #endif
     },
     {               /*  [4] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x4u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x14004u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) vaspaceapiCtrlCmdVaspaceCopyServerReservedPdes_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x4u)
-        /*flags=*/      0x4u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x14004u)
+        /*flags=*/      0x14004u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0x90f10106u,
         /*paramSize=*/  sizeof(NV90F1_CTRL_VASPACE_COPY_SERVER_RESERVED_PDES_PARAMS),
@@ -262,12 +174,158 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_VaSpaceA
         /*func=*/       "vaspaceapiCtrlCmdVaspaceCopyServerReservedPdes"
 #endif
     },
+    {               /*  [5] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) vaspaceapiCtrlCmdVaspaceGetHostRmManagedSize_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+        /*flags=*/      0x0u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0x90f10107u,
+        /*paramSize=*/  sizeof(NV90F1_CTRL_VASPACE_GET_HOST_RM_MANAGED_SIZE_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_VaSpaceApi.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "vaspaceapiCtrlCmdVaspaceGetHostRmManagedSize"
+#endif
+    },
 
 };
 
+// 1 down-thunk(s) defined to bridge methods in VaSpaceApi from superclasses
+
+// vaspaceapiCanCopy: virtual override (res) base (gpures)
+static NvBool __nvoc_down_thunk_VaSpaceApi_resCanCopy(struct RsResource *pResource) {
+    return vaspaceapiCanCopy((struct VaSpaceApi *)(((unsigned char *) pResource) - __nvoc_rtti_VaSpaceApi_RsResource.offset));
+}
+
+
+// 24 up-thunk(s) defined to bridge methods in VaSpaceApi to superclasses
+
+// vaspaceapiControl: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiControl(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return gpuresControl((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiMap: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiMap(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
+    return gpuresMap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pParams, pCpuMapping);
+}
+
+// vaspaceapiUnmap: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiUnmap(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
+    return gpuresUnmap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, pCpuMapping);
+}
+
+// vaspaceapiShareCallback: virtual inherited (gpures) base (gpures)
+static NvBool __nvoc_up_thunk_GpuResource_vaspaceapiShareCallback(struct VaSpaceApi *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return gpuresShareCallback((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+}
+
+// vaspaceapiGetRegBaseOffsetAndSize: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiGetRegBaseOffsetAndSize(struct VaSpaceApi *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
+    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pGpu, pOffset, pSize);
+}
+
+// vaspaceapiGetMapAddrSpace: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiGetMapAddrSpace(struct VaSpaceApi *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
+}
+
+// vaspaceapiInternalControlForward: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_vaspaceapiInternalControlForward(struct VaSpaceApi *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
+    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset), command, pParams, size);
+}
+
+// vaspaceapiGetInternalObjectHandle: virtual inherited (gpures) base (gpures)
+static NvHandle __nvoc_up_thunk_GpuResource_vaspaceapiGetInternalObjectHandle(struct VaSpaceApi *pGpuResource) {
+    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_VaSpaceApi_GpuResource.offset));
+}
+
+// vaspaceapiAccessCallback: virtual inherited (rmres) base (gpures)
+static NvBool __nvoc_up_thunk_RmResource_vaspaceapiAccessCallback(struct VaSpaceApi *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+}
+
+// vaspaceapiGetMemInterMapParams: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_vaspaceapiGetMemInterMapParams(struct VaSpaceApi *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pParams);
+}
+
+// vaspaceapiCheckMemInterUnmap: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_vaspaceapiCheckMemInterUnmap(struct VaSpaceApi *pRmResource, NvBool bSubdeviceHandleProvided) {
+    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), bSubdeviceHandleProvided);
+}
+
+// vaspaceapiGetMemoryMappingDescriptor: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_vaspaceapiGetMemoryMappingDescriptor(struct VaSpaceApi *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
+    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), ppMemDesc);
+}
+
+// vaspaceapiControlSerialization_Prologue: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_vaspaceapiControlSerialization_Prologue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiControlSerialization_Epilogue: virtual inherited (rmres) base (gpures)
+static void __nvoc_up_thunk_RmResource_vaspaceapiControlSerialization_Epilogue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiControl_Prologue: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_vaspaceapiControl_Prologue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiControl_Epilogue: virtual inherited (rmres) base (gpures)
+static void __nvoc_up_thunk_RmResource_vaspaceapiControl_Epilogue(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RmResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiIsDuplicate: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_vaspaceapiIsDuplicate(struct VaSpaceApi *pResource, NvHandle hMemory, NvBool *pDuplicate) {
+    return resIsDuplicate((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), hMemory, pDuplicate);
+}
+
+// vaspaceapiPreDestruct: virtual inherited (res) base (gpures)
+static void __nvoc_up_thunk_RsResource_vaspaceapiPreDestruct(struct VaSpaceApi *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset));
+}
+
+// vaspaceapiControlFilter: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_vaspaceapiControlFilter(struct VaSpaceApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pCallContext, pParams);
+}
+
+// vaspaceapiIsPartialUnmapSupported: inline virtual inherited (res) base (gpures) body
+static NvBool __nvoc_up_thunk_RsResource_vaspaceapiIsPartialUnmapSupported(struct VaSpaceApi *pResource) {
+    return resIsPartialUnmapSupported((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset));
+}
+
+// vaspaceapiMapTo: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_vaspaceapiMapTo(struct VaSpaceApi *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
+    return resMapTo((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pParams);
+}
+
+// vaspaceapiUnmapFrom: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_vaspaceapiUnmapFrom(struct VaSpaceApi *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return resUnmapFrom((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pParams);
+}
+
+// vaspaceapiGetRefCount: virtual inherited (res) base (gpures)
+static NvU32 __nvoc_up_thunk_RsResource_vaspaceapiGetRefCount(struct VaSpaceApi *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset));
+}
+
+// vaspaceapiAddAdditionalDependants: virtual inherited (res) base (gpures)
+static void __nvoc_up_thunk_RsResource_vaspaceapiAddAdditionalDependants(struct RsClient *pClient, struct VaSpaceApi *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VaSpaceApi_RsResource.offset), pReference);
+}
+
+
 const struct NVOC_EXPORT_INFO __nvoc_export_info_VaSpaceApi = 
 {
-    /*numEntries=*/     5,
+    /*numEntries=*/     6,
     /*pExportEntries=*/ __nvoc_exported_method_def_VaSpaceApi
 };
 
@@ -301,77 +359,122 @@ __nvoc_ctor_VaSpaceApi_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_VaSpaceApi_1(VaSpaceApi *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // vaspaceapiCanCopy -- virtual override (res) base (gpures)
     pThis->__vaspaceapiCanCopy__ = &vaspaceapiCanCopy_IMPL;
+    pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__resCanCopy__ = &__nvoc_down_thunk_VaSpaceApi_resCanCopy;
 
+    // vaspaceapiCtrlCmdVaspaceGetGmmuFormat -- exported (id=0x90f10101)
 #if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
     pThis->__vaspaceapiCtrlCmdVaspaceGetGmmuFormat__ = &vaspaceapiCtrlCmdVaspaceGetGmmuFormat_IMPL;
 #endif
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+    // vaspaceapiCtrlCmdVaspaceGetPageLevelInfo -- exported (id=0x90f10102)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
     pThis->__vaspaceapiCtrlCmdVaspaceGetPageLevelInfo__ = &vaspaceapiCtrlCmdVaspaceGetPageLevelInfo_IMPL;
 #endif
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+    // vaspaceapiCtrlCmdVaspaceReserveEntries -- exported (id=0x90f10103)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
     pThis->__vaspaceapiCtrlCmdVaspaceReserveEntries__ = &vaspaceapiCtrlCmdVaspaceReserveEntries_IMPL;
 #endif
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+    // vaspaceapiCtrlCmdVaspaceReleaseEntries -- exported (id=0x90f10104)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x8000u)
     pThis->__vaspaceapiCtrlCmdVaspaceReleaseEntries__ = &vaspaceapiCtrlCmdVaspaceReleaseEntries_IMPL;
 #endif
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x4u)
+    // vaspaceapiCtrlCmdVaspaceCopyServerReservedPdes -- exported (id=0x90f10106)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x14004u)
     pThis->__vaspaceapiCtrlCmdVaspaceCopyServerReservedPdes__ = &vaspaceapiCtrlCmdVaspaceCopyServerReservedPdes_IMPL;
 #endif
 
-    pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__resCanCopy__ = &__nvoc_thunk_VaSpaceApi_resCanCopy;
+    // vaspaceapiCtrlCmdVaspaceGetHostRmManagedSize -- exported (id=0x90f10107)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x0u)
+    pThis->__vaspaceapiCtrlCmdVaspaceGetHostRmManagedSize__ = &vaspaceapiCtrlCmdVaspaceGetHostRmManagedSize_IMPL;
+#endif
 
-    pThis->__vaspaceapiShareCallback__ = &__nvoc_thunk_GpuResource_vaspaceapiShareCallback;
+    // vaspaceapiControl -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiControl__ = &__nvoc_up_thunk_GpuResource_vaspaceapiControl;
 
-    pThis->__vaspaceapiControl__ = &__nvoc_thunk_GpuResource_vaspaceapiControl;
+    // vaspaceapiMap -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiMap__ = &__nvoc_up_thunk_GpuResource_vaspaceapiMap;
 
-    pThis->__vaspaceapiUnmap__ = &__nvoc_thunk_GpuResource_vaspaceapiUnmap;
+    // vaspaceapiUnmap -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiUnmap__ = &__nvoc_up_thunk_GpuResource_vaspaceapiUnmap;
 
-    pThis->__vaspaceapiGetMemInterMapParams__ = &__nvoc_thunk_RmResource_vaspaceapiGetMemInterMapParams;
+    // vaspaceapiShareCallback -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiShareCallback__ = &__nvoc_up_thunk_GpuResource_vaspaceapiShareCallback;
 
-    pThis->__vaspaceapiGetMemoryMappingDescriptor__ = &__nvoc_thunk_RmResource_vaspaceapiGetMemoryMappingDescriptor;
+    // vaspaceapiGetRegBaseOffsetAndSize -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiGetRegBaseOffsetAndSize__ = &__nvoc_up_thunk_GpuResource_vaspaceapiGetRegBaseOffsetAndSize;
 
-    pThis->__vaspaceapiGetMapAddrSpace__ = &__nvoc_thunk_GpuResource_vaspaceapiGetMapAddrSpace;
+    // vaspaceapiGetMapAddrSpace -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiGetMapAddrSpace__ = &__nvoc_up_thunk_GpuResource_vaspaceapiGetMapAddrSpace;
 
-    pThis->__vaspaceapiGetInternalObjectHandle__ = &__nvoc_thunk_GpuResource_vaspaceapiGetInternalObjectHandle;
+    // vaspaceapiInternalControlForward -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiInternalControlForward__ = &__nvoc_up_thunk_GpuResource_vaspaceapiInternalControlForward;
 
-    pThis->__vaspaceapiControlFilter__ = &__nvoc_thunk_RsResource_vaspaceapiControlFilter;
+    // vaspaceapiGetInternalObjectHandle -- virtual inherited (gpures) base (gpures)
+    pThis->__vaspaceapiGetInternalObjectHandle__ = &__nvoc_up_thunk_GpuResource_vaspaceapiGetInternalObjectHandle;
 
-    pThis->__vaspaceapiAddAdditionalDependants__ = &__nvoc_thunk_RsResource_vaspaceapiAddAdditionalDependants;
+    // vaspaceapiAccessCallback -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiAccessCallback__ = &__nvoc_up_thunk_RmResource_vaspaceapiAccessCallback;
 
-    pThis->__vaspaceapiGetRefCount__ = &__nvoc_thunk_RsResource_vaspaceapiGetRefCount;
+    // vaspaceapiGetMemInterMapParams -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiGetMemInterMapParams__ = &__nvoc_up_thunk_RmResource_vaspaceapiGetMemInterMapParams;
 
-    pThis->__vaspaceapiCheckMemInterUnmap__ = &__nvoc_thunk_RmResource_vaspaceapiCheckMemInterUnmap;
+    // vaspaceapiCheckMemInterUnmap -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiCheckMemInterUnmap__ = &__nvoc_up_thunk_RmResource_vaspaceapiCheckMemInterUnmap;
 
-    pThis->__vaspaceapiMapTo__ = &__nvoc_thunk_RsResource_vaspaceapiMapTo;
+    // vaspaceapiGetMemoryMappingDescriptor -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_RmResource_vaspaceapiGetMemoryMappingDescriptor;
 
-    pThis->__vaspaceapiControl_Prologue__ = &__nvoc_thunk_RmResource_vaspaceapiControl_Prologue;
+    // vaspaceapiControlSerialization_Prologue -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_vaspaceapiControlSerialization_Prologue;
 
-    pThis->__vaspaceapiGetRegBaseOffsetAndSize__ = &__nvoc_thunk_GpuResource_vaspaceapiGetRegBaseOffsetAndSize;
+    // vaspaceapiControlSerialization_Epilogue -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_vaspaceapiControlSerialization_Epilogue;
 
-    pThis->__vaspaceapiInternalControlForward__ = &__nvoc_thunk_GpuResource_vaspaceapiInternalControlForward;
+    // vaspaceapiControl_Prologue -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiControl_Prologue__ = &__nvoc_up_thunk_RmResource_vaspaceapiControl_Prologue;
 
-    pThis->__vaspaceapiPreDestruct__ = &__nvoc_thunk_RsResource_vaspaceapiPreDestruct;
+    // vaspaceapiControl_Epilogue -- virtual inherited (rmres) base (gpures)
+    pThis->__vaspaceapiControl_Epilogue__ = &__nvoc_up_thunk_RmResource_vaspaceapiControl_Epilogue;
 
-    pThis->__vaspaceapiUnmapFrom__ = &__nvoc_thunk_RsResource_vaspaceapiUnmapFrom;
+    // vaspaceapiIsDuplicate -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiIsDuplicate__ = &__nvoc_up_thunk_RsResource_vaspaceapiIsDuplicate;
 
-    pThis->__vaspaceapiControl_Epilogue__ = &__nvoc_thunk_RmResource_vaspaceapiControl_Epilogue;
+    // vaspaceapiPreDestruct -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiPreDestruct__ = &__nvoc_up_thunk_RsResource_vaspaceapiPreDestruct;
 
-    pThis->__vaspaceapiControlLookup__ = &__nvoc_thunk_RsResource_vaspaceapiControlLookup;
+    // vaspaceapiControlFilter -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiControlFilter__ = &__nvoc_up_thunk_RsResource_vaspaceapiControlFilter;
 
-    pThis->__vaspaceapiMap__ = &__nvoc_thunk_GpuResource_vaspaceapiMap;
+    // vaspaceapiIsPartialUnmapSupported -- inline virtual inherited (res) base (gpures) body
+    pThis->__vaspaceapiIsPartialUnmapSupported__ = &__nvoc_up_thunk_RsResource_vaspaceapiIsPartialUnmapSupported;
 
-    pThis->__vaspaceapiAccessCallback__ = &__nvoc_thunk_RmResource_vaspaceapiAccessCallback;
-}
+    // vaspaceapiMapTo -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiMapTo__ = &__nvoc_up_thunk_RsResource_vaspaceapiMapTo;
 
+    // vaspaceapiUnmapFrom -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiUnmapFrom__ = &__nvoc_up_thunk_RsResource_vaspaceapiUnmapFrom;
+
+    // vaspaceapiGetRefCount -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiGetRefCount__ = &__nvoc_up_thunk_RsResource_vaspaceapiGetRefCount;
+
+    // vaspaceapiAddAdditionalDependants -- virtual inherited (res) base (gpures)
+    pThis->__vaspaceapiAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_vaspaceapiAddAdditionalDependants;
+} // End __nvoc_init_funcTable_VaSpaceApi_1 with approximately 32 basic block(s).
+
+
+// Initialize vtable(s) for 31 virtual method(s).
 void __nvoc_init_funcTable_VaSpaceApi(VaSpaceApi *pThis) {
+
+    // Initialize vtable(s) with 31 per-object function pointer(s).
     __nvoc_init_funcTable_VaSpaceApi_1(pThis);
 }
 
@@ -387,18 +490,26 @@ void __nvoc_init_VaSpaceApi(VaSpaceApi *pThis) {
     __nvoc_init_funcTable_VaSpaceApi(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_VaSpaceApi(VaSpaceApi **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_VaSpaceApi(VaSpaceApi **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     VaSpaceApi *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(VaSpaceApi));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(VaSpaceApi), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(VaSpaceApi));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_VaSpaceApi);
 
+    pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -413,12 +524,27 @@ NV_STATUS __nvoc_objCreate_VaSpaceApi(VaSpaceApi **ppThis, Dynamic *pParent, NvU
     status = __nvoc_ctor_VaSpaceApi(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_VaSpaceApi_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_VaSpaceApi_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(VaSpaceApi));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

@@ -66,121 +66,156 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_OBJIOVASPACE =
     /*pExportInfo=*/        &__nvoc_export_info_OBJIOVASPACE
 };
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceConstruct_(struct OBJVASPACE *pVAS, NvU32 classId, NvU32 vaspaceId, NvU64 vaStart, NvU64 vaLimit, NvU64 vaStartInternal, NvU64 vaLimitInternal, NvU32 flags) {
-    return iovaspaceConstruct_((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), classId, vaspaceId, vaStart, vaLimit, vaStartInternal, vaLimitInternal, flags);
+// 8 down-thunk(s) defined to bridge methods in OBJIOVASPACE from superclasses
+
+// iovaspaceConstruct_: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceConstruct_(struct OBJVASPACE *pVAS, NvU32 classId, NvU32 vaspaceId, NvU64 vaStart, NvU64 vaLimit, NvU64 vaStartInternal, NvU64 vaLimitInternal, NvU32 flags) {
+    return iovaspaceConstruct_((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), classId, vaspaceId, vaStart, vaLimit, vaStartInternal, vaLimitInternal, flags);
 }
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceAlloc(struct OBJVASPACE *pVAS, NvU64 size, NvU64 align, NvU64 rangeLo, NvU64 rangeHi, NvU64 pageSizeLockMask, VAS_ALLOC_FLAGS flags, NvU64 *pAddr) {
-    return iovaspaceAlloc((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), size, align, rangeLo, rangeHi, pageSizeLockMask, flags, pAddr);
+// iovaspaceAlloc: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceAlloc(struct OBJVASPACE *pVAS, NvU64 size, NvU64 align, NvU64 rangeLo, NvU64 rangeHi, NvU64 pageSizeLockMask, VAS_ALLOC_FLAGS flags, NvU64 *pAddr) {
+    return iovaspaceAlloc((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), size, align, rangeLo, rangeHi, pageSizeLockMask, flags, pAddr);
 }
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceFree(struct OBJVASPACE *pVAS, NvU64 vAddr) {
-    return iovaspaceFree((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), vAddr);
+// iovaspaceFree: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceFree(struct OBJVASPACE *pVAS, NvU64 vAddr) {
+    return iovaspaceFree((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), vAddr);
 }
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceApplyDefaultAlignment(struct OBJVASPACE *pVAS, const FB_ALLOC_INFO *pAllocInfo, NvU64 *pAlign, NvU64 *pSize, NvU64 *pPageSizeLockMask) {
-    return iovaspaceApplyDefaultAlignment((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pAllocInfo, pAlign, pSize, pPageSizeLockMask);
+// iovaspaceApplyDefaultAlignment: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceApplyDefaultAlignment(struct OBJVASPACE *pVAS, const FB_ALLOC_INFO *pAllocInfo, NvU64 *pAlign, NvU64 *pSize, NvU64 *pPageSizeLockMask) {
+    return iovaspaceApplyDefaultAlignment((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pAllocInfo, pAlign, pSize, pPageSizeLockMask);
 }
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceIncAllocRefCnt(struct OBJVASPACE *pVAS, NvU64 vAddr) {
-    return iovaspaceIncAllocRefCnt((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), vAddr);
+// iovaspaceIncAllocRefCnt: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceIncAllocRefCnt(struct OBJVASPACE *pVAS, NvU64 vAddr) {
+    return iovaspaceIncAllocRefCnt((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), vAddr);
 }
 
-static NvU64 __nvoc_thunk_OBJIOVASPACE_vaspaceGetVaStart(struct OBJVASPACE *pVAS) {
-    return iovaspaceGetVaStart((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceGetVaStart: virtual override (vaspace) base (vaspace)
+static NvU64 __nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVaStart(struct OBJVASPACE *pVAS) {
+    return iovaspaceGetVaStart((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NvU64 __nvoc_thunk_OBJIOVASPACE_vaspaceGetVaLimit(struct OBJVASPACE *pVAS) {
-    return iovaspaceGetVaLimit((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceGetVaLimit: virtual override (vaspace) base (vaspace)
+static NvU64 __nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVaLimit(struct OBJVASPACE *pVAS) {
+    return iovaspaceGetVaLimit((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJIOVASPACE_vaspaceGetVasInfo(struct OBJVASPACE *pVAS, NV0080_CTRL_DMA_ADV_SCHED_GET_VA_CAPS_PARAMS *pParams) {
-    return iovaspaceGetVasInfo((struct OBJIOVASPACE *)(((unsigned char *)pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pParams);
+// iovaspaceGetVasInfo: virtual override (vaspace) base (vaspace)
+static NV_STATUS __nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVasInfo(struct OBJVASPACE *pVAS, NV0080_CTRL_DMA_ADV_SCHED_GET_VA_CAPS_PARAMS *pParams) {
+    return iovaspaceGetVasInfo((struct OBJIOVASPACE *)(((unsigned char *) pVAS) - __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pParams);
 }
 
-static NvBool __nvoc_thunk_OBJVASPACE_iovaspaceIsMirrored(struct OBJIOVASPACE *pVAS) {
-    return vaspaceIsMirrored((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+
+// 21 up-thunk(s) defined to bridge methods in OBJIOVASPACE to superclasses
+
+// iovaspaceGetFlags: inline virtual inherited (vaspace) base (vaspace) body
+static NvU32 __nvoc_up_thunk_OBJVASPACE_iovaspaceGetFlags(struct OBJIOVASPACE *pVAS) {
+    return vaspaceGetFlags((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NvBool __nvoc_thunk_OBJVASPACE_iovaspaceIsExternallyOwned(struct OBJIOVASPACE *pVAS) {
-    return vaspaceIsExternallyOwned((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceMap: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceMap(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, const NvU64 vaLo, const NvU64 vaHi, const MMU_MAP_TARGET *pTarget, const VAS_MAP_FLAGS flags) {
+    return vaspaceMap((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, vaLo, vaHi, pTarget, flags);
 }
 
-static NvBool __nvoc_thunk_OBJVASPACE_iovaspaceIsInternalVaRestricted(struct OBJIOVASPACE *pVAS) {
-    return vaspaceIsInternalVaRestricted((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceUnmap: inline virtual inherited (vaspace) base (vaspace) body
+static void __nvoc_up_thunk_OBJVASPACE_iovaspaceUnmap(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, const NvU64 vaLo, const NvU64 vaHi) {
+    vaspaceUnmap((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, vaLo, vaHi);
 }
 
-static NvU32 __nvoc_thunk_OBJVASPACE_iovaspaceGetFlags(struct OBJIOVASPACE *pVAS) {
-    return vaspaceGetFlags((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceReserveMempool: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceReserveMempool(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, struct Device *pDevice, NvU64 size, NvU64 pageSizeLockMask, NvU32 flags) {
+    return vaspaceReserveMempool((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pDevice, size, pageSizeLockMask, flags);
 }
 
-static NvBool __nvoc_thunk_OBJVASPACE_iovaspaceIsAtsEnabled(struct OBJIOVASPACE *pVAS) {
-    return vaspaceIsAtsEnabled((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceGetHeap: inline virtual inherited (vaspace) base (vaspace) body
+static OBJEHEAP * __nvoc_up_thunk_OBJVASPACE_iovaspaceGetHeap(struct OBJIOVASPACE *pVAS) {
+    return vaspaceGetHeap((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NvU32 __nvoc_thunk_OBJVASPACE_iovaspaceGetBigPageSize(struct OBJIOVASPACE *pVAS) {
-    return vaspaceGetBigPageSize((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceGetMapPageSize: inline virtual inherited (vaspace) base (vaspace) body
+static NvU64 __nvoc_up_thunk_OBJVASPACE_iovaspaceGetMapPageSize(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, EMEMBLOCK *pMemBlock) {
+    return vaspaceGetMapPageSize((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pMemBlock);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceGetPteInfo(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, NV0080_CTRL_DMA_GET_PTE_INFO_PARAMS *pParams, RmPhysAddr *pPhysAddr) {
-    return vaspaceGetPteInfo((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pParams, pPhysAddr);
+// iovaspaceGetBigPageSize: inline virtual inherited (vaspace) base (vaspace) body
+static NvU64 __nvoc_up_thunk_OBJVASPACE_iovaspaceGetBigPageSize(struct OBJIOVASPACE *pVAS) {
+    return vaspaceGetBigPageSize((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static PMEMORY_DESCRIPTOR __nvoc_thunk_OBJVASPACE_iovaspaceGetPageDirBase(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
-    return vaspaceGetPageDirBase((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
+// iovaspaceIsMirrored: inline virtual inherited (vaspace) base (vaspace) body
+static NvBool __nvoc_up_thunk_OBJVASPACE_iovaspaceIsMirrored(struct OBJIOVASPACE *pVAS) {
+    return vaspaceIsMirrored((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static PMEMORY_DESCRIPTOR __nvoc_thunk_OBJVASPACE_iovaspaceGetKernelPageDirBase(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
-    return vaspaceGetKernelPageDirBase((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
+// iovaspaceIsFaultCapable: inline virtual inherited (vaspace) base (vaspace) body
+static NvBool __nvoc_up_thunk_OBJVASPACE_iovaspaceIsFaultCapable(struct OBJIOVASPACE *pVAS) {
+    return vaspaceIsFaultCapable((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NvU32 __nvoc_thunk_OBJVASPACE_iovaspaceGetMapPageSize(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, EMEMBLOCK *pMemBlock) {
-    return vaspaceGetMapPageSize((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pMemBlock);
+// iovaspaceIsExternallyOwned: inline virtual inherited (vaspace) base (vaspace) body
+static NvBool __nvoc_up_thunk_OBJVASPACE_iovaspaceIsExternallyOwned(struct OBJIOVASPACE *pVAS) {
+    return vaspaceIsExternallyOwned((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static struct OBJEHEAP *__nvoc_thunk_OBJVASPACE_iovaspaceGetHeap(struct OBJIOVASPACE *pVAS) {
-    return vaspaceGetHeap((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceIsAtsEnabled: inline virtual inherited (vaspace) base (vaspace) body
+static NvBool __nvoc_up_thunk_OBJVASPACE_iovaspaceIsAtsEnabled(struct OBJIOVASPACE *pVAS) {
+    return vaspaceIsAtsEnabled((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
 }
 
-static NvBool __nvoc_thunk_OBJVASPACE_iovaspaceIsFaultCapable(struct OBJIOVASPACE *pVAS) {
-    return vaspaceIsFaultCapable((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset));
+// iovaspaceGetPasid: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceGetPasid(struct OBJIOVASPACE *pVAS, NvU32 *pPasid) {
+    return vaspaceGetPasid((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pPasid);
 }
 
-static void __nvoc_thunk_OBJVASPACE_iovaspaceUnmap(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, const NvU64 vaLo, const NvU64 vaHi) {
-    vaspaceUnmap((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, vaLo, vaHi);
+// iovaspaceGetPageDirBase: inline virtual inherited (vaspace) base (vaspace) body
+static PMEMORY_DESCRIPTOR __nvoc_up_thunk_OBJVASPACE_iovaspaceGetPageDirBase(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
+    return vaspaceGetPageDirBase((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
 }
 
-static void __nvoc_thunk_OBJVASPACE_iovaspaceInvalidateTlb(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, VAS_PTE_UPDATE_TYPE type) {
-    vaspaceInvalidateTlb((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, type);
+// iovaspaceGetKernelPageDirBase: inline virtual inherited (vaspace) base (vaspace) body
+static PMEMORY_DESCRIPTOR __nvoc_up_thunk_OBJVASPACE_iovaspaceGetKernelPageDirBase(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
+    return vaspaceGetKernelPageDirBase((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspacePinRootPageDir(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
-    return vaspacePinRootPageDir((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
+// iovaspacePinRootPageDir: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspacePinRootPageDir(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
+    return vaspacePinRootPageDir((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
 }
 
-static void __nvoc_thunk_OBJVASPACE_iovaspaceUnpinRootPageDir(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
-    vaspaceUnpinRootPageDir((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
+// iovaspaceUnpinRootPageDir: inline virtual inherited (vaspace) base (vaspace) body
+static void __nvoc_up_thunk_OBJVASPACE_iovaspaceUnpinRootPageDir(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu) {
+    vaspaceUnpinRootPageDir((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceSetPteInfo(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, NV0080_CTRL_DMA_SET_PTE_INFO_PARAMS *pParams) {
-    return vaspaceSetPteInfo((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pParams);
+// iovaspaceInvalidateTlb: virtual inherited (vaspace) base (vaspace)
+static void __nvoc_up_thunk_OBJVASPACE_iovaspaceInvalidateTlb(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, VAS_PTE_UPDATE_TYPE type) {
+    vaspaceInvalidateTlb((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, type);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceGetPasid(struct OBJIOVASPACE *pVAS, NvU32 *pPasid) {
-    return vaspaceGetPasid((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pPasid);
+// iovaspaceGetPageTableInfo: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceGetPageTableInfo(struct OBJIOVASPACE *pVAS, NV0080_CTRL_DMA_GET_PDE_INFO_PARAMS *pParams) {
+    return vaspaceGetPageTableInfo((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceGetPageTableInfo(struct OBJIOVASPACE *pVAS, NV0080_CTRL_DMA_GET_PDE_INFO_PARAMS *pParams) {
-    return vaspaceGetPageTableInfo((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pParams);
+// iovaspaceGetPteInfo: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceGetPteInfo(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, NV0080_CTRL_DMA_GET_PTE_INFO_PARAMS *pParams, RmPhysAddr *pPhysAddr) {
+    return vaspaceGetPteInfo((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pParams, pPhysAddr);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceReserveMempool(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, NvHandle hClient, NvU64 size, NvU64 pageSizeLockMask, NvU32 flags) {
-    return vaspaceReserveMempool((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, hClient, size, pageSizeLockMask, flags);
+// iovaspaceSetPteInfo: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceSetPteInfo(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, NV0080_CTRL_DMA_SET_PTE_INFO_PARAMS *pParams) {
+    return vaspaceSetPteInfo((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_OBJVASPACE_iovaspaceMap(struct OBJIOVASPACE *pVAS, struct OBJGPU *pGpu, const NvU64 vaLo, const NvU64 vaHi, const MMU_MAP_TARGET *pTarget, const VAS_MAP_FLAGS flags) {
-    return vaspaceMap((struct OBJVASPACE *)(((unsigned char *)pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), pGpu, vaLo, vaHi, pTarget, flags);
+// iovaspaceFreeV2: inline virtual inherited (vaspace) base (vaspace) body
+static NV_STATUS __nvoc_up_thunk_OBJVASPACE_iovaspaceFreeV2(struct OBJIOVASPACE *pVAS, NvU64 vAddr, NvU64 *pSize) {
+    return vaspaceFreeV2((struct OBJVASPACE *)(((unsigned char *) pVAS) + __nvoc_rtti_OBJIOVASPACE_OBJVASPACE.offset), vAddr, pSize);
 }
+
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_OBJIOVASPACE = 
 {
@@ -213,85 +248,111 @@ __nvoc_ctor_OBJIOVASPACE_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_OBJIOVASPACE_1(OBJIOVASPACE *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // iovaspaceConstruct_ -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceConstruct___ = &iovaspaceConstruct__IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceConstruct___ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceConstruct_;
 
+    // iovaspaceAlloc -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceAlloc__ = &iovaspaceAlloc_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceAlloc__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceAlloc;
 
+    // iovaspaceFree -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceFree__ = &iovaspaceFree_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceFree__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceFree;
 
+    // iovaspaceApplyDefaultAlignment -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceApplyDefaultAlignment__ = &iovaspaceApplyDefaultAlignment_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceApplyDefaultAlignment__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceApplyDefaultAlignment;
 
+    // iovaspaceIncAllocRefCnt -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceIncAllocRefCnt__ = &iovaspaceIncAllocRefCnt_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceIncAllocRefCnt__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceIncAllocRefCnt;
 
+    // iovaspaceGetVaStart -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceGetVaStart__ = &iovaspaceGetVaStart_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVaStart__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVaStart;
 
+    // iovaspaceGetVaLimit -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceGetVaLimit__ = &iovaspaceGetVaLimit_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVaLimit__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVaLimit;
 
+    // iovaspaceGetVasInfo -- virtual override (vaspace) base (vaspace)
     pThis->__iovaspaceGetVasInfo__ = &iovaspaceGetVasInfo_IMPL;
+    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVasInfo__ = &__nvoc_down_thunk_OBJIOVASPACE_vaspaceGetVasInfo;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceConstruct___ = &__nvoc_thunk_OBJIOVASPACE_vaspaceConstruct_;
+    // iovaspaceGetFlags -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetFlags__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetFlags;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceAlloc__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceAlloc;
+    // iovaspaceMap -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceMap__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceMap;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceFree__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceFree;
+    // iovaspaceUnmap -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceUnmap__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceUnmap;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceApplyDefaultAlignment__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceApplyDefaultAlignment;
+    // iovaspaceReserveMempool -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceReserveMempool__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceReserveMempool;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceIncAllocRefCnt__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceIncAllocRefCnt;
+    // iovaspaceGetHeap -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetHeap__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetHeap;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVaStart__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceGetVaStart;
+    // iovaspaceGetMapPageSize -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetMapPageSize__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetMapPageSize;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVaLimit__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceGetVaLimit;
+    // iovaspaceGetBigPageSize -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetBigPageSize__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetBigPageSize;
 
-    pThis->__nvoc_base_OBJVASPACE.__vaspaceGetVasInfo__ = &__nvoc_thunk_OBJIOVASPACE_vaspaceGetVasInfo;
+    // iovaspaceIsMirrored -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceIsMirrored__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceIsMirrored;
 
-    pThis->__iovaspaceIsMirrored__ = &__nvoc_thunk_OBJVASPACE_iovaspaceIsMirrored;
+    // iovaspaceIsFaultCapable -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceIsFaultCapable__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceIsFaultCapable;
 
-    pThis->__iovaspaceIsExternallyOwned__ = &__nvoc_thunk_OBJVASPACE_iovaspaceIsExternallyOwned;
+    // iovaspaceIsExternallyOwned -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceIsExternallyOwned__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceIsExternallyOwned;
 
-    pThis->__iovaspaceIsInternalVaRestricted__ = &__nvoc_thunk_OBJVASPACE_iovaspaceIsInternalVaRestricted;
+    // iovaspaceIsAtsEnabled -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceIsAtsEnabled__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceIsAtsEnabled;
 
-    pThis->__iovaspaceGetFlags__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetFlags;
+    // iovaspaceGetPasid -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetPasid__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetPasid;
 
-    pThis->__iovaspaceIsAtsEnabled__ = &__nvoc_thunk_OBJVASPACE_iovaspaceIsAtsEnabled;
+    // iovaspaceGetPageDirBase -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetPageDirBase__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetPageDirBase;
 
-    pThis->__iovaspaceGetBigPageSize__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetBigPageSize;
+    // iovaspaceGetKernelPageDirBase -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetKernelPageDirBase__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetKernelPageDirBase;
 
-    pThis->__iovaspaceGetPteInfo__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetPteInfo;
+    // iovaspacePinRootPageDir -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspacePinRootPageDir__ = &__nvoc_up_thunk_OBJVASPACE_iovaspacePinRootPageDir;
 
-    pThis->__iovaspaceGetPageDirBase__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetPageDirBase;
+    // iovaspaceUnpinRootPageDir -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceUnpinRootPageDir__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceUnpinRootPageDir;
 
-    pThis->__iovaspaceGetKernelPageDirBase__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetKernelPageDirBase;
+    // iovaspaceInvalidateTlb -- virtual inherited (vaspace) base (vaspace)
+    pThis->__iovaspaceInvalidateTlb__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceInvalidateTlb;
 
-    pThis->__iovaspaceGetMapPageSize__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetMapPageSize;
+    // iovaspaceGetPageTableInfo -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetPageTableInfo__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetPageTableInfo;
 
-    pThis->__iovaspaceGetHeap__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetHeap;
+    // iovaspaceGetPteInfo -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceGetPteInfo__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceGetPteInfo;
 
-    pThis->__iovaspaceIsFaultCapable__ = &__nvoc_thunk_OBJVASPACE_iovaspaceIsFaultCapable;
+    // iovaspaceSetPteInfo -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceSetPteInfo__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceSetPteInfo;
 
-    pThis->__iovaspaceUnmap__ = &__nvoc_thunk_OBJVASPACE_iovaspaceUnmap;
+    // iovaspaceFreeV2 -- inline virtual inherited (vaspace) base (vaspace) body
+    pThis->__iovaspaceFreeV2__ = &__nvoc_up_thunk_OBJVASPACE_iovaspaceFreeV2;
+} // End __nvoc_init_funcTable_OBJIOVASPACE_1 with approximately 37 basic block(s).
 
-    pThis->__iovaspaceInvalidateTlb__ = &__nvoc_thunk_OBJVASPACE_iovaspaceInvalidateTlb;
 
-    pThis->__iovaspacePinRootPageDir__ = &__nvoc_thunk_OBJVASPACE_iovaspacePinRootPageDir;
-
-    pThis->__iovaspaceUnpinRootPageDir__ = &__nvoc_thunk_OBJVASPACE_iovaspaceUnpinRootPageDir;
-
-    pThis->__iovaspaceSetPteInfo__ = &__nvoc_thunk_OBJVASPACE_iovaspaceSetPteInfo;
-
-    pThis->__iovaspaceGetPasid__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetPasid;
-
-    pThis->__iovaspaceGetPageTableInfo__ = &__nvoc_thunk_OBJVASPACE_iovaspaceGetPageTableInfo;
-
-    pThis->__iovaspaceReserveMempool__ = &__nvoc_thunk_OBJVASPACE_iovaspaceReserveMempool;
-
-    pThis->__iovaspaceMap__ = &__nvoc_thunk_OBJVASPACE_iovaspaceMap;
-}
-
+// Initialize vtable(s) for 29 virtual method(s).
 void __nvoc_init_funcTable_OBJIOVASPACE(OBJIOVASPACE *pThis) {
+
+    // Initialize vtable(s) with 29 per-object function pointer(s).
     __nvoc_init_funcTable_OBJIOVASPACE_1(pThis);
 }
 
@@ -304,18 +365,26 @@ void __nvoc_init_OBJIOVASPACE(OBJIOVASPACE *pThis) {
     __nvoc_init_funcTable_OBJIOVASPACE(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_OBJIOVASPACE(OBJIOVASPACE **ppThis, Dynamic *pParent, NvU32 createFlags) {
+NV_STATUS __nvoc_objCreate_OBJIOVASPACE(OBJIOVASPACE **ppThis, Dynamic *pParent, NvU32 createFlags)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     OBJIOVASPACE *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(OBJIOVASPACE));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(OBJIOVASPACE), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(OBJIOVASPACE));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_OBJIOVASPACE);
 
+    pThis->__nvoc_base_OBJVASPACE.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -330,12 +399,27 @@ NV_STATUS __nvoc_objCreate_OBJIOVASPACE(OBJIOVASPACE **ppThis, Dynamic *pParent,
     status = __nvoc_ctor_OBJIOVASPACE(pThis);
     if (status != NV_OK) goto __nvoc_objCreate_OBJIOVASPACE_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_OBJIOVASPACE_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_OBJVASPACE.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(OBJIOVASPACE));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

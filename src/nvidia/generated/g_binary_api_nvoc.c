@@ -93,93 +93,136 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_BinaryApi =
     /*pExportInfo=*/        &__nvoc_export_info_BinaryApi
 };
 
-static NV_STATUS __nvoc_thunk_BinaryApi_gpuresControl(struct GpuResource *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return binapiControl((struct BinaryApi *)(((unsigned char *)pResource) - __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pParams);
+// 1 down-thunk(s) defined to bridge methods in BinaryApi from superclasses
+
+// binapiControl: virtual override (res) base (gpures)
+static NV_STATUS __nvoc_down_thunk_BinaryApi_gpuresControl(struct GpuResource *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return binapiControl((struct BinaryApi *)(((unsigned char *) pResource) - __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pParams);
 }
 
-static NvBool __nvoc_thunk_GpuResource_binapiShareCallback(struct BinaryApi *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return gpuresShareCallback((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+
+// 24 up-thunk(s) defined to bridge methods in BinaryApi to superclasses
+
+// binapiMap: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiMap(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
+    return gpuresMap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pParams, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiUnmap(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
-    return gpuresUnmap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pCpuMapping);
+// binapiUnmap: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiUnmap(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
+    return gpuresUnmap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiGetMemInterMapParams(struct BinaryApi *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pParams);
+// binapiShareCallback: virtual inherited (gpures) base (gpures)
+static NvBool __nvoc_up_thunk_GpuResource_binapiShareCallback(struct BinaryApi *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return gpuresShareCallback((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiGetMemoryMappingDescriptor(struct BinaryApi *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
-    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), ppMemDesc);
+// binapiGetRegBaseOffsetAndSize: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiGetRegBaseOffsetAndSize(struct BinaryApi *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
+    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pGpu, pOffset, pSize);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiGetMapAddrSpace(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
+// binapiGetMapAddrSpace: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiGetMapAddrSpace(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
 }
 
-static NvHandle __nvoc_thunk_GpuResource_binapiGetInternalObjectHandle(struct BinaryApi *pGpuResource) {
-    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset));
+// binapiInternalControlForward: virtual inherited (gpures) base (gpures)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiInternalControlForward(struct BinaryApi *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
+    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), command, pParams, size);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiControlFilter(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pCallContext, pParams);
+// binapiGetInternalObjectHandle: virtual inherited (gpures) base (gpures)
+static NvHandle __nvoc_up_thunk_GpuResource_binapiGetInternalObjectHandle(struct BinaryApi *pGpuResource) {
+    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset));
 }
 
-static void __nvoc_thunk_RsResource_binapiAddAdditionalDependants(struct RsClient *pClient, struct BinaryApi *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pReference);
+// binapiAccessCallback: virtual inherited (rmres) base (gpures)
+static NvBool __nvoc_up_thunk_RmResource_binapiAccessCallback(struct BinaryApi *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
 }
 
-static NvU32 __nvoc_thunk_RsResource_binapiGetRefCount(struct BinaryApi *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
+// binapiGetMemInterMapParams: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiGetMemInterMapParams(struct BinaryApi *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiCheckMemInterUnmap(struct BinaryApi *pRmResource, NvBool bSubdeviceHandleProvided) {
-    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), bSubdeviceHandleProvided);
+// binapiCheckMemInterUnmap: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiCheckMemInterUnmap(struct BinaryApi *pRmResource, NvBool bSubdeviceHandleProvided) {
+    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), bSubdeviceHandleProvided);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiMapTo(struct BinaryApi *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
-    return resMapTo((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pParams);
+// binapiGetMemoryMappingDescriptor: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiGetMemoryMappingDescriptor(struct BinaryApi *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
+    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApi_RmResource.offset), ppMemDesc);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiControl_Prologue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
+// binapiControlSerialization_Prologue: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiControlSerialization_Prologue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiGetRegBaseOffsetAndSize(struct BinaryApi *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
-    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pGpu, pOffset, pSize);
+// binapiControlSerialization_Epilogue: virtual inherited (rmres) base (gpures)
+static void __nvoc_up_thunk_RmResource_binapiControlSerialization_Epilogue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
 }
 
-static NvBool __nvoc_thunk_RsResource_binapiCanCopy(struct BinaryApi *pResource) {
-    return resCanCopy((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
+// binapiControl_Prologue: virtual inherited (rmres) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiControl_Prologue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiInternalControlForward(struct BinaryApi *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
-    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), command, pParams, size);
+// binapiControl_Epilogue: virtual inherited (rmres) base (gpures)
+static void __nvoc_up_thunk_RmResource_binapiControl_Epilogue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
 }
 
-static void __nvoc_thunk_RsResource_binapiPreDestruct(struct BinaryApi *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
+// binapiCanCopy: virtual inherited (res) base (gpures)
+static NvBool __nvoc_up_thunk_RsResource_binapiCanCopy(struct BinaryApi *pResource) {
+    return resCanCopy((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiUnmapFrom(struct BinaryApi *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return resUnmapFrom((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pParams);
+// binapiIsDuplicate: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiIsDuplicate(struct BinaryApi *pResource, NvHandle hMemory, NvBool *pDuplicate) {
+    return resIsDuplicate((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), hMemory, pDuplicate);
 }
 
-static void __nvoc_thunk_RmResource_binapiControl_Epilogue(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pCallContext, pParams);
+// binapiPreDestruct: virtual inherited (res) base (gpures)
+static void __nvoc_up_thunk_RsResource_binapiPreDestruct(struct BinaryApi *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiControlLookup(struct BinaryApi *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pParams, ppEntry);
+// binapiControlFilter: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiControlFilter(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiMap(struct BinaryApi *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
-    return gpuresMap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApi_GpuResource.offset), pCallContext, pParams, pCpuMapping);
+// binapiIsPartialUnmapSupported: inline virtual inherited (res) base (gpures) body
+static NvBool __nvoc_up_thunk_RsResource_binapiIsPartialUnmapSupported(struct BinaryApi *pResource) {
+    return resIsPartialUnmapSupported((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
 }
 
-static NvBool __nvoc_thunk_RmResource_binapiAccessCallback(struct BinaryApi *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApi_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+// binapiMapTo: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiMapTo(struct BinaryApi *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
+    return resMapTo((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pParams);
 }
+
+// binapiUnmapFrom: virtual inherited (res) base (gpures)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiUnmapFrom(struct BinaryApi *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return resUnmapFrom((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pParams);
+}
+
+// binapiGetRefCount: virtual inherited (res) base (gpures)
+static NvU32 __nvoc_up_thunk_RsResource_binapiGetRefCount(struct BinaryApi *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset));
+}
+
+// binapiAddAdditionalDependants: virtual inherited (res) base (gpures)
+static void __nvoc_up_thunk_RsResource_binapiAddAdditionalDependants(struct RsClient *pClient, struct BinaryApi *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApi_RsResource.offset), pReference);
+}
+
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_BinaryApi = 
 {
@@ -216,57 +259,92 @@ __nvoc_ctor_BinaryApi_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_BinaryApi_1(BinaryApi *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // binapiControl -- virtual override (res) base (gpures)
     pThis->__binapiControl__ = &binapiControl_IMPL;
+    pThis->__nvoc_base_GpuResource.__gpuresControl__ = &__nvoc_down_thunk_BinaryApi_gpuresControl;
 
-    pThis->__nvoc_base_GpuResource.__gpuresControl__ = &__nvoc_thunk_BinaryApi_gpuresControl;
+    // binapiMap -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiMap__ = &__nvoc_up_thunk_GpuResource_binapiMap;
 
-    pThis->__binapiShareCallback__ = &__nvoc_thunk_GpuResource_binapiShareCallback;
+    // binapiUnmap -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiUnmap__ = &__nvoc_up_thunk_GpuResource_binapiUnmap;
 
-    pThis->__binapiUnmap__ = &__nvoc_thunk_GpuResource_binapiUnmap;
+    // binapiShareCallback -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiShareCallback__ = &__nvoc_up_thunk_GpuResource_binapiShareCallback;
 
-    pThis->__binapiGetMemInterMapParams__ = &__nvoc_thunk_RmResource_binapiGetMemInterMapParams;
+    // binapiGetRegBaseOffsetAndSize -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiGetRegBaseOffsetAndSize__ = &__nvoc_up_thunk_GpuResource_binapiGetRegBaseOffsetAndSize;
 
-    pThis->__binapiGetMemoryMappingDescriptor__ = &__nvoc_thunk_RmResource_binapiGetMemoryMappingDescriptor;
+    // binapiGetMapAddrSpace -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiGetMapAddrSpace__ = &__nvoc_up_thunk_GpuResource_binapiGetMapAddrSpace;
 
-    pThis->__binapiGetMapAddrSpace__ = &__nvoc_thunk_GpuResource_binapiGetMapAddrSpace;
+    // binapiInternalControlForward -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiInternalControlForward__ = &__nvoc_up_thunk_GpuResource_binapiInternalControlForward;
 
-    pThis->__binapiGetInternalObjectHandle__ = &__nvoc_thunk_GpuResource_binapiGetInternalObjectHandle;
+    // binapiGetInternalObjectHandle -- virtual inherited (gpures) base (gpures)
+    pThis->__binapiGetInternalObjectHandle__ = &__nvoc_up_thunk_GpuResource_binapiGetInternalObjectHandle;
 
-    pThis->__binapiControlFilter__ = &__nvoc_thunk_RsResource_binapiControlFilter;
+    // binapiAccessCallback -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiAccessCallback__ = &__nvoc_up_thunk_RmResource_binapiAccessCallback;
 
-    pThis->__binapiAddAdditionalDependants__ = &__nvoc_thunk_RsResource_binapiAddAdditionalDependants;
+    // binapiGetMemInterMapParams -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiGetMemInterMapParams__ = &__nvoc_up_thunk_RmResource_binapiGetMemInterMapParams;
 
-    pThis->__binapiGetRefCount__ = &__nvoc_thunk_RsResource_binapiGetRefCount;
+    // binapiCheckMemInterUnmap -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiCheckMemInterUnmap__ = &__nvoc_up_thunk_RmResource_binapiCheckMemInterUnmap;
 
-    pThis->__binapiCheckMemInterUnmap__ = &__nvoc_thunk_RmResource_binapiCheckMemInterUnmap;
+    // binapiGetMemoryMappingDescriptor -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_RmResource_binapiGetMemoryMappingDescriptor;
 
-    pThis->__binapiMapTo__ = &__nvoc_thunk_RsResource_binapiMapTo;
+    // binapiControlSerialization_Prologue -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_binapiControlSerialization_Prologue;
 
-    pThis->__binapiControl_Prologue__ = &__nvoc_thunk_RmResource_binapiControl_Prologue;
+    // binapiControlSerialization_Epilogue -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_binapiControlSerialization_Epilogue;
 
-    pThis->__binapiGetRegBaseOffsetAndSize__ = &__nvoc_thunk_GpuResource_binapiGetRegBaseOffsetAndSize;
+    // binapiControl_Prologue -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiControl_Prologue__ = &__nvoc_up_thunk_RmResource_binapiControl_Prologue;
 
-    pThis->__binapiCanCopy__ = &__nvoc_thunk_RsResource_binapiCanCopy;
+    // binapiControl_Epilogue -- virtual inherited (rmres) base (gpures)
+    pThis->__binapiControl_Epilogue__ = &__nvoc_up_thunk_RmResource_binapiControl_Epilogue;
 
-    pThis->__binapiInternalControlForward__ = &__nvoc_thunk_GpuResource_binapiInternalControlForward;
+    // binapiCanCopy -- virtual inherited (res) base (gpures)
+    pThis->__binapiCanCopy__ = &__nvoc_up_thunk_RsResource_binapiCanCopy;
 
-    pThis->__binapiPreDestruct__ = &__nvoc_thunk_RsResource_binapiPreDestruct;
+    // binapiIsDuplicate -- virtual inherited (res) base (gpures)
+    pThis->__binapiIsDuplicate__ = &__nvoc_up_thunk_RsResource_binapiIsDuplicate;
 
-    pThis->__binapiUnmapFrom__ = &__nvoc_thunk_RsResource_binapiUnmapFrom;
+    // binapiPreDestruct -- virtual inherited (res) base (gpures)
+    pThis->__binapiPreDestruct__ = &__nvoc_up_thunk_RsResource_binapiPreDestruct;
 
-    pThis->__binapiControl_Epilogue__ = &__nvoc_thunk_RmResource_binapiControl_Epilogue;
+    // binapiControlFilter -- virtual inherited (res) base (gpures)
+    pThis->__binapiControlFilter__ = &__nvoc_up_thunk_RsResource_binapiControlFilter;
 
-    pThis->__binapiControlLookup__ = &__nvoc_thunk_RsResource_binapiControlLookup;
+    // binapiIsPartialUnmapSupported -- inline virtual inherited (res) base (gpures) body
+    pThis->__binapiIsPartialUnmapSupported__ = &__nvoc_up_thunk_RsResource_binapiIsPartialUnmapSupported;
 
-    pThis->__binapiMap__ = &__nvoc_thunk_GpuResource_binapiMap;
+    // binapiMapTo -- virtual inherited (res) base (gpures)
+    pThis->__binapiMapTo__ = &__nvoc_up_thunk_RsResource_binapiMapTo;
 
-    pThis->__binapiAccessCallback__ = &__nvoc_thunk_RmResource_binapiAccessCallback;
-}
+    // binapiUnmapFrom -- virtual inherited (res) base (gpures)
+    pThis->__binapiUnmapFrom__ = &__nvoc_up_thunk_RsResource_binapiUnmapFrom;
 
+    // binapiGetRefCount -- virtual inherited (res) base (gpures)
+    pThis->__binapiGetRefCount__ = &__nvoc_up_thunk_RsResource_binapiGetRefCount;
+
+    // binapiAddAdditionalDependants -- virtual inherited (res) base (gpures)
+    pThis->__binapiAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_binapiAddAdditionalDependants;
+} // End __nvoc_init_funcTable_BinaryApi_1 with approximately 26 basic block(s).
+
+
+// Initialize vtable(s) for 25 virtual method(s).
 void __nvoc_init_funcTable_BinaryApi(BinaryApi *pThis) {
+
+    // Initialize vtable(s) with 25 per-object function pointer(s).
     __nvoc_init_funcTable_BinaryApi_1(pThis);
 }
 
@@ -282,18 +360,26 @@ void __nvoc_init_BinaryApi(BinaryApi *pThis) {
     __nvoc_init_funcTable_BinaryApi(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_BinaryApi(BinaryApi **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_BinaryApi(BinaryApi **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     BinaryApi *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(BinaryApi));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(BinaryApi), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(BinaryApi));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_BinaryApi);
 
+    pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -308,12 +394,27 @@ NV_STATUS __nvoc_objCreate_BinaryApi(BinaryApi **ppThis, Dynamic *pParent, NvU32
     status = __nvoc_ctor_BinaryApi(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_BinaryApi_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_BinaryApi_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(BinaryApi));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 
@@ -422,93 +523,136 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_BinaryApiPrivileged =
     /*pExportInfo=*/        &__nvoc_export_info_BinaryApiPrivileged
 };
 
-static NV_STATUS __nvoc_thunk_BinaryApiPrivileged_binapiControl(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return binapiprivControl((struct BinaryApiPrivileged *)(((unsigned char *)pResource) - __nvoc_rtti_BinaryApiPrivileged_BinaryApi.offset), pCallContext, pParams);
+// 1 down-thunk(s) defined to bridge methods in BinaryApiPrivileged from superclasses
+
+// binapiprivControl: virtual override (res) base (binapi)
+static NV_STATUS __nvoc_down_thunk_BinaryApiPrivileged_binapiControl(struct BinaryApi *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return binapiprivControl((struct BinaryApiPrivileged *)(((unsigned char *) pResource) - __nvoc_rtti_BinaryApiPrivileged_BinaryApi.offset), pCallContext, pParams);
 }
 
-static NvBool __nvoc_thunk_GpuResource_binapiprivShareCallback(struct BinaryApiPrivileged *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return gpuresShareCallback((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+
+// 24 up-thunk(s) defined to bridge methods in BinaryApiPrivileged to superclasses
+
+// binapiprivMap: virtual inherited (gpures) base (binapi)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiprivMap(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
+    return gpuresMap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, pParams, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiprivUnmap(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
-    return gpuresUnmap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, pCpuMapping);
+// binapiprivUnmap: virtual inherited (gpures) base (binapi)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiprivUnmap(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RsCpuMapping *pCpuMapping) {
+    return gpuresUnmap((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiprivGetMemInterMapParams(struct BinaryApiPrivileged *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pParams);
+// binapiprivShareCallback: virtual inherited (gpures) base (binapi)
+static NvBool __nvoc_up_thunk_GpuResource_binapiprivShareCallback(struct BinaryApiPrivileged *pGpuResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return gpuresShareCallback((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pInvokingClient, pParentRef, pSharePolicy);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiprivGetMemoryMappingDescriptor(struct BinaryApiPrivileged *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
-    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), ppMemDesc);
+// binapiprivGetRegBaseOffsetAndSize: virtual inherited (gpures) base (binapi)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiprivGetRegBaseOffsetAndSize(struct BinaryApiPrivileged *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
+    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pGpu, pOffset, pSize);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiprivGetMapAddrSpace(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
+// binapiprivGetMapAddrSpace: virtual inherited (gpures) base (binapi)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiprivGetMapAddrSpace(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return gpuresGetMapAddrSpace((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, mapFlags, pAddrSpace);
 }
 
-static NvHandle __nvoc_thunk_GpuResource_binapiprivGetInternalObjectHandle(struct BinaryApiPrivileged *pGpuResource) {
-    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset));
+// binapiprivInternalControlForward: virtual inherited (gpures) base (binapi)
+static NV_STATUS __nvoc_up_thunk_GpuResource_binapiprivInternalControlForward(struct BinaryApiPrivileged *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
+    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), command, pParams, size);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiprivControlFilter(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pCallContext, pParams);
+// binapiprivGetInternalObjectHandle: virtual inherited (gpures) base (binapi)
+static NvHandle __nvoc_up_thunk_GpuResource_binapiprivGetInternalObjectHandle(struct BinaryApiPrivileged *pGpuResource) {
+    return gpuresGetInternalObjectHandle((struct GpuResource *)(((unsigned char *) pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset));
 }
 
-static void __nvoc_thunk_RsResource_binapiprivAddAdditionalDependants(struct RsClient *pClient, struct BinaryApiPrivileged *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pReference);
+// binapiprivAccessCallback: virtual inherited (rmres) base (binapi)
+static NvBool __nvoc_up_thunk_RmResource_binapiprivAccessCallback(struct BinaryApiPrivileged *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
 }
 
-static NvU32 __nvoc_thunk_RsResource_binapiprivGetRefCount(struct BinaryApiPrivileged *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
+// binapiprivGetMemInterMapParams: virtual inherited (rmres) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiprivGetMemInterMapParams(struct BinaryApiPrivileged *pRmResource, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return rmresGetMemInterMapParams((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiprivCheckMemInterUnmap(struct BinaryApiPrivileged *pRmResource, NvBool bSubdeviceHandleProvided) {
-    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *)pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), bSubdeviceHandleProvided);
+// binapiprivCheckMemInterUnmap: virtual inherited (rmres) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiprivCheckMemInterUnmap(struct BinaryApiPrivileged *pRmResource, NvBool bSubdeviceHandleProvided) {
+    return rmresCheckMemInterUnmap((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), bSubdeviceHandleProvided);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiprivMapTo(struct BinaryApiPrivileged *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
-    return resMapTo((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pParams);
+// binapiprivGetMemoryMappingDescriptor: virtual inherited (rmres) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiprivGetMemoryMappingDescriptor(struct BinaryApiPrivileged *pRmResource, struct MEMORY_DESCRIPTOR **ppMemDesc) {
+    return rmresGetMemoryMappingDescriptor((struct RmResource *)(((unsigned char *) pRmResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), ppMemDesc);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_binapiprivControl_Prologue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
+// binapiprivControlSerialization_Prologue: virtual inherited (rmres) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiprivControlSerialization_Prologue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiprivGetRegBaseOffsetAndSize(struct BinaryApiPrivileged *pGpuResource, struct OBJGPU *pGpu, NvU32 *pOffset, NvU32 *pSize) {
-    return gpuresGetRegBaseOffsetAndSize((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pGpu, pOffset, pSize);
+// binapiprivControlSerialization_Epilogue: virtual inherited (rmres) base (binapi)
+static void __nvoc_up_thunk_RmResource_binapiprivControlSerialization_Epilogue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
 }
 
-static NvBool __nvoc_thunk_RsResource_binapiprivCanCopy(struct BinaryApiPrivileged *pResource) {
-    return resCanCopy((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
+// binapiprivControl_Prologue: virtual inherited (rmres) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RmResource_binapiprivControl_Prologue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiprivInternalControlForward(struct BinaryApiPrivileged *pGpuResource, NvU32 command, void *pParams, NvU32 size) {
-    return gpuresInternalControlForward((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), command, pParams, size);
+// binapiprivControl_Epilogue: virtual inherited (rmres) base (binapi)
+static void __nvoc_up_thunk_RmResource_binapiprivControl_Epilogue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
 }
 
-static void __nvoc_thunk_RsResource_binapiprivPreDestruct(struct BinaryApiPrivileged *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
+// binapiprivCanCopy: virtual inherited (res) base (binapi)
+static NvBool __nvoc_up_thunk_RsResource_binapiprivCanCopy(struct BinaryApiPrivileged *pResource) {
+    return resCanCopy((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiprivUnmapFrom(struct BinaryApiPrivileged *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return resUnmapFrom((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pParams);
+// binapiprivIsDuplicate: virtual inherited (res) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiprivIsDuplicate(struct BinaryApiPrivileged *pResource, NvHandle hMemory, NvBool *pDuplicate) {
+    return resIsDuplicate((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), hMemory, pDuplicate);
 }
 
-static void __nvoc_thunk_RmResource_binapiprivControl_Epilogue(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pCallContext, pParams);
+// binapiprivPreDestruct: virtual inherited (res) base (binapi)
+static void __nvoc_up_thunk_RsResource_binapiprivPreDestruct(struct BinaryApiPrivileged *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_binapiprivControlLookup(struct BinaryApiPrivileged *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pParams, ppEntry);
+// binapiprivControlFilter: virtual inherited (res) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiprivControlFilter(struct BinaryApiPrivileged *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_GpuResource_binapiprivMap(struct BinaryApiPrivileged *pGpuResource, struct CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, struct RsCpuMapping *pCpuMapping) {
-    return gpuresMap((struct GpuResource *)(((unsigned char *)pGpuResource) + __nvoc_rtti_BinaryApiPrivileged_GpuResource.offset), pCallContext, pParams, pCpuMapping);
+// binapiprivIsPartialUnmapSupported: inline virtual inherited (res) base (binapi) body
+static NvBool __nvoc_up_thunk_RsResource_binapiprivIsPartialUnmapSupported(struct BinaryApiPrivileged *pResource) {
+    return resIsPartialUnmapSupported((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
 }
 
-static NvBool __nvoc_thunk_RmResource_binapiprivAccessCallback(struct BinaryApiPrivileged *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_BinaryApiPrivileged_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+// binapiprivMapTo: virtual inherited (res) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiprivMapTo(struct BinaryApiPrivileged *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
+    return resMapTo((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pParams);
 }
+
+// binapiprivUnmapFrom: virtual inherited (res) base (binapi)
+static NV_STATUS __nvoc_up_thunk_RsResource_binapiprivUnmapFrom(struct BinaryApiPrivileged *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return resUnmapFrom((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pParams);
+}
+
+// binapiprivGetRefCount: virtual inherited (res) base (binapi)
+static NvU32 __nvoc_up_thunk_RsResource_binapiprivGetRefCount(struct BinaryApiPrivileged *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset));
+}
+
+// binapiprivAddAdditionalDependants: virtual inherited (res) base (binapi)
+static void __nvoc_up_thunk_RsResource_binapiprivAddAdditionalDependants(struct RsClient *pClient, struct BinaryApiPrivileged *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_BinaryApiPrivileged_RsResource.offset), pReference);
+}
+
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_BinaryApiPrivileged = 
 {
@@ -545,57 +689,92 @@ __nvoc_ctor_BinaryApiPrivileged_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_BinaryApiPrivileged_1(BinaryApiPrivileged *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // binapiprivControl -- virtual override (res) base (binapi)
     pThis->__binapiprivControl__ = &binapiprivControl_IMPL;
+    pThis->__nvoc_base_BinaryApi.__binapiControl__ = &__nvoc_down_thunk_BinaryApiPrivileged_binapiControl;
 
-    pThis->__nvoc_base_BinaryApi.__binapiControl__ = &__nvoc_thunk_BinaryApiPrivileged_binapiControl;
+    // binapiprivMap -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivMap__ = &__nvoc_up_thunk_GpuResource_binapiprivMap;
 
-    pThis->__binapiprivShareCallback__ = &__nvoc_thunk_GpuResource_binapiprivShareCallback;
+    // binapiprivUnmap -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivUnmap__ = &__nvoc_up_thunk_GpuResource_binapiprivUnmap;
 
-    pThis->__binapiprivUnmap__ = &__nvoc_thunk_GpuResource_binapiprivUnmap;
+    // binapiprivShareCallback -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivShareCallback__ = &__nvoc_up_thunk_GpuResource_binapiprivShareCallback;
 
-    pThis->__binapiprivGetMemInterMapParams__ = &__nvoc_thunk_RmResource_binapiprivGetMemInterMapParams;
+    // binapiprivGetRegBaseOffsetAndSize -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivGetRegBaseOffsetAndSize__ = &__nvoc_up_thunk_GpuResource_binapiprivGetRegBaseOffsetAndSize;
 
-    pThis->__binapiprivGetMemoryMappingDescriptor__ = &__nvoc_thunk_RmResource_binapiprivGetMemoryMappingDescriptor;
+    // binapiprivGetMapAddrSpace -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivGetMapAddrSpace__ = &__nvoc_up_thunk_GpuResource_binapiprivGetMapAddrSpace;
 
-    pThis->__binapiprivGetMapAddrSpace__ = &__nvoc_thunk_GpuResource_binapiprivGetMapAddrSpace;
+    // binapiprivInternalControlForward -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivInternalControlForward__ = &__nvoc_up_thunk_GpuResource_binapiprivInternalControlForward;
 
-    pThis->__binapiprivGetInternalObjectHandle__ = &__nvoc_thunk_GpuResource_binapiprivGetInternalObjectHandle;
+    // binapiprivGetInternalObjectHandle -- virtual inherited (gpures) base (binapi)
+    pThis->__binapiprivGetInternalObjectHandle__ = &__nvoc_up_thunk_GpuResource_binapiprivGetInternalObjectHandle;
 
-    pThis->__binapiprivControlFilter__ = &__nvoc_thunk_RsResource_binapiprivControlFilter;
+    // binapiprivAccessCallback -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivAccessCallback__ = &__nvoc_up_thunk_RmResource_binapiprivAccessCallback;
 
-    pThis->__binapiprivAddAdditionalDependants__ = &__nvoc_thunk_RsResource_binapiprivAddAdditionalDependants;
+    // binapiprivGetMemInterMapParams -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivGetMemInterMapParams__ = &__nvoc_up_thunk_RmResource_binapiprivGetMemInterMapParams;
 
-    pThis->__binapiprivGetRefCount__ = &__nvoc_thunk_RsResource_binapiprivGetRefCount;
+    // binapiprivCheckMemInterUnmap -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivCheckMemInterUnmap__ = &__nvoc_up_thunk_RmResource_binapiprivCheckMemInterUnmap;
 
-    pThis->__binapiprivCheckMemInterUnmap__ = &__nvoc_thunk_RmResource_binapiprivCheckMemInterUnmap;
+    // binapiprivGetMemoryMappingDescriptor -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_RmResource_binapiprivGetMemoryMappingDescriptor;
 
-    pThis->__binapiprivMapTo__ = &__nvoc_thunk_RsResource_binapiprivMapTo;
+    // binapiprivControlSerialization_Prologue -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_binapiprivControlSerialization_Prologue;
 
-    pThis->__binapiprivControl_Prologue__ = &__nvoc_thunk_RmResource_binapiprivControl_Prologue;
+    // binapiprivControlSerialization_Epilogue -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_binapiprivControlSerialization_Epilogue;
 
-    pThis->__binapiprivGetRegBaseOffsetAndSize__ = &__nvoc_thunk_GpuResource_binapiprivGetRegBaseOffsetAndSize;
+    // binapiprivControl_Prologue -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivControl_Prologue__ = &__nvoc_up_thunk_RmResource_binapiprivControl_Prologue;
 
-    pThis->__binapiprivCanCopy__ = &__nvoc_thunk_RsResource_binapiprivCanCopy;
+    // binapiprivControl_Epilogue -- virtual inherited (rmres) base (binapi)
+    pThis->__binapiprivControl_Epilogue__ = &__nvoc_up_thunk_RmResource_binapiprivControl_Epilogue;
 
-    pThis->__binapiprivInternalControlForward__ = &__nvoc_thunk_GpuResource_binapiprivInternalControlForward;
+    // binapiprivCanCopy -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivCanCopy__ = &__nvoc_up_thunk_RsResource_binapiprivCanCopy;
 
-    pThis->__binapiprivPreDestruct__ = &__nvoc_thunk_RsResource_binapiprivPreDestruct;
+    // binapiprivIsDuplicate -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivIsDuplicate__ = &__nvoc_up_thunk_RsResource_binapiprivIsDuplicate;
 
-    pThis->__binapiprivUnmapFrom__ = &__nvoc_thunk_RsResource_binapiprivUnmapFrom;
+    // binapiprivPreDestruct -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivPreDestruct__ = &__nvoc_up_thunk_RsResource_binapiprivPreDestruct;
 
-    pThis->__binapiprivControl_Epilogue__ = &__nvoc_thunk_RmResource_binapiprivControl_Epilogue;
+    // binapiprivControlFilter -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivControlFilter__ = &__nvoc_up_thunk_RsResource_binapiprivControlFilter;
 
-    pThis->__binapiprivControlLookup__ = &__nvoc_thunk_RsResource_binapiprivControlLookup;
+    // binapiprivIsPartialUnmapSupported -- inline virtual inherited (res) base (binapi) body
+    pThis->__binapiprivIsPartialUnmapSupported__ = &__nvoc_up_thunk_RsResource_binapiprivIsPartialUnmapSupported;
 
-    pThis->__binapiprivMap__ = &__nvoc_thunk_GpuResource_binapiprivMap;
+    // binapiprivMapTo -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivMapTo__ = &__nvoc_up_thunk_RsResource_binapiprivMapTo;
 
-    pThis->__binapiprivAccessCallback__ = &__nvoc_thunk_RmResource_binapiprivAccessCallback;
-}
+    // binapiprivUnmapFrom -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivUnmapFrom__ = &__nvoc_up_thunk_RsResource_binapiprivUnmapFrom;
 
+    // binapiprivGetRefCount -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivGetRefCount__ = &__nvoc_up_thunk_RsResource_binapiprivGetRefCount;
+
+    // binapiprivAddAdditionalDependants -- virtual inherited (res) base (binapi)
+    pThis->__binapiprivAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_binapiprivAddAdditionalDependants;
+} // End __nvoc_init_funcTable_BinaryApiPrivileged_1 with approximately 26 basic block(s).
+
+
+// Initialize vtable(s) for 25 virtual method(s).
 void __nvoc_init_funcTable_BinaryApiPrivileged(BinaryApiPrivileged *pThis) {
+
+    // Initialize vtable(s) with 25 per-object function pointer(s).
     __nvoc_init_funcTable_BinaryApiPrivileged_1(pThis);
 }
 
@@ -612,18 +791,26 @@ void __nvoc_init_BinaryApiPrivileged(BinaryApiPrivileged *pThis) {
     __nvoc_init_funcTable_BinaryApiPrivileged(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_BinaryApiPrivileged(BinaryApiPrivileged **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_BinaryApiPrivileged(BinaryApiPrivileged **ppThis, Dynamic *pParent, NvU32 createFlags, struct CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     BinaryApiPrivileged *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(BinaryApiPrivileged));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(BinaryApiPrivileged), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(BinaryApiPrivileged));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_BinaryApiPrivileged);
 
+    pThis->__nvoc_base_BinaryApi.__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -638,12 +825,27 @@ NV_STATUS __nvoc_objCreate_BinaryApiPrivileged(BinaryApiPrivileged **ppThis, Dyn
     status = __nvoc_ctor_BinaryApiPrivileged(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_BinaryApiPrivileged_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_BinaryApiPrivileged_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_BinaryApi.__nvoc_base_GpuResource.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(BinaryApiPrivileged));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

@@ -75,101 +75,101 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_KernelDisplay =
     /*pExportInfo=*/        &__nvoc_export_info_KernelDisplay
 };
 
-static NV_STATUS __nvoc_thunk_KernelDisplay_engstateConstructEngine(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, ENGDESCRIPTOR engDesc) {
-    return kdispConstructEngine(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), engDesc);
+// 8 down-thunk(s) defined to bridge methods in KernelDisplay from superclasses
+
+// kdispConstructEngine: virtual override (engstate) base (engstate)
+static NV_STATUS __nvoc_down_thunk_KernelDisplay_engstateConstructEngine(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, ENGDESCRIPTOR engDesc) {
+    return kdispConstructEngine(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), engDesc);
 }
 
-static NV_STATUS __nvoc_thunk_KernelDisplay_engstateStatePreInitLocked(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
-    return kdispStatePreInitLocked(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispStatePreInitLocked: virtual override (engstate) base (engstate)
+static NV_STATUS __nvoc_down_thunk_KernelDisplay_engstateStatePreInitLocked(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
+    return kdispStatePreInitLocked(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_KernelDisplay_engstateStateInitLocked(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
-    return kdispStateInitLocked(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispStateInitLocked: virtual override (engstate) base (engstate)
+static NV_STATUS __nvoc_down_thunk_KernelDisplay_engstateStateInitLocked(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
+    return kdispStateInitLocked(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static void __nvoc_thunk_KernelDisplay_engstateStateDestroy(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
-    kdispStateDestroy(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispStateDestroy: virtual override (engstate) base (engstate)
+static void __nvoc_down_thunk_KernelDisplay_engstateStateDestroy(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay) {
+    kdispStateDestroy(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_KernelDisplay_engstateStateLoad(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, NvU32 flags) {
-    return kdispStateLoad(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), flags);
+// kdispStateLoad: virtual override (engstate) base (engstate)
+static NV_STATUS __nvoc_down_thunk_KernelDisplay_engstateStateLoad(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, NvU32 flags) {
+    return kdispStateLoad(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), flags);
 }
 
-static NV_STATUS __nvoc_thunk_KernelDisplay_engstateStateUnload(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, NvU32 flags) {
-    return kdispStateUnload(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), flags);
+// kdispStateUnload: virtual override (engstate) base (engstate)
+static NV_STATUS __nvoc_down_thunk_KernelDisplay_engstateStateUnload(OBJGPU *pGpu, struct OBJENGSTATE *pKernelDisplay, NvU32 flags) {
+    return kdispStateUnload(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), flags);
 }
 
-static void __nvoc_thunk_KernelDisplay_intrservRegisterIntrService(OBJGPU *pGpu, struct IntrService *pKernelDisplay, IntrServiceRecord pRecords[155]) {
-    kdispRegisterIntrService(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_IntrService.offset), pRecords);
+// kdispRegisterIntrService: virtual override (intrserv) base (intrserv)
+static void __nvoc_down_thunk_KernelDisplay_intrservRegisterIntrService(OBJGPU *pGpu, struct IntrService *pKernelDisplay, IntrServiceRecord pRecords[175]) {
+    kdispRegisterIntrService(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_IntrService.offset), pRecords);
 }
 
-static NvU32 __nvoc_thunk_KernelDisplay_intrservServiceInterrupt(OBJGPU *pGpu, struct IntrService *pKernelDisplay, IntrServiceServiceInterruptArguments *pParams) {
-    return kdispServiceInterrupt(pGpu, (struct KernelDisplay *)(((unsigned char *)pKernelDisplay) - __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
+// kdispServiceInterrupt: virtual halified (singleton optimized) override (intrserv) base (intrserv) body
+static NvU32 __nvoc_down_thunk_KernelDisplay_intrservServiceInterrupt(OBJGPU *pGpu, struct IntrService *pKernelDisplay, IntrServiceServiceInterruptArguments *pParams) {
+    return kdispServiceInterrupt(pGpu, (struct KernelDisplay *)(((unsigned char *) pKernelDisplay) - __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispReconcileTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void *pTunableState) {
-    return engstateReconcileTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), pTunableState);
+
+// 10 up-thunk(s) defined to bridge methods in KernelDisplay to superclasses
+
+// kdispInitMissing: virtual inherited (engstate) base (engstate)
+static void __nvoc_up_thunk_OBJENGSTATE_kdispInitMissing(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate) {
+    engstateInitMissing(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_IntrService_kdispServiceNotificationInterrupt(OBJGPU *pGpu, struct KernelDisplay *pIntrService, IntrServiceServiceNotificationInterruptArguments *pParams) {
-    return intrservServiceNotificationInterrupt(pGpu, (struct IntrService *)(((unsigned char *)pIntrService) + __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
+// kdispStatePreInitUnlocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStatePreInitUnlocked(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate) {
+    return engstateStatePreInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStatePreLoad(POBJGPU pGpu, struct KernelDisplay *pEngstate, NvU32 arg0) {
-    return engstateStatePreLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg0);
+// kdispStateInitUnlocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStateInitUnlocked(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate) {
+    return engstateStateInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStatePostUnload(POBJGPU pGpu, struct KernelDisplay *pEngstate, NvU32 arg0) {
-    return engstateStatePostUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg0);
+// kdispStatePreLoad: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStatePreLoad(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate, NvU32 arg3) {
+    return engstateStatePreLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStatePreUnload(POBJGPU pGpu, struct KernelDisplay *pEngstate, NvU32 arg0) {
-    return engstateStatePreUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg0);
+// kdispStatePostLoad: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStatePostLoad(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate, NvU32 arg3) {
+    return engstateStatePostLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStateInitUnlocked(POBJGPU pGpu, struct KernelDisplay *pEngstate) {
-    return engstateStateInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispStatePreUnload: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStatePreUnload(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate, NvU32 arg3) {
+    return engstateStatePreUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg3);
 }
 
-static void __nvoc_thunk_OBJENGSTATE_kdispInitMissing(POBJGPU pGpu, struct KernelDisplay *pEngstate) {
-    engstateInitMissing(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispStatePostUnload: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_kdispStatePostUnload(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate, NvU32 arg3) {
+    return engstateStatePostUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStatePreInitUnlocked(POBJGPU pGpu, struct KernelDisplay *pEngstate) {
-    return engstateStatePreInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
+// kdispIsPresent: virtual inherited (engstate) base (engstate)
+static NvBool __nvoc_up_thunk_OBJENGSTATE_kdispIsPresent(struct OBJGPU *pGpu, struct KernelDisplay *pEngstate) {
+    return engstateIsPresent(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispGetTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void *pTunableState) {
-    return engstateGetTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), pTunableState);
+// kdispClearInterrupt: virtual inherited (intrserv) base (intrserv)
+static NvBool __nvoc_up_thunk_IntrService_kdispClearInterrupt(OBJGPU *pGpu, struct KernelDisplay *pIntrService, IntrServiceClearInterruptArguments *pParams) {
+    return intrservClearInterrupt(pGpu, (struct IntrService *)(((unsigned char *) pIntrService) + __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispCompareTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void *pTunables1, void *pTunables2) {
-    return engstateCompareTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), pTunables1, pTunables2);
+// kdispServiceNotificationInterrupt: virtual inherited (intrserv) base (intrserv)
+static NV_STATUS __nvoc_up_thunk_IntrService_kdispServiceNotificationInterrupt(OBJGPU *pGpu, struct KernelDisplay *pIntrService, IntrServiceServiceNotificationInterruptArguments *pParams) {
+    return intrservServiceNotificationInterrupt(pGpu, (struct IntrService *)(((unsigned char *) pIntrService) + __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
 }
 
-static void __nvoc_thunk_OBJENGSTATE_kdispFreeTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void *pTunableState) {
-    engstateFreeTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), pTunableState);
-}
-
-static NvBool __nvoc_thunk_IntrService_kdispClearInterrupt(OBJGPU *pGpu, struct KernelDisplay *pIntrService, IntrServiceClearInterruptArguments *pParams) {
-    return intrservClearInterrupt(pGpu, (struct IntrService *)(((unsigned char *)pIntrService) + __nvoc_rtti_KernelDisplay_IntrService.offset), pParams);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispStatePostLoad(POBJGPU pGpu, struct KernelDisplay *pEngstate, NvU32 arg0) {
-    return engstateStatePostLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), arg0);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispAllocTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void **ppTunableState) {
-    return engstateAllocTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), ppTunableState);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_kdispSetTunableState(POBJGPU pGpu, struct KernelDisplay *pEngstate, void *pTunableState) {
-    return engstateSetTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset), pTunableState);
-}
-
-static NvBool __nvoc_thunk_OBJENGSTATE_kdispIsPresent(POBJGPU pGpu, struct KernelDisplay *pEngstate) {
-    return engstateIsPresent(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_KernelDisplay_OBJENGSTATE.offset));
-}
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_KernelDisplay = 
 {
@@ -203,8 +203,9 @@ void __nvoc_init_dataField_KernelDisplay(KernelDisplay *pThis, RmHalspecOwner *p
     PORT_UNREFERENCED_VARIABLE(dispIpHal_HalVarIdx);
 
     // NVOC Property Hal field -- PDB_PROP_KDISP_IS_MISSING
-    if (0)
+    if (( ((rmVariantHal_HalVarIdx >> 5) == 0UL) && ((1UL << (rmVariantHal_HalVarIdx & 0x1f)) & 0x00000001UL) )) /* RmVariantHal: VF */ 
     {
+        pThis->setProperty(pThis, PDB_PROP_KDISP_IS_MISSING, ((NvBool)(0 == 0)));
     }
     else if (( ((rmVariantHal_HalVarIdx >> 5) == 0UL) && ((1UL << (rmVariantHal_HalVarIdx & 0x1f)) & 0x00000002UL) )) /* RmVariantHal: PF_KERNEL_ONLY */ 
     {
@@ -212,19 +213,23 @@ void __nvoc_init_dataField_KernelDisplay(KernelDisplay *pThis, RmHalspecOwner *p
     }
 
     // NVOC Property Hal field -- PDB_PROP_KDISP_IMP_ENABLE
-    if (( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x0000ffe0UL) )) /* ChipHal: TU102 | TU104 | TU106 | TU116 | TU117 | GA100 | GA102 | GA103 | GA104 | GA106 | GA107 */ 
+    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd1f0ffe0UL) )) /* ChipHal: TU102 | TU104 | TU106 | TU116 | TU117 | GA100 | GA102 | GA103 | GA104 | GA106 | GA107 | AD102 | AD103 | AD104 | AD106 | AD107 | GH100 | GB100 | GB102 */  && (( ((rmVariantHal_HalVarIdx >> 5) == 0UL) && ((1UL << (rmVariantHal_HalVarIdx & 0x1f)) & 0x00000003UL) )) /* RmVariantHal: VF | PF_KERNEL_ONLY */ ))
     {
         pThis->setProperty(pThis, PDB_PROP_KDISP_IMP_ENABLE, ((NvBool)(0 == 0)));
     }
-    // default
-    else
+
+    // NVOC Property Hal field -- PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANK_ALWAYS
+    if (( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd1f0ffe0UL) )) /* ChipHal: TU102 | TU104 | TU106 | TU116 | TU117 | GA100 | GA102 | GA103 | GA104 | GA106 | GA107 | AD102 | AD103 | AD104 | AD106 | AD107 | GH100 | GB100 | GB102 */ 
     {
-        pThis->setProperty(pThis, PDB_PROP_KDISP_IMP_ENABLE, ((NvBool)(0 != 0)));
+        pThis->setProperty(pThis, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANK_ALWAYS, ((NvBool)(0 == 0)));
     }
+    pThis->setProperty(pThis, PDB_PROP_KDISP_FEATURE_STRETCH_VBLANK_CAPABLE, (0));
 
     pThis->pStaticInfo = ((void *)0);
 
     pThis->bWarPurgeSatellitesOnCoreFree = ((NvBool)(0 != 0));
+
+    pThis->bExtdevIntrSupported = ((NvBool)(0 != 0));
 }
 
 NV_STATUS __nvoc_ctor_OBJENGSTATE(OBJENGSTATE* );
@@ -246,6 +251,7 @@ __nvoc_ctor_KernelDisplay_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_KernelDisplay_1(KernelDisplay *pThis, RmHalspecOwner *pRmhalspecowner) {
     RmVariantHal *rmVariantHal = &pRmhalspecowner->rmVariantHal;
     const unsigned long rmVariantHal_HalVarIdx = (unsigned long)rmVariantHal->__nvoc_HalVarIdx;
@@ -262,185 +268,219 @@ static void __nvoc_init_funcTable_KernelDisplay_1(KernelDisplay *pThis, RmHalspe
     PORT_UNREFERENCED_VARIABLE(dispIpHal);
     PORT_UNREFERENCED_VARIABLE(dispIpHal_HalVarIdx);
 
+    // kdispConstructEngine -- virtual override (engstate) base (engstate)
     pThis->__kdispConstructEngine__ = &kdispConstructEngine_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateConstructEngine__ = &__nvoc_down_thunk_KernelDisplay_engstateConstructEngine;
 
+    // kdispStatePreInitLocked -- virtual override (engstate) base (engstate)
     pThis->__kdispStatePreInitLocked__ = &kdispStatePreInitLocked_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateStatePreInitLocked__ = &__nvoc_down_thunk_KernelDisplay_engstateStatePreInitLocked;
 
+    // kdispStateInitLocked -- virtual override (engstate) base (engstate)
     pThis->__kdispStateInitLocked__ = &kdispStateInitLocked_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateStateInitLocked__ = &__nvoc_down_thunk_KernelDisplay_engstateStateInitLocked;
 
+    // kdispStateDestroy -- virtual override (engstate) base (engstate)
     pThis->__kdispStateDestroy__ = &kdispStateDestroy_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateStateDestroy__ = &__nvoc_down_thunk_KernelDisplay_engstateStateDestroy;
 
+    // kdispStateLoad -- virtual override (engstate) base (engstate)
     pThis->__kdispStateLoad__ = &kdispStateLoad_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateStateLoad__ = &__nvoc_down_thunk_KernelDisplay_engstateStateLoad;
 
+    // kdispStateUnload -- virtual override (engstate) base (engstate)
     pThis->__kdispStateUnload__ = &kdispStateUnload_IMPL;
+    pThis->__nvoc_base_OBJENGSTATE.__engstateStateUnload__ = &__nvoc_down_thunk_KernelDisplay_engstateStateUnload;
 
+    // kdispRegisterIntrService -- virtual override (intrserv) base (intrserv)
     pThis->__kdispRegisterIntrService__ = &kdispRegisterIntrService_IMPL;
+    pThis->__nvoc_base_IntrService.__intrservRegisterIntrService__ = &__nvoc_down_thunk_KernelDisplay_intrservRegisterIntrService;
 
-    // Hal function -- kdispServiceInterrupt
-    if (( ((rmVariantHal_HalVarIdx >> 5) == 0UL) && ((1UL << (rmVariantHal_HalVarIdx & 0x1f)) & 0x00000002UL) )) /* RmVariantHal: PF_KERNEL_ONLY */ 
-    {
-        pThis->__kdispServiceInterrupt__ = &kdispServiceInterrupt_d3ef2b;
-    }
-    else if (0)
-    {
-    }
+    // kdispServiceInterrupt -- virtual halified (singleton optimized) override (intrserv) base (intrserv) body
+    pThis->__kdispServiceInterrupt__ = &kdispServiceInterrupt_acff5e;
+    pThis->__nvoc_base_IntrService.__intrservServiceInterrupt__ = &__nvoc_down_thunk_KernelDisplay_intrservServiceInterrupt;
 
-    // Hal function -- kdispSelectClass
-    if (0)
+    // kdispSelectClass -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ 
     {
+        pThis->__kdispSelectClass__ = &kdispSelectClass_46f6a7;
     }
-    else if (( ((rmVariantHal_HalVarIdx >> 5) == 0UL) && ((1UL << (rmVariantHal_HalVarIdx & 0x1f)) & 0x00000002UL) )) /* RmVariantHal: PF_KERNEL_ONLY */ 
+    else
     {
-        if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ 
-        {
-            pThis->__kdispSelectClass__ = &kdispSelectClass_46f6a7;
-        }
-        else if (0)
-        {
-        }
-        else if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 */ 
-        {
-            pThis->__kdispSelectClass__ = &kdispSelectClass_v03_00_KERNEL;
-        }
-    }
-    else if (0)
-    {
-#if 0
-        if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ 
-        {
-            pThis->__kdispSelectClass__ = &kdispSelectClass_46f6a7;
-        }
-        else if (0)
-        {
-        }
-        else if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 */ 
-        {
-            pThis->__kdispSelectClass__ = &kdispSelectClass_v03_00_KERNEL;
-        }
-#endif
+        pThis->__kdispSelectClass__ = &kdispSelectClass_v03_00_KERNEL;
     }
 
-    // Hal function -- kdispGetChannelNum
-    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ 
+    // kdispGetChannelNum -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ 
     {
         pThis->__kdispGetChannelNum__ = &kdispGetChannelNum_46f6a7;
     }
-    else if (0)
-    {
-    }
-    else if (0)
-    {
-    }
-    else if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 */ 
+    else
     {
         pThis->__kdispGetChannelNum__ = &kdispGetChannelNum_v03_00;
     }
 
-    // Hal function -- kdispGetDisplayCapsBaseAndSize
-    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x00000400UL) )) /* ChipHal: GA100 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ ))
+    // kdispGetDisplayCapsBaseAndSize -- halified (2 hals) body
+    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd0000400UL) )) /* ChipHal: GA100 | GH100 | GB100 | GB102 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ ))
     {
         pThis->__kdispGetDisplayCapsBaseAndSize__ = &kdispGetDisplayCapsBaseAndSize_b3696a;
     }
-    else if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x000003e0UL) )) /* ChipHal: TU102 | TU104 | TU106 | TU116 | TU117 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000400UL) )) /* DispIpHal: DISPv0400 */ ) ||
-             ((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x0000f800UL) )) /* ChipHal: GA102 | GA103 | GA104 | GA106 | GA107 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000800UL) )) /* DispIpHal: DISPv0401 */ ))
+    else
     {
         pThis->__kdispGetDisplayCapsBaseAndSize__ = &kdispGetDisplayCapsBaseAndSize_v03_00;
     }
 
-    // Hal function -- kdispGetDisplaySfUserBaseAndSize
-    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ 
+    // kdispGetDisplaySfUserBaseAndSize -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ 
     {
         pThis->__kdispGetDisplaySfUserBaseAndSize__ = &kdispGetDisplaySfUserBaseAndSize_b3696a;
     }
-    else if (0)
-    {
-    }
-    else if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 */ 
+    else
     {
         pThis->__kdispGetDisplaySfUserBaseAndSize__ = &kdispGetDisplaySfUserBaseAndSize_v03_00;
     }
 
-    // Hal function -- kdispGetDisplayChannelUserBaseAndSize
-    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00008000UL) )) /* DispIpHal: DISPv0000 */ 
+    // kdispGetDisplayChannelUserBaseAndSize -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ 
     {
         pThis->__kdispGetDisplayChannelUserBaseAndSize__ = &kdispGetDisplayChannelUserBaseAndSize_46f6a7;
     }
-    else if (0)
-    {
-    }
-    else if (0)
-    {
-    }
-    else if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00000c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 */ 
+    else
     {
         pThis->__kdispGetDisplayChannelUserBaseAndSize__ = &kdispGetDisplayChannelUserBaseAndSize_v03_00;
     }
 
-    // Hal function -- kdispGetVgaWorkspaceBase
-    if (( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x0000fbe0UL) )) /* ChipHal: TU102 | TU104 | TU106 | TU116 | TU117 | GA102 | GA103 | GA104 | GA106 | GA107 */ 
+    // kdispGetVgaWorkspaceBase -- halified (2 hals) body
+    if (( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd0000400UL) )) /* ChipHal: GA100 | GH100 | GB100 | GB102 */ 
+    {
+        pThis->__kdispGetVgaWorkspaceBase__ = &kdispGetVgaWorkspaceBase_491d52;
+    }
+    else
     {
         pThis->__kdispGetVgaWorkspaceBase__ = &kdispGetVgaWorkspaceBase_v04_00;
     }
-    else if (( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0x00000400UL) )) /* ChipHal: GA100 */ 
+
+    // kdispReadRgLineCountAndFrameCount -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00004c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 | DISPv0404 */ 
     {
-        pThis->__kdispGetVgaWorkspaceBase__ = &kdispGetVgaWorkspaceBase_491d52;
+        pThis->__kdispReadRgLineCountAndFrameCount__ = &kdispReadRgLineCountAndFrameCount_v03_00_KERNEL;
     }
     // default
     else
     {
-        pThis->__kdispGetVgaWorkspaceBase__ = &kdispGetVgaWorkspaceBase_ceaee8;
+        pThis->__kdispReadRgLineCountAndFrameCount__ = &kdispReadRgLineCountAndFrameCount_46f6a7;
     }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateConstructEngine__ = &__nvoc_thunk_KernelDisplay_engstateConstructEngine;
+    // kdispRestoreOriginalLsrMinTime -- halified (2 hals) body
+    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd0000400UL) )) /* ChipHal: GA100 | GH100 | GB100 | GB102 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ ))
+    {
+        pThis->__kdispRestoreOriginalLsrMinTime__ = &kdispRestoreOriginalLsrMinTime_b3696a;
+    }
+    else
+    {
+        pThis->__kdispRestoreOriginalLsrMinTime__ = &kdispRestoreOriginalLsrMinTime_v03_00;
+    }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateStatePreInitLocked__ = &__nvoc_thunk_KernelDisplay_engstateStatePreInitLocked;
+    // kdispComputeLsrMinTimeValue -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ 
+    {
+        pThis->__kdispComputeLsrMinTimeValue__ = &kdispComputeLsrMinTimeValue_56cd7a;
+    }
+    else
+    {
+        pThis->__kdispComputeLsrMinTimeValue__ = &kdispComputeLsrMinTimeValue_v02_07;
+    }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateStateInitLocked__ = &__nvoc_thunk_KernelDisplay_engstateStateInitLocked;
+    // kdispSetSwapBarrierLsrMinTime -- halified (2 hals) body
+    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd0000400UL) )) /* ChipHal: GA100 | GH100 | GB100 | GB102 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ ))
+    {
+        pThis->__kdispSetSwapBarrierLsrMinTime__ = &kdispSetSwapBarrierLsrMinTime_b3696a;
+    }
+    else
+    {
+        pThis->__kdispSetSwapBarrierLsrMinTime__ = &kdispSetSwapBarrierLsrMinTime_v03_00;
+    }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateStateDestroy__ = &__nvoc_thunk_KernelDisplay_engstateStateDestroy;
+    // kdispGetRgScanLock -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00004c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 | DISPv0404 */ 
+    {
+        pThis->__kdispGetRgScanLock__ = &kdispGetRgScanLock_v02_01;
+    }
+    // default
+    else
+    {
+        pThis->__kdispGetRgScanLock__ = &kdispGetRgScanLock_92bfc3;
+    }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateStateLoad__ = &__nvoc_thunk_KernelDisplay_engstateStateLoad;
+    // kdispDetectSliLink -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00004c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 | DISPv0404 */ 
+    {
+        pThis->__kdispDetectSliLink__ = &kdispDetectSliLink_v04_00;
+    }
+    // default
+    else
+    {
+        pThis->__kdispDetectSliLink__ = &kdispDetectSliLink_92bfc3;
+    }
 
-    pThis->__nvoc_base_OBJENGSTATE.__engstateStateUnload__ = &__nvoc_thunk_KernelDisplay_engstateStateUnload;
+    // kdispInitRegistryOverrides -- halified (2 hals) body
+    if (((( ((chipHal_HalVarIdx >> 5) == 1UL) && ((1UL << (chipHal_HalVarIdx & 0x1f)) & 0xd0000400UL) )) /* ChipHal: GA100 | GH100 | GB100 | GB102 */  && (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00040000UL) )) /* DispIpHal: DISPv0000 */ ))
+    {
+        pThis->__kdispInitRegistryOverrides__ = &kdispInitRegistryOverrides_b3696a;
+    }
+    // default
+    else
+    {
+        pThis->__kdispInitRegistryOverrides__ = &kdispInitRegistryOverrides_IMPL;
+    }
 
-    pThis->__nvoc_base_IntrService.__intrservRegisterIntrService__ = &__nvoc_thunk_KernelDisplay_intrservRegisterIntrService;
+    // kdispGetPBTargetAperture -- halified (2 hals) body
+    if (( ((dispIpHal_HalVarIdx >> 5) == 0UL) && ((1UL << (dispIpHal_HalVarIdx & 0x1f)) & 0x00004c00UL) )) /* DispIpHal: DISPv0400 | DISPv0401 | DISPv0404 */ 
+    {
+        pThis->__kdispGetPBTargetAperture__ = &kdispGetPBTargetAperture_v03_00;
+    }
+    // default
+    else
+    {
+        pThis->__kdispGetPBTargetAperture__ = &kdispGetPBTargetAperture_15a734;
+    }
 
-    pThis->__nvoc_base_IntrService.__intrservServiceInterrupt__ = &__nvoc_thunk_KernelDisplay_intrservServiceInterrupt;
+    // kdispInitMissing -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispInitMissing__ = &__nvoc_up_thunk_OBJENGSTATE_kdispInitMissing;
 
-    pThis->__kdispReconcileTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispReconcileTunableState;
+    // kdispStatePreInitUnlocked -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStatePreInitUnlocked__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStatePreInitUnlocked;
 
-    pThis->__kdispServiceNotificationInterrupt__ = &__nvoc_thunk_IntrService_kdispServiceNotificationInterrupt;
+    // kdispStateInitUnlocked -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStateInitUnlocked__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStateInitUnlocked;
 
-    pThis->__kdispStatePreLoad__ = &__nvoc_thunk_OBJENGSTATE_kdispStatePreLoad;
+    // kdispStatePreLoad -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStatePreLoad__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStatePreLoad;
 
-    pThis->__kdispStatePostUnload__ = &__nvoc_thunk_OBJENGSTATE_kdispStatePostUnload;
+    // kdispStatePostLoad -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStatePostLoad__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStatePostLoad;
 
-    pThis->__kdispStatePreUnload__ = &__nvoc_thunk_OBJENGSTATE_kdispStatePreUnload;
+    // kdispStatePreUnload -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStatePreUnload__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStatePreUnload;
 
-    pThis->__kdispStateInitUnlocked__ = &__nvoc_thunk_OBJENGSTATE_kdispStateInitUnlocked;
+    // kdispStatePostUnload -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispStatePostUnload__ = &__nvoc_up_thunk_OBJENGSTATE_kdispStatePostUnload;
 
-    pThis->__kdispInitMissing__ = &__nvoc_thunk_OBJENGSTATE_kdispInitMissing;
+    // kdispIsPresent -- virtual inherited (engstate) base (engstate)
+    pThis->__kdispIsPresent__ = &__nvoc_up_thunk_OBJENGSTATE_kdispIsPresent;
 
-    pThis->__kdispStatePreInitUnlocked__ = &__nvoc_thunk_OBJENGSTATE_kdispStatePreInitUnlocked;
+    // kdispClearInterrupt -- virtual inherited (intrserv) base (intrserv)
+    pThis->__kdispClearInterrupt__ = &__nvoc_up_thunk_IntrService_kdispClearInterrupt;
 
-    pThis->__kdispGetTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispGetTunableState;
+    // kdispServiceNotificationInterrupt -- virtual inherited (intrserv) base (intrserv)
+    pThis->__kdispServiceNotificationInterrupt__ = &__nvoc_up_thunk_IntrService_kdispServiceNotificationInterrupt;
+} // End __nvoc_init_funcTable_KernelDisplay_1 with approximately 54 basic block(s).
 
-    pThis->__kdispCompareTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispCompareTunableState;
 
-    pThis->__kdispFreeTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispFreeTunableState;
-
-    pThis->__kdispClearInterrupt__ = &__nvoc_thunk_IntrService_kdispClearInterrupt;
-
-    pThis->__kdispStatePostLoad__ = &__nvoc_thunk_OBJENGSTATE_kdispStatePostLoad;
-
-    pThis->__kdispAllocTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispAllocTunableState;
-
-    pThis->__kdispSetTunableState__ = &__nvoc_thunk_OBJENGSTATE_kdispSetTunableState;
-
-    pThis->__kdispIsPresent__ = &__nvoc_thunk_OBJENGSTATE_kdispIsPresent;
-}
-
+// Initialize vtable(s) for 32 virtual method(s).
 void __nvoc_init_funcTable_KernelDisplay(KernelDisplay *pThis, RmHalspecOwner *pRmhalspecowner) {
+
+    // Initialize vtable(s) with 32 per-object function pointer(s).
     __nvoc_init_funcTable_KernelDisplay_1(pThis, pRmhalspecowner);
 }
 
@@ -456,20 +496,31 @@ void __nvoc_init_KernelDisplay(KernelDisplay *pThis, RmHalspecOwner *pRmhalspeco
     __nvoc_init_funcTable_KernelDisplay(pThis, pRmhalspecowner);
 }
 
-NV_STATUS __nvoc_objCreate_KernelDisplay(KernelDisplay **ppThis, Dynamic *pParent, NvU32 createFlags) {
+NV_STATUS __nvoc_objCreate_KernelDisplay(KernelDisplay **ppThis, Dynamic *pParent, NvU32 createFlags)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     KernelDisplay *pThis;
     RmHalspecOwner *pRmhalspecowner;
 
-    pThis = portMemAllocNonPaged(sizeof(KernelDisplay));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(KernelDisplay), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(KernelDisplay));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_KernelDisplay);
 
-    if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
+    pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object.createFlags = createFlags;
+
+    // pParent must be a valid object that derives from a halspec owner class.
+    NV_ASSERT_OR_RETURN(pParent != NULL, NV_ERR_INVALID_ARGUMENT);
+
+    // Link the child into the parent unless flagged not to do so.
+    if (!(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
         objAddChild(pParentObj, &pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object);
@@ -487,12 +538,27 @@ NV_STATUS __nvoc_objCreate_KernelDisplay(KernelDisplay **ppThis, Dynamic *pParen
     status = __nvoc_ctor_KernelDisplay(pThis, pRmhalspecowner);
     if (status != NV_OK) goto __nvoc_objCreate_KernelDisplay_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_KernelDisplay_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(KernelDisplay));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

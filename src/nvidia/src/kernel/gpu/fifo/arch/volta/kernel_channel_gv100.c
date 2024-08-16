@@ -24,6 +24,7 @@
 #include "kernel/gpu/fifo/kernel_channel.h"
 #include "kernel/mem_mgr/mem.h"
 #include "kernel/gpu/mmu/kern_gmmu.h"
+#include "platform/sli/sli.h"
 
 #include "published/volta/gv100/dev_pbdma.h"
 #include "rmapi/rs_utils.h"
@@ -97,7 +98,7 @@ kchannelCreateUserdMemDescBc_GV100
                       "User provided memory info for index %d is NULL\n",
                       iter);
             NV_PRINTF(LEVEL_ERROR,
-                      "NV_CHANNELGPFIFO_ALLOCATION_PARAMETERS needs to have all subdevice info\n");
+                      "NV_CHANNEL_ALLOC_PARAMS needs to have all subdevice info\n");
 
             hUserdMemory = phUserdMemory[0];
             userdOffset  = pUserdOffset[0];
@@ -170,7 +171,7 @@ kchannelCreateUserdMemDesc_GV100
     NvU32                   userdAddrLo;
     NvU32                   userdAddrHi;
     NvU32                   userdAlignment;
-    NvU32                   pageSize;
+    NvU64                   pageSize;
 
     NV_ASSERT_OR_RETURN(!gpumgrGetBcEnabledStatus(pGpu), NV_ERR_INVALID_STATE);
     pKernelChannel->pUserdSubDeviceMemDesc[gpumgrGetSubDeviceInstanceFromGpu(pGpu)] = NULL;
@@ -202,6 +203,15 @@ kchannelCreateUserdMemDesc_GV100
     userdAddr = memdescGetPhysAddr(pUserdMemDescForSubDev,
                                AT_GPU,
                                userdOffset);
+
+    // Adjust for the DMA window start address, if any
+    if (memdescGetAddressSpace(pUserdMemDescForSubDev) == ADDR_SYSMEM)
+    {
+        RmPhysAddr dmaWindowStart = gpuGetDmaStartAddress(pGpu); 
+        NV_ASSERT_OR_RETURN(userdAddr > dmaWindowStart, NV_ERR_INVALID_ADDRESS);
+
+        userdAddr -= dmaWindowStart;
+    }
 
     userdAddrLo = NvU64_LO32(userdAddr) >> userdShift;
     userdAddrHi = NvU64_HI32(userdAddr);
@@ -269,7 +279,7 @@ kchannelCreateUserdMemDesc_GV100
  * @brief Delete the memory descriptors for userd memory allocated
  *        by client
  */
-NV_STATUS
+void
 kchannelDestroyUserdMemDesc_GV100
 (
     OBJGPU           *pGpu,
@@ -278,11 +288,6 @@ kchannelDestroyUserdMemDesc_GV100
 {
     NvU32 subdevInst = gpumgrGetSubDeviceInstanceFromGpu(pGpu);
 
-    if (pKernelChannel->pUserdSubDeviceMemDesc[subdevInst])
-    {
-        memdescDestroy(pKernelChannel->pUserdSubDeviceMemDesc[subdevInst]);
-        pKernelChannel->pUserdSubDeviceMemDesc[subdevInst] = NULL;
-    }
-
-    return NV_OK;
+    memdescDestroy(pKernelChannel->pUserdSubDeviceMemDesc[subdevInst]);
+    pKernelChannel->pUserdSubDeviceMemDesc[subdevInst] = NULL;
 }

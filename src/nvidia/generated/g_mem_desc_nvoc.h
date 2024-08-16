@@ -1,13 +1,20 @@
+
 #ifndef _G_MEM_DESC_NVOC_H_
 #define _G_MEM_DESC_NVOC_H_
 #include "nvoc/runtime.h"
+
+// Version of generated metadata structures
+#ifdef NVOC_METADATA_VERSION
+#undef NVOC_METADATA_VERSION
+#endif
+#define NVOC_METADATA_VERSION 0
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * SPDX-FileCopyrightText: Copyright (c) 1993-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 1993-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,6 +36,7 @@ extern "C" {
  * DEALINGS IN THE SOFTWARE.
  */
 
+#pragma once
 #include "g_mem_desc_nvoc.h"
 
 #ifndef _MEMDESC_H_
@@ -36,6 +44,7 @@ extern "C" {
 
 #include "core/prelude.h"
 #include "poolalloc.h"
+
 
 
 struct OBJVASPACE;
@@ -50,6 +59,7 @@ typedef struct OBJVASPACE OBJVASPACE;
 #endif /* __nvoc_class_id_OBJVASPACE */
 
 
+
 struct OBJGPU;
 
 #ifndef __NVOC_CLASS_OBJGPU_TYPEDEF__
@@ -60,6 +70,7 @@ typedef struct OBJGPU OBJGPU;
 #ifndef __nvoc_class_id_OBJGPU
 #define __nvoc_class_id_OBJGPU 0x7ef3cb
 #endif /* __nvoc_class_id_OBJGPU */
+
 
 
 struct Heap;
@@ -74,6 +85,19 @@ typedef struct Heap Heap;
 #endif /* __nvoc_class_id_Heap */
 
 
+
+struct RsClient;
+
+#ifndef __NVOC_CLASS_RsClient_TYPEDEF__
+#define __NVOC_CLASS_RsClient_TYPEDEF__
+typedef struct RsClient RsClient;
+#endif /* __NVOC_CLASS_RsClient_TYPEDEF__ */
+
+#ifndef __nvoc_class_id_RsClient
+#define __nvoc_class_id_RsClient 0x8f87e5
+#endif /* __nvoc_class_id_RsClient */
+
+
 struct MEMORY_DESCRIPTOR;
 
 typedef struct CTX_BUF_POOL_INFO CTX_BUF_POOL_INFO;
@@ -81,6 +105,8 @@ typedef struct COMPR_INFO COMPR_INFO;
 
 //
 // Address space identifiers.
+// Note: This should match the NV2080_CTRL_GR_CTX_BUFFER_INFO_APERTURE_* defines
+//       in ctrl2080gr.h
 //
 typedef NvU32      NV_ADDRESS_SPACE;
 #define ADDR_UNKNOWN    0         // Address space is unknown
@@ -88,8 +114,9 @@ typedef NvU32      NV_ADDRESS_SPACE;
 #define ADDR_FBMEM      2         // Frame buffer memory space
 #define ADDR_REGMEM     3         // NV register memory space
 #define ADDR_VIRTUAL    4         // Virtual address space only
-#define ADDR_FABRIC     5         // Fabric address space for the GPA based addressing.
 #define ADDR_FABRIC_V2  6         // Fabric address space for the FLA based addressing. Will replace ADDR_FABRIC.
+#define ADDR_EGM        7         // Extended GPU Memory (EGM)
+#define ADDR_FABRIC_MC  8         // Multicast fabric address space (MCFLA)
 
 //
 // Address translation identifiers:
@@ -163,6 +190,239 @@ typedef struct ADDRESS_TRANSLATION_ *ADDRESS_TRANSLATION;
 #define AT_VALUE(x)    ((NvU64)(NvUPtr)(x))
 
 //
+// RM defined Memdesc surface names. The names are sent to Mods to enable feature verification.
+//
+#define NV_RM_SURF_NAME_INSTANCE_BLOCK                      "rm_instance_block_surface"
+#define NV_RM_SURF_NAME_PAGE_TABLE                          "rm_page_table_surface"
+#define NV_RM_SURF_NAME_NONREPLAYABLE_FAULT_BUFFER          "rm_non_replayable_fault_buffer_surface"
+#define NV_RM_SURF_NAME_REPLAYABLE_FAULT_BUFFER             "rm_replayable_fault_buffer_surface"
+#define NV_RM_SURF_NAME_CE_FAULT_METHOD_BUFFER              "rm_ce_fault_method_buffer_surface"
+#define NV_RM_SURF_NAME_ACCESS_COUNTER_BUFFER               "rm_access_counter_buffer_surface"
+#define NV_RM_SURF_NAME_VAB                                 "rm_vab_surface"
+#define NV_RM_SURF_NAME_GR_CIRCULAR_BUFFER                  "rm_gr_ctx_circular_buffer_surface"
+
+//
+// Tagging wrapper macro for memdescAlloc
+//
+#define memdescTagAlloc(stat, tag, pMemdesc)                        {(pMemdesc)->allocTag = tag; stat = memdescAlloc(pMemdesc);}
+#define memdescTagAllocList(stat, tag, pMemdesc, pList)             {(pMemdesc)->allocTag = tag; stat = memdescAllocList(pMemdesc, pList);}
+
+//
+// RM internal allocations owner tags
+// Total 200 tags are introduced, out of which some are already
+// replaced with known verbose strings
+//
+typedef enum
+{
+    NV_FB_ALLOC_RM_INTERNAL_OWNER__MIN                  = 10U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_COMPBIT_STORE         = 11U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_CONTEXT_BUFFER        = 12U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ATTR_BUFFER           = 13U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_PMU_SURFACE           = 14U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_CIRCULAR_BUFFER       = 15U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_PAGE_POOL             = 16U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ACCESS_MAP            = 17U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_WPR_METADATA          = 18U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_LIBOS_ARGS            = 19U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_BOOTLOADER_ARGS       = 20U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_SR_METADATA           = 21U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ACR_SETUP             = 22U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ACR_SHADOW            = 23U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ACR_BACKUP            = 24U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_ACR_BINARY            = 25U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_VBIOS_FRTS            = 26U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_USERD_BUFFER          = 27U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_RUNLIST_ENTRIES       = 28U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_PAGE_PTE              = 29U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_MMU_FAULT_BUFFER      = 30U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_FAULT_METHOD          = 31U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_WAR_PT                = 32U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_WAR_PD                = 33U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_1         = 34U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_2         = 35U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_3         = 36U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_4         = 37U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_5         = 38U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_6         = 39U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_7         = 40U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_8         = 41U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_9         = 42U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_10        = 43U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_11        = 44U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_12        = 45U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_13        = 46U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_14        = 47U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_15        = 48U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_16        = 49U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_17        = 50U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_18        = 51U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_19        = 52U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_20        = 53U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_21        = 54U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_22        = 55U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_23        = 56U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_24        = 57U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_25        = 58U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_26        = 59U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_27        = 60U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_28        = 61U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_29        = 62U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_30        = 63U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_31        = 64U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_32        = 65U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_33        = 66U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_34        = 67U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_RUSD_BUFFER           = 68U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_36        = 69U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_37        = 70U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_38        = 71U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_39        = 72U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_40        = 73U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_41        = 74U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_42        = 75U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_43        = 76U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_44        = 77U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_45        = 78U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_46        = 79U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_47        = 80U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_48        = 81U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_49        = 82U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_50        = 83U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_51        = 84U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_52        = 85U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_53        = 86U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_54        = 87U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_55        = 88U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_56        = 89U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_57        = 90U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_58        = 91U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_59        = 92U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_60        = 93U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_61        = 94U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_62        = 95U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_63        = 96U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_64        = 97U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_65        = 98U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_66        = 99U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_67        = 100U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_68        = 101U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_69        = 102U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_70        = 103U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_71        = 104U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_72        = 105U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_73        = 106U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_74        = 107U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_75        = 108U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_76        = 109U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_77        = 110U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_78        = 111U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_79        = 112U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_80        = 113U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_81        = 114U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_82        = 115U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_83        = 116U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_84        = 117U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_85        = 118U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_86        = 119U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_87        = 120U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_88        = 121U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_89        = 122U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_90        = 123U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_91        = 124U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_92        = 125U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_93        = 126U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_94        = 127U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_95        = 128U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_96        = 129U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_97        = 130U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_98        = 131U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_99        = 132U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_100       = 133U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_101       = 134U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_102       = 135U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_103       = 136U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_104       = 137U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_105       = 138U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_106       = 139U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_107       = 140U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_108       = 141U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_109       = 142U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_110       = 143U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_111       = 144U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_112       = 145U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_113       = 146U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_114       = 147U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_115       = 148U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_116       = 149U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_117       = 150U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_118       = 151U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_119       = 152U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_120       = 153U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_121       = 154U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_122       = 155U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_123       = 156U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_124       = 157U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_125       = 158U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_126       = 159U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_127       = 160U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_128       = 161U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_FBSR_CE_TEST_BUFFER   = 162U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_130       = 163U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_131       = 164U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_132       = 165U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_133       = 166U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_134       = 167U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_135       = 168U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_136       = 169U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_137       = 170U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_138       = 171U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_139       = 172U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_140       = 173U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_141       = 174U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_142       = 175U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_143       = 176U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_GSP_NOTIFY_OP_SURFACE = 177U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_FAKE_WPR_RSVD         = 178U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_GR_SCRUB_CHANNEL      = 179U,
+
+    //
+    // Unused tags from here, for any new use-case it's required 
+    // to replace the below tags with known verbose strings
+    //
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_147       = 180U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_148       = 181U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_149       = 182U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_150       = 183U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_151       = 184U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_152       = 185U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_153       = 186U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_154       = 187U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_155       = 188U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_156       = 189U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_157       = 190U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_158       = 191U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_159       = 192U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_160       = 193U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_161       = 194U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_162       = 195U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_163       = 196U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_164       = 197U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_165       = 198U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_166       = 199U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_167       = 200U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_168       = 201U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_169       = 202U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_170       = 203U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_171       = 204U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_172       = 205U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_173       = 206U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_174       = 207U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_175       = 208U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_176       = 209U,
+    NV_FB_ALLOC_RM_INTERNAL_OWNER__MAX                  = 210U,
+} NV_FB_ALLOC_RM_INTERNAL_OWNER;
+
+//
 // Overrides address translation in SR-IOV enabled usecases
 //
 // In SRIOV systems, an access from guest has to go through the following
@@ -203,7 +463,7 @@ typedef struct MEMORY_DESCRIPTOR
     NvU64 _flags;
 
     // Size of mapping used for this allocation.  Multiple mappings on Fermi must always use the same page size.
-    NvU32 _pageSize;
+    NvU64 _pageSize;
 
     // Size of the memory allocation in pages
     NvU64 PageCount;
@@ -295,6 +555,11 @@ typedef struct MEMORY_DESCRIPTOR
     NvU32 _hwResId;
 
     //
+    // alloc tag for tracking internal allocations @ref NV_FB_ALLOC_RM_INTERNAL_OWNER
+    //
+    NV_FB_ALLOC_RM_INTERNAL_OWNER allocTag;
+
+    //
     // Keep track which heap is actually used for this allocation
     //
     struct Heap *pHeap;
@@ -332,6 +597,9 @@ typedef struct MEMORY_DESCRIPTOR
     // Serve as a head node in a list of submemdescs
     MEMORY_DESCRIPTOR_LIST *pSubMemDescList;
 
+    // Reserved for RM exclusive use
+    NvBool bRmExclusiveUse;
+
     // If strung in a intrusive linked list
     ListNode   node;
 
@@ -366,6 +634,19 @@ typedef struct MEMORY_DESCRIPTOR
 
     // We verified that memdesc is safe to be mapped as large pages
     NvBool bForceHugePages;
+
+    // Memory handle that libos 3+ returns for dynamically mapped sysmem
+    NvU32 libosRegionHandle;
+    NvU64 baseVirtualAddress;
+
+    // Indicates granularity of mapping. Will be used to implement dynamic page sizes.
+    NvU32 pageArrayGranularity;
+
+    // NUMA node ID from which memory should be allocated
+    NvS32 numaNode;
+
+    // Array to hold EGM addresses when EGM is enabled
+    RmPhysAddr *pPteEgmMappings;
 
     //
     // If PhysicallyContiguous is NV_TRUE, this array consists of one element.
@@ -478,7 +759,7 @@ void memdescDescribe(MEMORY_DESCRIPTOR *pMemDesc,
 // Fill in a MEMORY_DESCRIPTOR with the physical page addresses returned by PMA.
 // It should already be initialized with memdescCreate*().
 void memdescFillPages(MEMORY_DESCRIPTOR *pMemDesc, NvU32 offset,
-                      NvU64 *pPages, NvU32 pageCount, NvU32 pageSize);
+                      NvU64 *pPages, NvU32 pageCount, NvU64 pageSize);
 
 // Create a MEMORY_DESCRIPTOR for a subset of an existing memory allocation.
 // The new MEMORY_DESCRIPTOR must be freed with memdescDestroy.
@@ -555,7 +836,7 @@ MEMORY_DESCRIPTOR *memdescGetMemDescFromIndex(MEMORY_DESCRIPTOR *pMemDesc, NvU32
 void memdescPrintMemdesc(MEMORY_DESCRIPTOR *pMemDesc, NvBool bPrintIndividualPages, const char *pPrefixMessage);
 
 // Get the page offset for an arbitrary power of two page size
-NvU64 memdescGetPageOffset(MEMORY_DESCRIPTOR *pMemDesc, NvU32 pageSize);
+NvU64 memdescGetPageOffset(MEMORY_DESCRIPTOR *pMemDesc, NvU64 pageSize);
 
 //
 // Internal APIs for the IOVASPACE to manage IOMMU mappings in a memdesc.
@@ -625,11 +906,17 @@ NvBool memdescGetContiguity(PMEMORY_DESCRIPTOR pMemDesc, ADDRESS_TRANSLATION add
 void memdescSetContiguity(PMEMORY_DESCRIPTOR pMemDesc, ADDRESS_TRANSLATION addressTranslation, NvBool isContiguous);
 NvBool memdescCheckContiguity(PMEMORY_DESCRIPTOR pMemDesc, ADDRESS_TRANSLATION addressTranslation);
 NV_ADDRESS_SPACE memdescGetAddressSpace(PMEMORY_DESCRIPTOR pMemDesc);
-NvU32 memdescGetPageSize(MEMORY_DESCRIPTOR *pMemDesc, ADDRESS_TRANSLATION addressTranslation);
-void  memdescSetPageSize(MEMORY_DESCRIPTOR *pMemDesc, ADDRESS_TRANSLATION addressTranslation, NvU32 pageSize);
+NvU64 memdescGetPageSize(MEMORY_DESCRIPTOR *pMemDesc, ADDRESS_TRANSLATION addressTranslation);
+void  memdescSetPageSize(MEMORY_DESCRIPTOR *pMemDesc, ADDRESS_TRANSLATION addressTranslation, NvU64 pageSize);
 PMEMORY_DESCRIPTOR memdescGetRootMemDesc(PMEMORY_DESCRIPTOR pMemDesc, NvU64 *pRootOffset);
 void memdescSetCustomHeap(PMEMORY_DESCRIPTOR);
 NvBool memdescGetCustomHeap(PMEMORY_DESCRIPTOR);
+NV_STATUS memdescSetPageArrayGranularity(MEMORY_DESCRIPTOR *pMemDesc, NvU64 pageArrayGranularity);
+NvBool memdescAcquireRmExclusiveUse(MEMORY_DESCRIPTOR *pMemDesc);
+NV_STATUS memdescFillMemdescForPhysAttr(MEMORY_DESCRIPTOR *pMemDesc, ADDRESS_TRANSLATION addressTranslation,
+                                        NvU64 *pOffset,NvU32 *pMemAperture, NvU32 *pMemKind, NvU32 *pZCullId,
+                                        NvU32 *pGpuCacheAttr, NvU32 *pGpuP2PCacheAttr, NvU64 *contigSegmentSize);
+NvBool memdescIsEgm(MEMORY_DESCRIPTOR *pMemDesc);
 
 /*!
  *  @brief Get PTE kind
@@ -820,6 +1107,31 @@ memdescGetSize(PMEMORY_DESCRIPTOR pMemDesc)
 }
 
 /*!
+ *  @brief Set CPU NUMA node to allocate memory from
+ *
+ *  @param[in]  pMemDesc    Memory Descriptor to use
+ *  @param[in]  numaNode    NUMA node to allocate memory from
+ */
+static NV_INLINE void
+memdescSetNumaNode(MEMORY_DESCRIPTOR *pMemDesc, NvS32 numaNode)
+{
+    pMemDesc->numaNode = numaNode;
+}
+
+/*!
+ *  @brief Get CPU NUMA node to allocate memory from
+ *
+ *  @param[in]  pMemDesc    Memory Descriptor to use
+ *
+ *  @returns    NUMA node to allocate memory from
+ */
+static NV_INLINE NvS32
+memdescGetNumaNode(MEMORY_DESCRIPTOR *pMemDesc)
+{
+    return pMemDesc->numaNode;
+}
+
+/*!
  *  @brief Checks if subdevice memory descriptors are present
  *
  *  See memdescGetMemDescFromSubDeviceInst for an explanation of subdevice memory
@@ -869,29 +1181,23 @@ void memdescOverrideInstLocList(NvU32 loc, const char *name, const NV_ADDRESS_SP
 void memdescOverridePhysicalAddressWidthWindowsWAR(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 addressWidth);
 
 /*!
-* @brief Register memory descriptor referenced by hMemory in CPU-RM to GSP
+* @brief Send memory descriptor from CPU-RM to GSP
+*
+* This function will create a MemoryList object with the MEMORY_DESCRIPTOR information on CPU-RM
+* It will then use memRegisterWithGsp API to create a corresponding MemoryList object on GSP-RM
+* with the same Handle as that on CPU-RM
+*
+* This MemoryList object has the same MEMORY_DESCRIPTOR info as the input pMemDesc
+* The CPU-RM handle can be sent to GSP-RM and then used on GSP end to retrieve the MemoryList object
+* and then the corresponding MEMORY_DESCRIPTOR
 *
 * @param[in]  pGpu          OBJGPU pointer
-* @param[in]  hClient       client handled
-* @param[in]  hSubDevice    subdevice handle
-* @param[in]  hMemory       memory handle
+* @param[in]  pMemDesc      MemDesc pointer
+* @param[out] pHandle       Pointer to handle of MemoryList object
 *
 * @returns NV_STATUS
 */
-NV_STATUS memdescRegisterToGSP(OBJGPU *pGpu, NvHandle hClient, NvHandle hParent, NvHandle hMemory);
-
-/*!
-* @brief Deregister memory descriptor referenced by hMemory in CPU-RM from GSP
-*
-* @param[in]  pGpu          OBJGPU pointer
-* @param[in]  hClient       client handled
-* @param[in]  hSubDevice    subdevice handle
-* @param[in]  hMemory       memory handle
-*
-* @returns NV_STATUS
-*/
-
-NV_STATUS memdescDeregisterFromGSP(OBJGPU *pGpu, NvHandle hClient, NvHandle hParent, NvHandle hMemory);
+NV_STATUS memdescSendMemDescToGSP(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvHandle *pHandle);
 
 // cache maintenance functions
 void memdescFlushGpuCaches(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc);
@@ -900,6 +1206,15 @@ void memdescFlushCpuCaches(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc);
 // Map memory descriptor for RM internal access
 void* memdescMapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags);
 void memdescUnmapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags);
+
+/*!
+ * @brief Set the name of the surface.
+ *
+ * @param[in] pGpu     OBJGPU pointer.
+ * @param[in] pMemDesc MEMORY_DESCRIPTOR pointer that the name is to be set for.
+ * @param[in] name     const char pointer to the name to be set.
+ */
+void memdescSetName(OBJGPU*, MEMORY_DESCRIPTOR *pMemDesc, const char *name, const char *suffix);
 
 //
 // External flags:
@@ -1026,6 +1341,8 @@ void memdescUnmapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags
 // created using NV01_MEMORY_LIST_SYSTEM, NV01_MEMORY_LIST_FBMEM or NV01_MEMORY_LIST_OBJECT.
 #define MEMDESC_FLAGS_LIST_MEMORY                  NVBIT64(34)
 
+// unused                                          NVBIT64(35)
+
 // This flag is used to denote that this memdesc is allocated from
 // a context buffer pool. When this flag is set, we expect a pointer
 // to this context buffer pool to be cached in memdesc.
@@ -1038,7 +1355,7 @@ void memdescUnmapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags
 #define MEMDESC_FLAGS_SKIP_REGMEM_PRIV_CHECK       NVBIT64(37)
 
 // This flag denotes the memory descriptor of type Display non iso
-#define MEMDESC_FLAGS_MEMORY_TYPE_DISPLAY_NISO             NVBIT64(38)
+#define MEMDESC_FLAGS_MEMORY_TYPE_DISPLAY_NISO     NVBIT64(38)
 
 // This flag is used to force mapping of coherent sysmem through
 // the GMMU over BAR1. This is useful when we need some form
@@ -1054,16 +1371,24 @@ void memdescUnmapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags
 // 32-bit addressable.
 #define MEMDESC_FLAGS_ALLOC_32BIT_ADDRESSABLE      NVBIT64(41)
 
+// unused                                          NVBIT64(42)
+
 //
-// If this flag is set, the memory is registered in GSP
+// If this flag is set then it indicates that the memory associated with
+// this descriptor was allocated from local EGM.
 //
-#define MEMDESC_FLAGS_REGISTERED_TO_GSP      NVBIT64(42)
+#define MEMDESC_FLAGS_ALLOC_FROM_EGM               NVBIT64(43)
 
 //
 // Indicates that this memdesc is tracking client sysmem allocation as
 // against RM internal sysmem allocation
 //
-#define MEMDESC_FLAGS_SYSMEM_OWNED_BY_CLIENT        NVBIT64(44)
+#define MEMDESC_FLAGS_SYSMEM_OWNED_BY_CLIENT       NVBIT64(44)
+//
+// Clients (including RM) should set this flag to request allocations in
+// unprotected memory. This is required for Confidential Compute cases
+//
+#define MEMDESC_FLAGS_ALLOC_IN_UNPROTECTED_MEMORY  NVBIT64(45)
 
 //
 // The following is a special use case for sharing memory between
@@ -1071,11 +1396,32 @@ void memdescUnmapInternal(OBJGPU *pGpu, MEMORY_DESCRIPTOR *pMemDesc, NvU32 flags
 // currently for this, so a WAR is required for r515. The intent
 // is to remove this by r525.
 //
-#define MEMDESC_FLAGS_WSL_SHARED_MEMORY             NVBIT64(46)
+#define MEMDESC_FLAGS_WSL_SHARED_MEMORY            NVBIT64(46)
+
+//
+// Skip IOMMU mapping creation during alloc for sysmem.
+// A mapping might be requested later with custom parameters.
+//
+#define MEMDESC_FLAGS_SKIP_IOMMU_MAPPING           NVBIT64(47)
+
+//
+// Specical case to allocate the runlists for Guests from its GPA
+// In MODS, VM's GPA allocated from subheap so using this define to
+// Forcing memdesc to allocated from subheap
+//
+#define MEMDESC_FLAGS_FORCE_ALLOC_FROM_SUBHEAP     NVBIT64(48)
+
+//
+// Indicate if memdesc needs to restore pte kind in the static bar1 mode
+// when it is freed.
+//
+#define MEMDESC_FLAGS_RESTORE_PTE_KIND_ON_FREE     NVBIT64(49)
+
 
 #endif // _MEMDESC_H_
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
+
 #endif // _G_MEM_DESC_NVOC_H_

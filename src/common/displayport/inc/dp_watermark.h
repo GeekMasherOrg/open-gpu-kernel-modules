@@ -38,13 +38,13 @@ namespace DisplayPort
 {
     class LinkConfiguration;
 
-    struct ModesetInfo 
+    struct ModesetInfo
     {
         unsigned twoChannelAudioHz;         // if you need 192khz stereo specify 192000 here
         unsigned eightChannelAudioHz;       // Same setting for multi channel audio.
                                             //  DisplayPort encodes 3-8 channel streams as 8 channel
         NvU64 pixelClockHz;                 // Requested pixel clock for the mode
-        unsigned rasterWidth; 
+        unsigned rasterWidth;
         unsigned rasterHeight;
         unsigned surfaceWidth;              // RasterBlankStartX - newRasterBlankEndX
         unsigned surfaceHeight;             // Active region height
@@ -54,39 +54,42 @@ namespace DisplayPort
         unsigned bitsPerComponent;          // Bits per component
         bool     bEnableDsc;                // bEnableDsc=1 indicates DSC would be enabled for the mode
         DSC_MODE mode;                      // DSC Mode
+        bool     bEnablePassThroughForPCON;
 
-        ModesetInfo(): twoChannelAudioHz(0), 
-                       eightChannelAudioHz(0), 
-                       pixelClockHz(0), 
-                       rasterWidth(0), 
-                       rasterHeight(0), 
-                       surfaceWidth(0), 
+        ModesetInfo(): twoChannelAudioHz(0),
+                       eightChannelAudioHz(0),
+                       pixelClockHz(0),
+                       rasterWidth(0),
+                       rasterHeight(0),
+                       surfaceWidth(0),
                        surfaceHeight(0),
                        depth(0),
-                       rasterBlankStartX(0), 
+                       rasterBlankStartX(0),
                        rasterBlankEndX(0),
                        bitsPerComponent(0),
                        bEnableDsc(false),
-                       mode(DSC_SINGLE) {}
-        
-        ModesetInfo(unsigned newTwoChannelAudioHz, unsigned newEightChannelAudioHz, NvU64 newPixelClockHz, 
-                    unsigned newRasterWidth, unsigned newRasterHeight, 
+                       mode(DSC_SINGLE),
+                       bEnablePassThroughForPCON(false) {}
+
+        ModesetInfo(unsigned newTwoChannelAudioHz, unsigned newEightChannelAudioHz, NvU64 newPixelClockHz,
+                    unsigned newRasterWidth, unsigned newRasterHeight,
                     unsigned newSurfaceWidth, unsigned newSurfaceHeight, unsigned newDepth,
                     unsigned newRasterBlankStartX=0, unsigned newRasterBlankEndX=0, bool newBEnableDsc = false,
-                    DSC_MODE newMode = DSC_SINGLE):
-           twoChannelAudioHz(newTwoChannelAudioHz), 
-           eightChannelAudioHz(newEightChannelAudioHz), 
-           pixelClockHz(newPixelClockHz), 
-           rasterWidth(newRasterWidth), 
+                    DSC_MODE newMode = DSC_SINGLE, bool newBEnablePassThroughForPCON = false):
+           twoChannelAudioHz(newTwoChannelAudioHz),
+           eightChannelAudioHz(newEightChannelAudioHz),
+           pixelClockHz(newPixelClockHz),
+           rasterWidth(newRasterWidth),
            rasterHeight(newRasterHeight),
            surfaceWidth(newSurfaceWidth),
            surfaceHeight(newSurfaceHeight),
            depth(newDepth),
-           rasterBlankStartX(newRasterBlankStartX), 
+           rasterBlankStartX(newRasterBlankStartX),
            rasterBlankEndX(newRasterBlankEndX),
            bitsPerComponent(0),
            bEnableDsc(newBEnableDsc),
-           mode(newMode){}
+           mode(newMode),
+           bEnablePassThroughForPCON(newBEnablePassThroughForPCON) {}
     };
 
     struct Watermark
@@ -95,6 +98,7 @@ namespace DisplayPort
         unsigned tuSize;
         unsigned hBlankSym;
         unsigned vBlankSym;
+        NvU32    effectiveBpp;
     };
 
     bool isModePossibleSST
@@ -121,6 +125,13 @@ namespace DisplayPort
     );
 
     bool isModePossibleMSTWithFEC
+    (
+        const LinkConfiguration & linkConfig,
+        const ModesetInfo & modesetInfo,
+        Watermark  * dpInfo
+    );
+
+    bool dp2xIsModePossibleMSTWithFEC
     (
         const LinkConfiguration & linkConfig,
         const ModesetInfo & modesetInfo,

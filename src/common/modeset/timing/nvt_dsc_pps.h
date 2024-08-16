@@ -42,28 +42,6 @@
 #define DSC_MAX_PPS_SIZE_DWORD 32
 
 /* ------------------------ Datatypes -------------------------------------- */
-
-#define DSC_CALLBACK_MODIFIED 1
-
-#if defined(DSC_CALLBACK_MODIFIED)
-typedef struct
-{
-    // DSC - Callbacks
-    const void* clientHandle;    // ClientHandle is only used when calling into HDMI lib's mallocCb/freeCb
-    void (*dscPrint) (const char* fmtstring, ...);
-    void *(*dscMalloc)(const void *clientHandle, NvLength size);
-    void (*dscFree) (const void *clientHandle, void * ptr);
-} DSC_CALLBACK;
-#else
-typedef struct
-{
-    // DSC - Callbacks
-    void (*dscPrint) (const char* fmtstring, ...);
-    void *(*dscMalloc)(NvLength size);
-    void (*dscFree) (void * ptr);
-} DSC_CALLBACK;
-#endif // DSC_CALLBACK_MODIFIED
-
 typedef struct
 {
     NvU32 versionMajor;
@@ -196,6 +174,13 @@ typedef struct
         NvU32  maxBitsPerPixelX16;
     }sinkCaps;
 
+    struct BRANCH_DSC_CAPS
+    {
+        NvU32  overallThroughputMode0;
+        NvU32  overallThroughputMode1;
+        NvU32  maxLineBufferWidth;
+    }branchCaps;
+
     struct GPU_DSC_CAPS
     {
         // Mask of all color formats for which encoding supported by GPU
@@ -271,6 +256,10 @@ typedef struct
     }dpData;
 } WAR_DATA;
 
+typedef struct {
+    NvU8 data[492U]; // total size of DSC_IN/OUTPUT_PARAMS
+} DSC_GENERATE_PPS_OPAQUE_WORKAREA;
+
 /*
  *  Windows testbed compiles are done with warnings as errors
  *  with the maximum warning level.  Here we turn off some
@@ -285,15 +274,6 @@ typedef struct
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
- * @brief Initializes callbacks for print and assert
- *
- * @param[in]   callback   DSC callbacks
- *
- * @returns NVT_STATUS_SUCCESS if successful;
- *          NVT_STATUS_ERR if unsuccessful;
- */
-NVT_STATUS DSC_InitializeCallback(DSC_CALLBACK callback);
 
 /*
  * @brief Calculate PPS parameters based on passed down Sink,
@@ -304,6 +284,8 @@ NVT_STATUS DSC_InitializeCallback(DSC_CALLBACK callback);
  * @param[in]   pWARData       Data required for providing WAR for issues
  * @param[in]   availableBandwidthBitsPerSecond      Available bandwidth for video
  *                                                   transmission(After FEC/Downspread overhead consideration)
+ * @param[in]   pOpaqueWorkarea  Scratch buffer of sufficient size pre-allocated
+                                 by client for DSC PPS calculations use
  * @param[out]  pps                 Calculated PPS parameter.
  *                                  The data can be send to SetDscPpsData* methods directly.
  * @param[out]  pBitsPerPixelX16    Bits per pixel multiplied by 16
@@ -315,8 +297,40 @@ NVT_STATUS DSC_GeneratePPS(const DSC_INFO *pDscInfo,
                            const MODESET_INFO *pModesetInfo,
                            const WAR_DATA *pWARData,
                            NvU64 availableBandwidthBitsPerSecond,
+                           DSC_GENERATE_PPS_OPAQUE_WORKAREA *pOpaqueWorkarea,
                            NvU32 pps[DSC_MAX_PPS_SIZE_DWORD],
                            NvU32 *pBitsPerPixelX16);
+
+/*
+ * @brief       Calculate PPS parameters and slice count mask based on passed down 
+ *              Sink, GPU capability and modeset info
+ *
+ *
+ * @param[in]   pDscInfo       Includes Sink and GPU DSC capabilities
+ * @param[in]   pModesetInfo   Modeset related information
+ * @param[in]   pWARData       Data required for providing WAR for issues
+ * @param[in]   availableBandwidthBitsPerSecond      Available bandwidth for video
+ *                                                   transmission(After FEC/Downspread overhead consideration)
+ * @param[out]  pps                 Calculated PPS parameter.
+ *                                  The data can be send to SetDscPpsData* methods directly.
+ * @param[out]  pBitsPerPixelX16    Bits per pixel multiplied by 16
+ * @param[out]  pSliceCountMask     Mask of all slice counts supported by the mode.
+ *
+ * @returns NVT_STATUS_SUCCESS if successful;
+ *          NVT_STATUS_ERR if unsuccessful;
+ *          In case this returns failure consider that PPS is not possible.
+ */
+NVT_STATUS
+DSC_GeneratePPSWithSliceCountMask
+(
+    const DSC_INFO *pDscInfo,
+    const MODESET_INFO *pModesetInfo,
+    const WAR_DATA *pWARData,
+    NvU64 availableBandwidthBitsPerSecond,
+    NvU32 pps[DSC_MAX_PPS_SIZE_DWORD],
+    NvU32 *pBitsPerPixelX16,
+    NvU32 *sliceCountMask
+);
 
 #ifdef __cplusplus
 }

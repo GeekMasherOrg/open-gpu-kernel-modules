@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2018-2021 NVIDIA Corporation
+    Copyright (c) 2018-2023 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -30,6 +30,14 @@
 #include "uvm_va_space.h"
 #include "uvm_populate_pageable.h"
 
+#if defined(NV_HANDLE_MM_FAULT_HAS_MM_ARG)
+#define UVM_HANDLE_MM_FAULT(vma, addr, flags)       handle_mm_fault(vma->vm_mm, vma, addr, flags)
+#elif defined(NV_HANDLE_MM_FAULT_HAS_PT_REGS_ARG)
+#define UVM_HANDLE_MM_FAULT(vma, addr, flags)       handle_mm_fault(vma, addr, flags, NULL)
+#else
+#define UVM_HANDLE_MM_FAULT(vma, addr, flags)       handle_mm_fault(vma, addr, flags)
+#endif
+
 static bool is_write_populate(struct vm_area_struct *vma, uvm_populate_permissions_t populate_permissions)
 {
     switch (populate_permissions) {
@@ -45,6 +53,34 @@ static bool is_write_populate(struct vm_area_struct *vma, uvm_populate_permissio
     }
 }
 
+static NV_STATUS handle_fault(struct vm_area_struct *vma, unsigned long start, unsigned long vma_num_pages, bool write)
+{
+    NV_STATUS status = NV_OK;
+
+    unsigned long i;
+    unsigned int ret = 0;
+    unsigned int fault_flags = write ? FAULT_FLAG_WRITE : 0;
+
+#if defined(NV_MM_HAS_FAULT_FLAG_REMOTE)
+    fault_flags |= (FAULT_FLAG_REMOTE);
+#endif
+
+    for (i = 0; i < vma_num_pages; i++) {
+        ret = UVM_HANDLE_MM_FAULT(vma, start + (i * PAGE_SIZE), fault_flags);
+        if (ret & VM_FAULT_ERROR) {
+#if defined(NV_VM_FAULT_TO_ERRNO_PRESENT)
+            int err = vm_fault_to_errno(ret, fault_flags);
+            status = errno_to_nv_status(err);
+#else
+            status = errno_to_nv_status(-EFAULT);
+#endif
+            break;
+        }
+    }
+
+    return status;
+}
+
 NV_STATUS uvm_populate_pageable_vma(struct vm_area_struct *vma,
                                     unsigned long start,
                                     unsigned long length,
@@ -54,7 +90,7 @@ NV_STATUS uvm_populate_pageable_vma(struct vm_area_struct *vma,
 {
     unsigned long vma_num_pages;
     unsigned long outer = start + length;
-    const bool is_writable = is_write_populate(vma, populate_permissions);
+    unsigned int gup_flags = is_write_populate(vma, populate_permissions) ? FOLL_WRITE : 0;
     struct mm_struct *mm = vma->vm_mm;
     unsigned long vm_flags = vma->vm_flags;
     bool uvm_managed_vma;
@@ -97,7 +133,14 @@ NV_STATUS uvm_populate_pageable_vma(struct vm_area_struct *vma,
     if (uvm_managed_vma)
         uvm_record_unlock_mmap_lock_read(mm);
 
-    ret = NV_GET_USER_PAGES_REMOTE(NULL, mm, start, vma_num_pages, is_writable, 0, pages, NULL);
+    status = handle_fault(vma, start, vma_num_pages, !!(gup_flags & FOLL_WRITE));
+    if (status != NV_OK)
+        goto out;
+
+    if (touch)
+        ret = NV_PIN_USER_PAGES_REMOTE(mm, start, vma_num_pages, gup_flags, pages, NULL);
+    else
+        ret = NV_GET_USER_PAGES_REMOTE(mm, start, vma_num_pages, gup_flags, pages, NULL);
 
     if (uvm_managed_vma)
         uvm_record_lock_mmap_lock_read(mm);
@@ -114,7 +157,7 @@ NV_STATUS uvm_populate_pageable_vma(struct vm_area_struct *vma,
 
             for (i = 0; i < ret; i++) {
                 UVM_ASSERT(pages[i]);
-                put_page(pages[i]);
+                NV_UNPIN_USER_PAGE(pages[i]);
             }
         }
 
@@ -127,7 +170,7 @@ NV_STATUS uvm_populate_pageable_vma(struct vm_area_struct *vma,
 
         for (i = 0; i < vma_num_pages; i++) {
             uvm_touch_page(pages[i]);
-            put_page(pages[i]);
+            NV_UNPIN_USER_PAGE(pages[i]);
         }
     }
 
@@ -158,7 +201,7 @@ NV_STATUS uvm_populate_pageable(struct mm_struct *mm,
     // VMAs are validated and populated one at a time, since they may have
     // different protection flags
     // Validation of VM_SPECIAL flags is delegated to get_user_pages
-    for (; vma->vm_start <= prev_end; vma = vma->vm_next) {
+    for (; vma && vma->vm_start <= prev_end; vma = find_vma_intersection(mm, prev_end, end)) {
         NV_STATUS status = uvm_populate_pageable_vma(vma, start, end - start, min_prot, touch, populate_permissions);
 
         if (status != NV_OK)

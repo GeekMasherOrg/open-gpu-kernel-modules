@@ -66,6 +66,14 @@ static NV_STATUS test_tracker_completion(uvm_va_space_t *va_space)
     NV_STATUS status = NV_OK;
     uvm_spin_loop_t spin;
 
+    // TODO: Bug 4008734: [UVM][HCC] Extend secure tracking semaphore mechanism
+    //                     to all semaphore
+    // This test allocates semaphore in vidmem and then releases it from the CPU
+    // SEC2 channels cannot target semaphores in vidmem. Moreover, CPU cannot
+    // directly release values to vidmem for CE channels.
+    if (g_uvm_global.conf_computing_enabled)
+        return NV_OK;
+
     gpu = uvm_va_space_find_first_gpu(va_space);
     TEST_CHECK_RET(gpu != NULL);
 
@@ -83,6 +91,13 @@ static NV_STATUS test_tracker_completion(uvm_va_space_t *va_space)
         uvm_for_each_pool(pool, gpu->channel_manager) {
             uvm_channel_t *channel;
 
+            // Skip WLC channels as they are used for secure work launch
+            if (uvm_channel_pool_is_wlc(pool))
+                continue;
+
+            // Skip LCIC channels as those can't accept pushes
+            if (uvm_channel_pool_is_lcic(pool))
+                continue;
             uvm_for_each_channel_in_pool(channel, pool) {
                 uvm_push_t push;
                 NvU64 semaphore_gpu_va;
@@ -214,6 +229,9 @@ static NV_STATUS test_tracker_basic(uvm_va_space_t *va_space)
         uvm_for_each_pool(pool, gpu->channel_manager) {
             uvm_channel_t *channel;
 
+            // Skip LCIC channels as those can't accept pushes
+            if (uvm_channel_pool_is_lcic(pool))
+                continue;
             uvm_for_each_channel_in_pool(channel, pool) {
                 uvm_push_t push;
                 status = uvm_push_begin_on_channel(channel, &push, "Test push");

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,6 +23,8 @@
 
 #include "kernel/gpu/fifo/kernel_channel_group.h"
 #include "kernel/gpu/fifo/kernel_fifo.h"
+#include "platform/sli/sli.h"
+#include "containers/eheap_old.h"
 
 #include "ctrl/ctrla06c.h"  // NVA06C_CTRL_INTERLEAVE_LEVEL_*
 
@@ -147,7 +149,9 @@ kchangrpInit_IMPL
     }
 
     // Determine initial runlist for this TSG, using engine type if provided
-    pKernelChannelGroup->runlistId = kchangrpGetDefaultRunlist_HAL(pGpu, pKernelChannelGroup);
+    pKernelChannelGroup->runlistId = kfifoGetDefaultRunlist_HAL(pGpu,
+        pKernelFifo,
+        pKernelChannelGroup->engineType);
 
     if (kfifoIsPerRunlistChramEnabled(pKernelFifo))
     {
@@ -158,7 +162,7 @@ kchangrpInit_IMPL
         //
         NV_ASSERT_OK_OR_RETURN(
             kfifoEngineInfoXlate_HAL(pGpu, pKernelFifo,
-                                     ENGINE_INFO_TYPE_NV2080,
+                                     ENGINE_INFO_TYPE_RM_ENGINE_TYPE,
                                      pKernelChannelGroup->engineType,
                                      ENGINE_INFO_TYPE_RUNLIST,
                                      &runlistId));
@@ -371,7 +375,7 @@ kchangrpDestroy_IMPL
         //
         NV_ASSERT_OK_OR_RETURN(
             kfifoEngineInfoXlate_HAL(pGpu, pKernelFifo,
-                                     ENGINE_INFO_TYPE_NV2080,
+                                     ENGINE_INFO_TYPE_RM_ENGINE_TYPE,
                                      pKernelChannelGroup->engineType,
                                      ENGINE_INFO_TYPE_RUNLIST,
                                      &runlistId));
@@ -417,18 +421,21 @@ kchangrpDestroy_IMPL
     kfifoChannelListDestroy(pGpu, pKernelFifo, pKernelChannelGroup->pChanList);
     pKernelChannelGroup->pChanList= NULL;
 
-    // Remove this from the <grIPD, PCHGRP> that we maintain in OBJFIFO
-    pKernelChannelGroupTemp = mapFind(pChidMgr->pChanGrpTree, pKernelChannelGroup->grpID);
-    if (pKernelChannelGroupTemp == NULL)
+    if (pChidMgr != NULL)
     {
-        NV_PRINTF(LEVEL_ERROR, "Could not find channel group %d\n",
-                  pKernelChannelGroup->grpID);
-        return NV_ERR_OBJECT_NOT_FOUND;
-    }
-    mapRemove(pChidMgr->pChanGrpTree, pKernelChannelGroupTemp);
+        // Remove this from the <grIPD, PCHGRP> that we maintain in OBJFIFO
+        pKernelChannelGroupTemp = mapFind(pChidMgr->pChanGrpTree, pKernelChannelGroup->grpID);
+        if (pKernelChannelGroupTemp == NULL)
+        {
+            NV_PRINTF(LEVEL_ERROR, "Could not find channel group %d\n",
+                      pKernelChannelGroup->grpID);
+            return NV_ERR_OBJECT_NOT_FOUND;
+        }
+        mapRemove(pChidMgr->pChanGrpTree, pKernelChannelGroupTemp);
 
-    // Release the free grpID
-    kfifoChidMgrFreeChannelGroupHwID(pGpu, pKernelFifo, pChidMgr, pKernelChannelGroup->grpID);
+        // Release the free grpID
+        kfifoChidMgrFreeChannelGroupHwID(pGpu, pKernelFifo, pChidMgr, pKernelChannelGroup->grpID);
+    }
 
     //
     // Free the method buffer if applicable
@@ -733,3 +740,4 @@ kchangrpGetEngineContextMemDesc_IMPL
 
     return NV_OK;
 }
+

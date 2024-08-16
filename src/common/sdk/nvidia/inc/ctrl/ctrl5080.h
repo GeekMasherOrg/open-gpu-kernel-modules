@@ -26,11 +26,8 @@
 
 //
 // This file was generated with FINN, an NVIDIA coding tool.
-// Source file: ctrl/ctrl5080.finn
+// Source file:      ctrl/ctrl5080.finn
 //
-
-
-
 
 #include "ctrl/ctrlxxxx.h"
 #include "ctrl/ctrl0080/ctrl0080dma.h"  /* NV0080_CTRL_DMA_FILL_PTE_MEM_PARAMS */
@@ -190,6 +187,14 @@ typedef struct NV5080_CTRL_DEFERRED_API_V2_PARAMS {
         NV_DECLARE_ALIGNED(NV2080_CTRL_FIFO_UPDATE_CHANNEL_INFO_PARAMS ChannelInfoUpdate, 8);
     } api_bundle;
 } NV5080_CTRL_DEFERRED_API_V2_PARAMS;
+
+/* This is just used to forward NV5080_CTRL_CMD_DEFERRED_API_V2 from kernel RM
+ * to physical RM.  The parameters are unchanged. */
+#define NV5080_CTRL_CMD_DEFERRED_API_INTERNAL (0x50800104) /* finn: Evaluated from "(FINN_NV50_DEFERRED_API_CLASS_DEFERRED_INTERFACE_ID << 8) | NV5080_CTRL_DEFERRED_API_INTERNAL_PARAMS_MESSAGE_ID" */
+
+#define NV5080_CTRL_DEFERRED_API_INTERNAL_PARAMS_MESSAGE_ID (0x4U)
+
+typedef NV5080_CTRL_DEFERRED_API_V2_PARAMS NV5080_CTRL_DEFERRED_API_INTERNAL_PARAMS;
 
 /*
  * NV5080_CTRL_CMD_REMOVE_API

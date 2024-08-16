@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2020-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2020-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -104,7 +104,7 @@ typedef struct nv_ioctl_rm_api_version
 
 #define NV_RM_API_VERSION_CMD_STRICT         0
 #define NV_RM_API_VERSION_CMD_RELAXED       '1'
-#define NV_RM_API_VERSION_CMD_OVERRIDE      '2'
+#define NV_RM_API_VERSION_CMD_QUERY         '2'
 
 #define NV_RM_API_VERSION_REPLY_UNRECOGNIZED 0
 #define NV_RM_API_VERSION_REPLY_RECOGNIZED   1
@@ -141,5 +141,11 @@ typedef struct nv_ioctl_export_to_dma_buf_fd
     NvU64       sizes[NV_DMABUF_EXPORT_MAX_HANDLES] NV_ALIGN_BYTES(8);
     NvU32       status;
 } nv_ioctl_export_to_dma_buf_fd_t;
+
+typedef struct nv_ioctl_wait_open_complete
+{
+    int rc;
+    NvU32 adapterStatus;
+} nv_ioctl_wait_open_complete_t;
 
 #endif

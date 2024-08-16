@@ -88,15 +88,11 @@
 
 #include "nv-kthread-q.h"
 
-
-    #if NV_KTHREAD_Q_SUPPORTS_AFFINITY() == 1 && defined(NV_CPUMASK_OF_NODE_PRESENT)
+    #if defined(NV_CPUMASK_OF_NODE_PRESENT)
         #define UVM_THREAD_AFFINITY_SUPPORTED() 1
     #else
         #define UVM_THREAD_AFFINITY_SUPPORTED() 0
     #endif
-
-
-
 
 // The ARM arch lacks support for cpumask_of_node() until kernel 4.7. It was
 // added via commit1a2db300348b ("arm64, numa: Add NUMA support for arm64
@@ -112,15 +108,21 @@ static inline const struct cpumask *uvm_cpumask_of_node(int node)
 #endif
 }
 
-
-    #if defined(CONFIG_HMM_MIRROR) && defined(CONFIG_DEVICE_PRIVATE) && defined(NV_MAKE_DEVICE_EXCLUSIVE_RANGE_PRESENT)
+    #if defined(CONFIG_HMM_MIRROR) && defined(CONFIG_DEVICE_PRIVATE) && defined(NV_MIGRATE_DEVICE_RANGE_PRESENT)
         #define UVM_IS_CONFIG_HMM() 1
     #else
         #define UVM_IS_CONFIG_HMM() 0
     #endif
 
-
-
+// ATS prefetcher uses hmm_range_fault() to query residency information.
+// hmm_range_fault() needs CONFIG_HMM_MIRROR. To detect racing CPU invalidates
+// of memory regions while hmm_range_fault() is being called, MMU interval
+// notifiers are needed.
+    #if defined(CONFIG_HMM_MIRROR) && defined(NV_MMU_INTERVAL_NOTIFIER)
+        #define UVM_HMM_RANGE_FAULT_SUPPORTED() 1
+    #else
+        #define UVM_HMM_RANGE_FAULT_SUPPORTED() 0
+    #endif
 
 // Various issues prevent us from using mmu_notifiers in older kernels. These
 // include:
@@ -136,25 +138,17 @@ static inline const struct cpumask *uvm_cpumask_of_node(int node)
 // present if we see the callback.
 //
 // The callback was added in commit 0f0a327fa12cd55de5e7f8c05a70ac3d047f405e,
-// v3.19 (2014-11-13).
-
-    #if defined(NV_MMU_NOTIFIER_OPS_HAS_INVALIDATE_RANGE)
+// v3.19 (2014-11-13) and renamed in commit 1af5a8109904.
+    #if defined(NV_MMU_NOTIFIER_OPS_HAS_INVALIDATE_RANGE) || \
+        defined(NV_MMU_NOTIFIER_OPS_HAS_ARCH_INVALIDATE_SECONDARY_TLBS)
         #define UVM_CAN_USE_MMU_NOTIFIERS() 1
     #else
         #define UVM_CAN_USE_MMU_NOTIFIERS() 0
     #endif
 
-
-
-
-
-
-
-
-
 // See bug 1707453 for further details about setting the minimum kernel version.
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 32)
-#  error This driver does not support kernels older than 2.6.32!
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+#  error This driver does not support kernels older than 3.10!
 #endif
 
 #if !defined(VM_RESERVED)
@@ -232,11 +226,7 @@ static inline const struct cpumask *uvm_cpumask_of_node(int node)
 #define __GFP_NORETRY 0
 #endif
 
-#define NV_UVM_GFP_FLAGS (GFP_KERNEL | __GFP_NORETRY)
-
-#if !defined(NV_ADDRESS_SPACE_INIT_ONCE_PRESENT)
-    void address_space_init_once(struct address_space *mapping);
-#endif
+#define NV_UVM_GFP_FLAGS (GFP_KERNEL)
 
 // Develop builds define DEBUG but enable optimization
 #if defined(DEBUG) && !defined(NVIDIA_UVM_DEVELOP)
@@ -369,21 +359,45 @@ static inline NvU64 NV_GETTIME(void)
              (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 #endif
 
-// bitmap_clear was added in 2.6.33 via commit c1a2a962a2ad103846e7950b4591471fabecece7
-#if !defined(NV_BITMAP_CLEAR_PRESENT)
-    static inline void bitmap_clear(unsigned long *map, unsigned int start, int len)
+#if !defined(NV_FIND_NEXT_BIT_WRAP_PRESENT)
+    static inline unsigned long find_next_bit_wrap(const unsigned long *addr, unsigned long size, unsigned long offset)
     {
-        unsigned int index = start;
-        for_each_set_bit_from(index, map, start + len)
-            __clear_bit(index, map);
+        unsigned long bit = find_next_bit(addr, size, offset);
+
+        if (bit < size)
+            return bit;
+
+        bit = find_first_bit(addr, offset);
+        return bit < offset ? bit : size;
+    }
+#endif
+
+// for_each_set_bit_wrap and __for_each_wrap were introduced in v6.1-rc1
+// by commit 4fe49b3b97c2640147c46519c2a6fdb06df34f5f
+#if !defined(for_each_set_bit_wrap)
+static inline unsigned long __for_each_wrap(const unsigned long *bitmap,
+                                            unsigned long size,
+                                            unsigned long start,
+                                            unsigned long n)
+{
+    unsigned long bit;
+
+    if (n > start) {
+        bit = find_next_bit(bitmap, size, n);
+        if (bit < size)
+            return bit;
+
+        n = 0;
     }
 
-    static inline void bitmap_set(unsigned long *map, unsigned int start, int len)
-    {
-        unsigned int index = start;
-        for_each_clear_bit_from(index, map, start + len)
-            __set_bit(index, map);
-    }
+    bit = find_next_bit(bitmap, start, n);
+    return bit < start ? bit : size;
+}
+
+#define for_each_set_bit_wrap(bit, addr, size, start)                   \
+    for ((bit) = find_next_bit_wrap((addr), (size), (start));           \
+         (bit) < (size);                                                \
+         (bit) = __for_each_wrap((addr), (size), (start), (bit) + 1))
 #endif
 
 // Added in 2.6.24
@@ -442,6 +456,7 @@ static inline NvU64 NV_GETTIME(void)
 // 654672d4ba1a6001c365833be895f9477c4d5eab ("locking/atomics:
 // Add _{acquire|release|relaxed}() variants of some atomic operations") in v4.3
 // (2015-08-06).
+// TODO: Bug 3849079: We always use this definition on newer kernels.
 #ifndef atomic_read_acquire
     #define atomic_read_acquire(p) smp_load_acquire(&(p)->counter)
 #endif
@@ -450,21 +465,28 @@ static inline NvU64 NV_GETTIME(void)
     #define atomic_set_release(p, v) smp_store_release(&(p)->counter, v)
 #endif
 
+// atomic_long_read_acquire and atomic_long_set_release were added in commit
+// b5d47ef9ea5c5fe31d7eabeb79f697629bd9e2cb ("locking/atomics: Switch to
+// generated atomic-long") in v5.1 (2019-05-05).
+// TODO: Bug 3849079: We always use these definitions on newer kernels.
+#define atomic_long_read_acquire uvm_atomic_long_read_acquire
+static inline long uvm_atomic_long_read_acquire(atomic_long_t *p)
+{
+    long val = atomic_long_read(p);
+    smp_mb();
+    return val;
+}
+
+#define atomic_long_set_release uvm_atomic_long_set_release
+static inline void uvm_atomic_long_set_release(atomic_long_t *p, long v)
+{
+    smp_mb();
+    atomic_long_set(p, v);
+}
 
 // Added in 3.11
 #ifndef PAGE_ALIGNED
     #define PAGE_ALIGNED(addr) (((addr) & (PAGE_SIZE - 1)) == 0)
-#endif
-
-// Added in 2.6.37 via commit e1ca7788dec6773b1a2bce51b7141948f2b8bccf
-#if !defined(NV_VZALLOC_PRESENT)
-    static inline void *vzalloc(unsigned long size)
-    {
-        void *p = vmalloc(size);
-        if (p)
-            memset(p, 0, size);
-        return p;
-    }
 #endif
 
 // Changed in 3.17 via commit 743162013d40ca612b4cb53d3a200dff2d9ab26e
@@ -522,27 +544,11 @@ static bool radix_tree_empty(struct radix_tree_root *tree)
 #endif
 #endif
 
-#if !defined(NV_USLEEP_RANGE_PRESENT)
-static void __sched usleep_range(unsigned long min, unsigned long max)
-{
-    unsigned min_msec = min / 1000;
-    unsigned max_msec = max / 1000;
-
-    if (min_msec != 0)
-        msleep(min_msec);
-    else if (max_msec != 0)
-        msleep(max_msec);
-    else
-        msleep(1);
-}
-#endif
-
 typedef struct
 {
     struct mem_cgroup *new_memcg;
     struct mem_cgroup *old_memcg;
 } uvm_memcg_context_t;
-
 
     // cgroup support requires set_active_memcg(). set_active_memcg() is an
     // inline function that requires int_active_memcg per-cpu symbol when called
@@ -585,29 +591,35 @@ typedef struct
         }
     #endif // NV_IS_EXPORT_SYMBOL_PRESENT_int_active_memcg
 
+#if defined(NVCPU_X86) || defined(NVCPU_X86_64)
+  #include <asm/pgtable.h>
+  #include <asm/pgtable_types.h>
+#endif
 
+#if !defined(PAGE_KERNEL_NOENC)
+  #define PAGE_KERNEL_NOENC PAGE_KERNEL
+#endif
 
+// uvm_pgprot_decrypted is a GPL-aware version of pgprot_decrypted that returns
+// the given input when UVM cannot use GPL symbols, or pgprot_decrypted is not
+// defined. Otherwise, the function is equivalent to pgprot_decrypted. UVM only
+// depends on pgprot_decrypted when the driver is allowed to use GPL symbols:
+// both AMD's SEV and Intel's TDX are only supported in conjunction with OpenRM.
+//
+// It is safe to invoke uvm_pgprot_decrypted in KVM + AMD SEV-SNP guests, even
+// if the call is not required, because pgprot_decrypted(PAGE_KERNEL_NOENC) ==
+// PAGE_KERNEL_NOENC.
+//
+// pgprot_decrypted was added by commit 21729f81ce8a ("x86/mm: Provide general
+// kernel support for memory encryption") in v4.14 (2017-07-18)
+static inline pgprot_t uvm_pgprot_decrypted(pgprot_t prot)
+{
+#if defined(pgprot_decrypted)
+        return pgprot_decrypted(prot);
+#endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   return prot;
+}
 
 // Commit 1dff8083a024650c75a9c961c38082473ceae8cf (v4.7).
 //
@@ -619,4 +631,5 @@ typedef struct
   #include <asm/page.h>
   #define page_to_virt(x)    __va(PFN_PHYS(page_to_pfn(x)))
 #endif
+
 #endif // _UVM_LINUX_H

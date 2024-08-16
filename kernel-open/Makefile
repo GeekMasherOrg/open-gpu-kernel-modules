@@ -28,7 +28,7 @@ else
   else
     KERNEL_UNAME ?= $(shell uname -r)
     KERNEL_MODLIB := /lib/modules/$(KERNEL_UNAME)
-    KERNEL_SOURCES := $(shell test -d $(KERNEL_MODLIB)/source && echo $(KERNEL_MODLIB)/source || echo $(KERNEL_MODLIB)/build)
+    KERNEL_SOURCES := $(shell ((test -d $(KERNEL_MODLIB)/source && echo $(KERNEL_MODLIB)/source) || (test -d $(KERNEL_MODLIB)/build/source && echo $(KERNEL_MODLIB)/build/source)) || echo $(KERNEL_MODLIB)/build)
   endif
 
   KERNEL_OUTPUT := $(KERNEL_SOURCES)
@@ -42,7 +42,11 @@ else
   else
     KERNEL_UNAME ?= $(shell uname -r)
     KERNEL_MODLIB := /lib/modules/$(KERNEL_UNAME)
-    ifeq ($(KERNEL_SOURCES), $(KERNEL_MODLIB)/source)
+    # $(filter patter...,text) - Returns all whitespace-separated words in text that
+    # do match any of the pattern words, removing any words that do not match.
+    # Set the KERNEL_OUTPUT only if either $(KERNEL_MODLIB)/source or
+    # $(KERNEL_MODLIB)/build/source path matches the KERNEL_SOURCES.
+    ifneq ($(filter $(KERNEL_SOURCES),$(KERNEL_MODLIB)/source $(KERNEL_MODLIB)/build/source),)
       KERNEL_OUTPUT := $(KERNEL_MODLIB)/build
       KBUILD_PARAMS := KBUILD_OUTPUT=$(KERNEL_OUTPUT)
     endif
@@ -57,12 +61,15 @@ else
       -e 's/armv[0-7]\w\+/arm/' \
       -e 's/aarch64/arm64/' \
       -e 's/ppc64le/powerpc/' \
+      -e 's/riscv64/riscv/' \
     )
   endif
 
   NV_KERNEL_MODULES ?= $(wildcard nvidia nvidia-uvm nvidia-vgpu-vfio nvidia-modeset nvidia-drm nvidia-peermem)
   NV_KERNEL_MODULES := $(filter-out $(NV_EXCLUDE_KERNEL_MODULES), \
                                     $(NV_KERNEL_MODULES))
+  INSTALL_MOD_DIR ?= kernel/drivers/video
+
   NV_VERBOSE ?=
   SPECTRE_V2_RETPOLINE ?= 0
 
@@ -74,7 +81,7 @@ else
   KBUILD_PARAMS += NV_KERNEL_SOURCES=$(KERNEL_SOURCES)
   KBUILD_PARAMS += NV_KERNEL_OUTPUT=$(KERNEL_OUTPUT)
   KBUILD_PARAMS += NV_KERNEL_MODULES="$(NV_KERNEL_MODULES)"
-  KBUILD_PARAMS += INSTALL_MOD_DIR=kernel/drivers/video
+  KBUILD_PARAMS += INSTALL_MOD_DIR="$(INSTALL_MOD_DIR)"
   KBUILD_PARAMS += NV_SPECTRE_V2=$(SPECTRE_V2_RETPOLINE)
 
   .PHONY: modules module clean clean_conftest modules_install

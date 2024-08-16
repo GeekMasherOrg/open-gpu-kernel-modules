@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2013-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -26,7 +26,9 @@
 #include "mem_mgr/gpu_vaspace.h"
 #include "gpu/mmu/kern_gmmu.h"
 #include "kernel/gpu/nvlink/kernel_nvlink.h"
-#include "nvRmReg.h"  // NV_REG_STR_RM_*
+#include "kernel/gpu/fifo/kernel_fifo.h"
+#include "gpu/mem_mgr/mem_desc.h"
+#include "nvrm_registry.h"  // NV_REG_STR_RM_*
 
 #include "mmu/gmmu_fmt.h"
 #include "mmu/mmu_fmt.h"
@@ -192,6 +194,11 @@ _gmmuWalkCBLevelAlloc
         // Get the alignment from the parent PDE address shift.
         pPde = gmmuFmtGetPde(pFmt, pParent, subLevel);
 
+        if (pPde->version == GMMU_FMT_VERSION_3)
+        {
+            alignment = NVBIT(pPde->fldAddr.shift);
+        }
+        else
         {
             alignment = NVBIT(pPde->fldAddrSysmem.shift);
         }
@@ -279,7 +286,7 @@ _gmmuWalkCBLevelAlloc
 
     // Add memList end entry.
     memPoolList[memPoolListCount++] = ADDR_UNKNOWN;
-    NV_ASSERT(memPoolListCount <= NV_ARRAY_ELEMENTS32(memPoolList));
+    NV_ASSERT(memPoolListCount <= NV_ARRAY_ELEMENTS(memPoolList));
 
     // MEMDESC flags
     memDescFlags = MEMDESC_FLAGS_LOCKLESS_SYSMEM_ALLOC  |
@@ -329,7 +336,8 @@ _gmmuWalkCBLevelAlloc
                         break;
                     }
                 case ADDR_SYSMEM:
-                    status = memdescAlloc(pMemDescTemp);
+                    memdescTagAlloc(status, NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_143, 
+                                    pMemDescTemp);
                     break;
                 default:
                     NV_ASSERT_OR_GOTO(0, done);
@@ -345,6 +353,7 @@ _gmmuWalkCBLevelAlloc
                     status = _gmmuScrubMemDesc(pGpu, pMemDescTemp);
                 }
 
+                memdescSetName(pGpu, pMemDescTemp, NV_RM_SURF_NAME_PAGE_TABLE, mmuFmtConvertLevelIdToSuffix(pLevelFmt));
                 break;
             }
             j++;
@@ -403,10 +412,9 @@ _gmmuWalkCBLevelAlloc
                   mmuFmtLevelVirtAddrHi(pLevelFmt, vaLimit));
 #else // NV_PRINTF_STRINGS_ALLOWED
         NV_PRINTF(LEVEL_INFO,
-                  "[GPU%u]:  [Packed: %c] %sPA 0x%llX (0x%X bytes) for VA 0x%llX-0x%llX\n",
+                  "[GPU%u]:  [Packed: %c] PA 0x%llX (0x%X bytes) for VA 0x%llX-0x%llX\n",
                   pUserCtx->pGpu->gpuInstance,
                   bPacked ? 'Y' : 'N',
-                  bMirror ? _gmmuUVMMirroringDirString[i] : ' ',
                   memdescGetPhysAddr(pMemDesc[i], AT_GPU, 0), newMemSize,
                   mmuFmtLevelVirtAddrLo(pLevelFmt, vaBase),
                   mmuFmtLevelVirtAddrHi(pLevelFmt, vaLimit));
@@ -718,6 +726,19 @@ _gmmuWalkCBUpdatePde
             const GMMU_FIELD_ADDRESS *pFldAddr = gmmuFmtPdePhysAddrFld(pPde, aperture);
             const NvU64               physAddr = memdescGetPhysAddr(pSubMemDesc, AT_GPU, 0);
 
+            if (pFmt->version == GMMU_FMT_VERSION_3)
+            {
+                NvU32 pdePcfHw    = 0;
+                NvU32 pdePcfSw    = 0;
+
+                pdePcfSw |= gvaspaceIsAtsEnabled(pGVAS) ? (1 << SW_MMU_PCF_ATS_ALLOWED_IDX) : 0;
+                pdePcfSw |= memdescGetVolatility(pSubMemDesc) ? (1 << SW_MMU_PCF_UNCACHED_IDX) : 0;
+
+                NV_ASSERT_OR_RETURN((kgmmuTranslatePdePcfFromSw_HAL(pKernelGmmu, pdePcfSw, &pdePcfHw) == NV_OK),
+                                      NV_ERR_INVALID_ARGUMENT);
+                nvFieldSet32(&pPde->fldPdePcf, pdePcfHw, entry.v8);
+            }
+            else
             {
                 nvFieldSetBool(&pPde->fldVolatile, memdescGetVolatility(pSubMemDesc), entry.v8);
             }
@@ -857,23 +878,32 @@ _gmmuWalkCBFillEntries
             {
                 const GMMU_FMT_FAMILY  *pFam = kgmmuFmtGetFamily(pKernelGmmu, pFmt->version);
                 const GMMU_ENTRY_VALUE *pSparseEntry;
+                // Fake sparse entry is needed for GH100 in CC mode for PDE2-PDE4. Ref: Bug 3341692
+                NvU8 *pFakeSparse = kgmmuGetFakeSparseEntry_HAL(pGpu, pKernelGmmu, pLevelFmt);
 
-                // Select sparse entry template based on number of sub-levels.
-                if (pLevelFmt->numSubLevels > 1)
+                if (pFakeSparse != NULL)
                 {
-                    pSparseEntry = &pFam->sparsePdeMulti;
-                }
-                else if (pLevelFmt->numSubLevels == 1)
-                {
-                    pSparseEntry = &pFam->sparsePde;
+                    pSparseEntry = (const GMMU_ENTRY_VALUE *) pFakeSparse;
                 }
                 else
                 {
-                    if (kbusIsFlaDummyPageEnabled(pKernelBus) &&
-                        (pUserCtx->pGVAS->flags & VASPACE_FLAGS_FLA))
-                        pSparseEntry = &pUserCtx->pGpuState->flaDummyPage.pte;
+                    // Select sparse entry template based on number of sub-levels.
+                    if (pLevelFmt->numSubLevels > 1)
+                    {
+                        pSparseEntry = &pFam->sparsePdeMulti;
+                    }
+                    else if (pLevelFmt->numSubLevels == 1)
+                    {
+                        pSparseEntry = &pFam->sparsePde;
+                    }
                     else
-                        pSparseEntry = &pFam->sparsePte;
+                    {
+                        if (kbusIsFlaDummyPageEnabled(pKernelBus) &&
+                            (pUserCtx->pGVAS->flags & VASPACE_FLAGS_FLA))
+                            pSparseEntry = &pUserCtx->pGpuState->flaDummyPage.pte;
+                        else
+                            pSparseEntry = &pFam->sparsePte;
+                    }
                 }
 
                 // Copy sparse template to each entry.

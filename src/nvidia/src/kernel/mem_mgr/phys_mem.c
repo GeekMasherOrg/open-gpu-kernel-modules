@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2018-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2018-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,7 +31,7 @@
 #include "gpu/mem_mgr/mem_mgr.h"
 #include "gpu/mem_mgr/heap.h"
 #include "gpu/mem_sys/kern_mem_sys.h"
-#include "gpu/device/device.h"
+#include "gpu/bus/kern_bus.h"
 #include "rmapi/client.h"
 #include "virtualization/hypervisor/hypervisor.h"
 
@@ -60,13 +60,13 @@ physmemConstruct_IMPL
     HWRESOURCE_INFO                       hwResource     = {0};
     NvU64                                 heapBase;
     NvU64                                 trueLength;
-    RS_PRIV_LEVEL                         privLevel = pCallContext->secInfo.privLevel;
     NvBool                                bCompressedKind;
     NvU32                                 attr           = DRF_DEF(OS32, _ATTR, _PHYSICALITY, _CONTIGUOUS) |
                                                            DRF_DEF(OS32, _ATTR, _LOCATION, _VIDMEM);
     NvU32                                 attr2          = 0;
     const MEMORY_SYSTEM_STATIC_CONFIG    *pMemorySystemConfig =
         kmemsysGetStaticConfig(pGpu, GPU_GET_KERNEL_MEMORY_SYSTEM(pGpu));
+    KernelBus                            *pKernelBus     = GPU_GET_KERNEL_BUS(pGpu);
 
     NV_ASSERT_OR_RETURN(RMCFG_FEATURE_KERNEL_RM, NV_ERR_NOT_SUPPORTED);
 
@@ -82,9 +82,6 @@ physmemConstruct_IMPL
     // get mappings when needed.
     //
     //
-
-    if (!(rmclientIsAdminByHandle(hClient, privLevel) || hypervisorCheckForObjectAccess(hClient)))
-        return NV_ERR_INSUFFICIENT_PERMISSIONS;
 
     pAllocParams = pParams->pAllocParams;
     bCompressedKind = memmgrIsKind_HAL(pMemoryManager, FB_IS_KIND_COMPRESSIBLE, pAllocParams->format);
@@ -106,7 +103,19 @@ physmemConstruct_IMPL
             attr2 |= DRF_DEF(OS32, _ATTR2, _PAGE_SIZE_HUGE, _2MB);
             break;
         default:
-            attr |= DRF_DEF(OS32, _ATTR, _PAGE_SIZE, _BIG);
+            if (bCompressedKind && kbusIsStaticBar1Enabled(pGpu, pKernelBus))
+            {
+                NV_ASSERT_OR_RETURN(kgmmuIsHugePageSupported(pKernelGmmu), NV_ERR_INVALID_ARGUMENT);
+                attr |= DRF_DEF(OS32, _ATTR, _PAGE_SIZE, _HUGE);
+                attr2 |= DRF_DEF(OS32, _ATTR2, _PAGE_SIZE_HUGE, _2MB);
+
+                NV_PRINTF(LEVEL_INFO,
+                          "Default to use 2MB page size on this compressed vidmem for the static bar1\n");
+            }
+            else
+            {
+                attr |= DRF_DEF(OS32, _ATTR, _PAGE_SIZE, _BIG);
+            }
             break;
     }
 
@@ -168,47 +177,68 @@ physmemConstruct_IMPL
     }
 
     status = memCreateMemDesc(pGpu, &pMemDesc, ADDR_FBMEM, 0, trueLength, attr, attr2);
+
+    NV_CHECK_OK_OR_RETURN(LEVEL_ERROR, status);
+
     memdescDescribe(pMemDesc, ADDR_FBMEM, heapBase, trueLength);
 
-    if (status == NV_OK)
+    memdescSetPteKind(pMemDesc, pAllocParams->format);
+    if (bCompressedKind)
+        memdescSetHwResId(pMemDesc, hwResource.hwResId);
+
+    // Track internally as NV01_MEMORY_LOCAL_USER to share regular FB mem code paths
+    NV_CHECK_OK_OR_GOTO(status, LEVEL_ERROR,
+                        memConstructCommon(pMemory, NV01_MEMORY_LOCAL_USER, 0, pMemDesc, 0,
+                                NULL, attr, attr2, 0, 0, NVOS32_MEM_TAG_NONE,
+                                bCompressedKind ? &hwResource : NULL),
+                        cleanup_mem);
+
+    if (!IS_GSP_CLIENT(pGpu))
     {
-        memdescSetPteKind(pMemDesc, pAllocParams->format);
-        if (bCompressedKind)
-            memdescSetHwResId(pMemDesc, hwResource.hwResId);
-
-        // Track internally as NV01_MEMORY_LOCAL_USER to share regular FB mem code paths
-        status = memConstructCommon(pMemory, NV01_MEMORY_LOCAL_USER, 0, pMemDesc, 0,
-                                    NULL, attr, attr2, 0, 0, NVOS32_MEM_TAG_NONE,
-                                    bCompressedKind ? &hwResource : NULL);
-        if (status == NV_OK)
+        //
+        // vGPU:
+        //
+        // Since vGPU does all real hardware management in the
+        // host, if we are in guest OS (where IS_VIRTUAL(pGpu) is true),
+        // do an RPC to the host to do the hardware update.
+        //
+        NV_RM_RPC_ALLOC_LOCAL_USER(pGpu, hClient, hParent, hMemory, pMemDesc, trueLength,
+                                   attr, attr2, pAllocParams->format, status);
+        if (status != NV_OK)
         {
-            if (!IS_GSP_CLIENT(pGpu))
-            {
-                //
-                // vGPU:
-                //
-                // Since vGPU does all real hardware management in the
-                // host, if we are in guest OS (where IS_VIRTUAL(pGpu) is true),
-                // do an RPC to the host to do the hardware update.
-                //
-                NV_RM_RPC_ALLOC_LOCAL_USER(pGpu, hClient, hParent, hMemory, pMemDesc, trueLength,
-                                           attr, attr2, pAllocParams->format, status);
-                if (status != NV_OK)
-                {
-                    // cleanup on an RPC failure
-                    memDestructCommon(pMemory);
-                    memdescDestroy(pMemDesc);
-                    return status;
-                }
+            // cleanup on an RPC failure
+            goto cleanup_common;
+        }
 
-                pMemory->bRpcAlloc = NV_TRUE;
-            }
-        }
-        else
-        {
-            memdescDestroy(pMemDesc);
-        }
+        pMemory->bRpcAlloc = NV_TRUE;
     }
+
+    if (bCompressedKind && kbusIsStaticBar1Enabled(pGpu, pKernelBus))
+    {
+        NV_CHECK_OK_OR_GOTO(status, LEVEL_ERROR,
+                            kbusUpdateStaticBar1VAMapping_HAL(pGpu, pKernelBus,
+                                pMemDesc, 0, memdescGetSize(pMemDesc), NV_FALSE),
+                            cleanup_rpc);
+
+        memdescSetFlag(pMemDesc,
+                       MEMDESC_FLAGS_RESTORE_PTE_KIND_ON_FREE, NV_TRUE);
+    }
+
+    return NV_OK;
+
+cleanup_rpc:
+    {
+        NV_STATUS rpcstatus = NV_OK;;
+        NV_RM_RPC_FREE(pGpu, hClient, hParent, hMemory, rpcstatus);
+        NV_ASSERT(rpcstatus == NV_OK);
+    }
+
+cleanup_common:
+    memDestructCommon(pMemory);
+
+cleanup_mem:
+    memdescDestroy(pMemDesc);
+
     return status;
 }
 

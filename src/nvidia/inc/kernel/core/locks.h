@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 1993-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 1993-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,6 +28,7 @@
 
 // Forward declarations
 typedef struct OBJSYS OBJSYS;
+typedef struct NV0000_CTRL_SYSTEM_GET_LOCK_TIMES_PARAMS NV0000_CTRL_SYSTEM_GET_LOCK_TIMES_PARAMS;
 
 typedef enum
 {
@@ -79,17 +80,17 @@ typedef struct
     NvU32 index;
 } LOCK_TRACE_INFO;
 
-#define INSERT_LOCK_TRACE(plti, ra, t, d16, d32, ti, irql, pr, ts)      \
-{                                                               \
-    (plti)->entries[(plti)->index].callerRA = (NvUPtr)ra;       \
-    (plti)->entries[(plti)->index].type = t;                    \
-    (plti)->entries[(plti)->index].data16.value = d16;          \
-    (plti)->entries[(plti)->index].data32.value = d32;          \
-    (plti)->entries[(plti)->index].threadId = ti;               \
-    (plti)->entries[(plti)->index].timestamp = ts;              \
-    (plti)->entries[(plti)->index].bHighIrql = irql;            \
-    (plti)->entries[(plti)->index].priority = pr;               \
-    (plti)->index = ((plti)->index + 1) % MAX_TRACE_LOCK_CALLS; \
+#define INSERT_LOCK_TRACE(plti, ra, t, d16, d32, ti, irql, pr, ts) \
+{                                                                  \
+    (plti)->entries[(plti)->index].callerRA = (NvUPtr)ra;          \
+    (plti)->entries[(plti)->index].type = t;                       \
+    (plti)->entries[(plti)->index].data16.value = d16;             \
+    (plti)->entries[(plti)->index].data32.value = d32;             \
+    (plti)->entries[(plti)->index].threadId = ti;                  \
+    (plti)->entries[(plti)->index].timestamp = ts;                 \
+    (plti)->entries[(plti)->index].bHighIrql = irql;               \
+    (plti)->entries[(plti)->index].priority = pr;                  \
+    (plti)->index = ((plti)->index + 1) % MAX_TRACE_LOCK_CALLS;    \
 }
 
 //
@@ -105,13 +106,12 @@ typedef struct
 #define GPUS_LOCK_FLAGS_NONE                            (0x00000000)
 // conditional acquire; if lock is already held then return error
 #define GPU_LOCK_FLAGS_COND_ACQUIRE                     NVBIT(0)
-// acquire the lock in read (shared) mode, if applicable
-#define GPU_LOCK_FLAGS_READ                             NVBIT(1)
 // Attempt acquire even if it potentially violates the locking order
 // But do not block in a way that could cause a deadlock
-#define GPU_LOCK_FLAGS_SAFE_LOCK_UPGRADE                NVBIT(2)
-// Old name alias
-#define GPUS_LOCK_FLAGS_COND_ACQUIRE                    GPU_LOCK_FLAGS_COND_ACQUIRE
+#define GPU_LOCK_FLAGS_SAFE_LOCK_UPGRADE                NVBIT(1)
+// Additionally acquire the GPU alloc lock (implied if locking all GPUs)
+// to prevent the set of lockable GPUs from changing
+#define GPU_LOCK_FLAGS_LOCK_ALLOC                       NVBIT(2)
 
 //
 // RM Lock Related Functions
@@ -163,6 +163,7 @@ NvBool     rmGpuLockIsOwner(void);
 NvU32      rmGpuLocksGetOwnedMask(void);
 NvBool     rmGpuLockIsHidden(OBJGPU *);
 NV_STATUS  rmGpuLockSetOwner(OS_THREAD_HANDLE);
+void       rmGpuLockGetTimes(NV0000_CTRL_SYSTEM_GET_LOCK_TIMES_PARAMS *);
 NV_STATUS  rmGpuGroupLockAcquire(NvU32, GPU_LOCK_GRP_ID, NvU32, NvU32, GPU_MASK *);
 NV_STATUS  rmGpuGroupLockRelease(GPU_MASK, NvU32);
 NvBool     rmGpuGroupLockIsOwner(NvU32, GPU_LOCK_GRP_ID, GPU_MASK*);
@@ -189,17 +190,9 @@ void       rmIntrMaskLockRelease(OBJGPU *pGpu, NvU64 oldIrql);
 #define rmInitLockMetering()
 #define rmDestroyLockMetering()
 
-//
-// RM API lock definitions are handled by the rmapi module. Providing legacy
-// rmApiLockXxx interface for temporary compatibility. CORERM-1370
-//
 #include "rmapi/rmapi.h"
 
 #define API_LOCK_FLAGS_NONE                             RMAPI_LOCK_FLAGS_NONE
 #define API_LOCK_FLAGS_COND_ACQUIRE                     RMAPI_LOCK_FLAGS_COND_ACQUIRE
-
-#define rmApiLockAcquire(flags, module)                 (rmapiLockAcquire(flags, module))
-static NV_INLINE NV_STATUS rmApiLockRelease(void)       {rmapiLockRelease(); return NV_OK;}
-#define rmApiLockIsOwner()                              (rmapiLockIsOwner())
 
 #endif // LOCKS_H

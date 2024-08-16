@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 1993-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 1993-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -101,10 +101,6 @@ namespace DisplayPort
 
     class MainLink : virtual public Object
     {
-    private:
-        virtual void initializeRegkeyDatabase() = 0;
-        virtual void applyRegkeyOverrides() = 0;
-
     public:
         virtual bool physicalLayerSetTestPattern(PatternInfo * patternInfo) = 0;
 
@@ -129,7 +125,7 @@ namespace DisplayPort
         virtual NvU32 getSorIndex() = 0;
         virtual bool isInbandStereoSignalingSupported() = 0;
 
- 
+
         virtual bool isEDP() = 0;
         virtual bool supportMSAOverMST() = 0;
         virtual bool isForceRmEdidRequired() = 0;
@@ -147,6 +143,9 @@ namespace DisplayPort
 
         // Check if we should skip power down eDP when head detached.
         virtual bool skipPowerdownEdpPanelWhenHeadDetach() = 0;
+
+        // Check if we should skip reading PCON Caps in MST case.
+        virtual bool isMSTPCONCapsReadDisabled() = 0;
 
         // Get GPU DSC capabilities
         virtual void getDscCaps(bool *pbDscSupported = NULL,
@@ -175,8 +174,7 @@ namespace DisplayPort
         virtual bool hasIncreasedWatermarkLimits() = 0;
         virtual bool hasMultistream() = 0;
         virtual bool isPC2Disabled() = 0;
-        virtual bool isDP1_2Supported() = 0;
-        virtual bool isDP1_4Supported() = 0;
+        virtual NvU32 getGpuDpSupportedVersions() = 0;
         virtual bool isStreamCloningEnabled() = 0;
         virtual NvU32 maxLinkRateSupported() = 0;
         virtual bool isLttprSupported() = 0;
@@ -247,7 +245,7 @@ namespace DisplayPort
         virtual NvU32 getRootDisplayId() = 0;
         virtual NvU32 allocDisplayId() = 0;
         virtual bool freeDisplayId(NvU32 displayId) = 0;
-        virtual void queryGPUCapability() = 0;
+        virtual bool queryGPUCapability() {return false;}
         virtual bool queryAndUpdateDfpParams() = 0;
         virtual bool getEdpPowerData(bool *panelPowerOn, bool *bDPCDPowerStateD0) = 0;
         virtual bool vrrRunEnablementStage(unsigned stage, NvU32 *status) = 0;

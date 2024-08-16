@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2008-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2008-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -130,6 +130,7 @@ typedef NvU8 FLCN_STATUS;
 // because that will affect other binaries and their signatures
 //
 #define FLCN_ERR_CTXSW_ERROR                                               (0x4EU)
+#define FLCN_ERR_SE_SNPKA_HW_CRYPTO_OPERATION_FAILED                       (0x4FU)
 
 // VPR SEC2 task errors
 #define FLCN_ERR_VPR_APP_INVALID_REQUEST_END_ADDR                          (0x51U)
@@ -159,6 +160,7 @@ typedef NvU8 FLCN_STATUS;
 #define FLCN_ERR_FREQ_NOT_SUPPORTED                                        (0x73U)
 #define FLCN_ERR_INVALID_SOURCE                                            (0x74U)
 #define FLCN_ERR_NOT_INITIALIZED                                           (0x75U)
+#define FLCN_ERR_CLOCK_NOT_SETTLED                                         (0x76U)
 
 // HDCP2.2 Errors
 #define FLCN_ERR_HDCP22_GETDKEY_FAILED                                     (0x80U)
@@ -232,7 +234,10 @@ typedef NvU8 FLCN_STATUS;
 #define FLCN_ERR_HS_APM_FECS_NOT_HALTED                                    (0xCEU)
 #define FLCN_ERR_HS_APM_SCRATCH_PLM_INVALID                                (0xCFU)
 #define FLCN_ERR_HS_APM_SCRATCH_INIT_INVALID                               (0xD0U)
-
+#define FLCN_ERR_HS_INVALID_KEY                                            (0xD1U)
+#define FLCN_ERR_HS_SWKG_INVALID_SIGNATURE                                 (0xD2U)
+#define FLCN_ERR_HS_SCP_LIB_DMHASH_FAILED                                  (0xD3U)
+#define FLCN_ERR_HS_SCP_LIB_AESKDF_FAILED                                  (0xD4U)
 
 //
 // BAR0/CSB Priv Read/Write Error Handling Defines
@@ -259,6 +264,7 @@ typedef NvU8 FLCN_STATUS;
 // Warnings.
 #define FLCN_WARN_NOTHING_TO_DO                                            (0xD0U)
 #define FLCN_WARN_NOT_QUERIED                                              (0xD1U)
+#define FLCN_WARN_DATA_NOT_AVAILABLE                                       (0xD2U)
 
 // Queue handling Errors
 #define FLCN_ERR_QUEUE_MGMT_INVALID_UNIT_ID                                (0xE0U)
@@ -266,6 +272,7 @@ typedef NvU8 FLCN_STATUS;
 #define FLCN_ERR_QUEUE_TASK_INVALID_EVENT_TYPE                             (0xE2U)
 #define FLCN_ERR_QUEUE_TASK_INVALID_UNIT_ID                                (0xE3U)
 #define FLCN_ERR_QUEUE_TASK_INVALID_CMD_TYPE                               (0xE4U)
+#define FLCN_ERR_QUEUE_TASK_SLOT_NOT_AVAILABLE                             (0xE5U)
 
 // Posted write errors
 #define FLCN_ERR_POSTED_WRITE_FAILURE                                      (0xF0U)
@@ -275,5 +282,18 @@ typedef NvU8 FLCN_STATUS;
 
 // Lane Margining errors
 #define FLCN_ERR_LM_INVALID_RECEIVER_NUMBER                                (0xF5U)
+
+// APM errors
+#define FLCN_ERR_APM_NOT_FUSED_FOR_EK                                      (0xF6U)
+#define FLCN_ERR_APM_BROM_SIGN_FAIL                                        (0xF7U)
+// Booter Reload on SEC2-RTOS errors
+#define FLCN_ERR_AUTH_GSP_RM_HANDOFF_FAILED                                (0xF8U)
+#define FLCN_ERR_INVALID_WPRMETA_MAGIC_OR_REVISION                         (0xF9U)
+
+// Arithmetic errors
+#define FLCN_ERR_ARITHMETIC_OVERFLOW                                       (0xFAU)
+
+// Pri errros
+#define FLCN_ERR_OUTSTANDING_PRI_ERROR                                     (0xFBU)
 
 #endif // FLCNRETVAL_H

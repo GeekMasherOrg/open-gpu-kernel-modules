@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2009-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2009-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,11 +27,8 @@
 
 //
 // This file was generated with FINN, an NVIDIA coding tool.
-// Source file: ctrl/ctrl0080/ctrl0080bif.finn
+// Source file:      ctrl/ctrl0080/ctrl0080bif.finn
 //
-
-
-
 
 #include "ctrl/ctrl0080/ctrl0080base.h"
 
@@ -65,10 +62,16 @@ typedef struct NV0080_CTRL_BIF_RESET_PARAMS {
     NvU32 flags;
 } NV0080_CTRL_BIF_RESET_PARAMS;
 
-#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE                2:0
-#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_SW_RESET    (0x00000001)
-#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_SBR         (0x00000002)
-#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_FUNDAMENTAL (0x00000003)
+
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE                  4:0
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_SW_RESET         0x1
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_SBR              0x2
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_FUNDAMENTAL      0x3
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_BOOT_DEVICE_FUSE 0x4
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_BOOT_DEVICE      0x5
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_PEX              0x6
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_OOBHUB_TRIGGER   0x7
+#define NV0080_CTRL_BIF_RESET_FLAGS_TYPE_BASE             0x8
 
 /*
  * NV0080_CTRL_BIF_GET_DMA_BASE_SYSMEM_ADDR
@@ -84,7 +87,7 @@ typedef struct NV0080_CTRL_BIF_RESET_PARAMS {
  *   NV_ERR_INVALID_OBJECT_PARENT
  */
 
-#define NV0080_CTRL_CMD_BIF_GET_DMA_BASE_SYSMEM_ADDR (0x800103) /* finn: Evaluated from "(FINN_NV01_DEVICE_0_BIF_INTERFACE_ID << 8) | NV0080_CTRL_BIF_GET_DMA_BASE_SYSMEM_ADDR_PARAMS_MESSAGE_ID" */
+#define NV0080_CTRL_CMD_BIF_GET_DMA_BASE_SYSMEM_ADDR      (0x800103) /* finn: Evaluated from "(FINN_NV01_DEVICE_0_BIF_INTERFACE_ID << 8) | NV0080_CTRL_BIF_GET_DMA_BASE_SYSMEM_ADDR_PARAMS_MESSAGE_ID" */
 
 #define NV0080_CTRL_BIF_GET_DMA_BASE_SYSMEM_ADDR_PARAMS_MESSAGE_ID (0x3U)
 
@@ -116,6 +119,48 @@ typedef struct NV0080_CTRL_BIF_SET_ASPM_FEATURE_PARAMS {
 #define NV0080_CTRL_BIF_ASPM_FEATURE_DT_L1                 1:1
 #define NV0080_CTRL_BIF_ASPM_FEATURE_DT_L1_ENABLED   0x000000001
 #define NV0080_CTRL_BIF_ASPM_FEATURE_DT_L1_DISABLED  0x000000000
+
+/*
+ * NV0080_CTRL_BIF_ASPM_CYA_UPDATE
+ *
+ * bL0sEnable
+ * bL1Enable
+ *    ASPM CYA update by client
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ */
+
+#define NV0080_CTRL_CMD_BIF_ASPM_CYA_UPDATE          (0x800105) /* finn: Evaluated from "(FINN_NV01_DEVICE_0_BIF_INTERFACE_ID << 8) | NV0080_CTRL_BIF_ASPM_CYA_UPDATE_PARAMS_MESSAGE_ID" */
+
+#define NV0080_CTRL_BIF_ASPM_CYA_UPDATE_PARAMS_MESSAGE_ID (0x5U)
+
+typedef struct NV0080_CTRL_BIF_ASPM_CYA_UPDATE_PARAMS {
+    NvBool bL0sEnable;
+    NvBool bL1Enable;
+} NV0080_CTRL_BIF_ASPM_CYA_UPDATE_PARAMS;
+
+/*
+ * NV0080_CTRL_BIF_ASPM_FEATURE
+ *
+ * pciePowerControlMask
+ * pciePowerControlIdentifiedKeyOrder
+ * pciePowerControlIdentifiedKeyLocation
+ *    ASPM and RTD3 enable/disable information
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ */
+
+#define NV0080_CTRL_CMD_BIF_GET_PCIE_POWER_CONTROL_MASK (0x800106) /* finn: Evaluated from "(FINN_NV01_DEVICE_0_BIF_INTERFACE_ID << 8) | NV0080_CTRL_CMD_BIF_GET_PCIE_POWER_CONTROL_MASK_PARAMS_MESSAGE_ID" */
+
+#define NV0080_CTRL_CMD_BIF_GET_PCIE_POWER_CONTROL_MASK_PARAMS_MESSAGE_ID (0x6U)
+
+typedef struct NV0080_CTRL_CMD_BIF_GET_PCIE_POWER_CONTROL_MASK_PARAMS {
+    NvU32 pciePowerControlMask;
+    NvU32 pciePowerControlIdentifiedKeyOrder;
+    NvU32 pciePowerControlIdentifiedKeyLocation;
+} NV0080_CTRL_CMD_BIF_GET_PCIE_POWER_CONTROL_MASK_PARAMS;
 
 /* _ctrl0080bif_h_ */
 

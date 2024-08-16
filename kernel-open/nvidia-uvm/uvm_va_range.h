@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2015-2022 NVIDIA Corporation
+    Copyright (c) 2015-2024 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -141,7 +141,7 @@ typedef struct
     // process is sharing the UVM file descriptor.
     uvm_vma_wrapper_t *vma_wrapper;
 
-    // UVM managed allocations only use this policy and never use the policy
+    // Managed allocations only use this policy and never use the policy
     // stored in the va_block for HMM allocations.
     uvm_va_policy_t policy;
 
@@ -188,7 +188,7 @@ typedef struct
     // GPU which owns the allocation. For sysmem, this is the GPU that the
     // sysmem was originally allocated under. For the allocation to remain valid
     // we need to prevent the GPU from going away, similarly to P2P mapped
-    // memory.
+    // memory and to EGM memory.
     //
     // This field is not used for sparse mappings as they don't have an
     // allocation and, hence, owning GPU.
@@ -207,6 +207,10 @@ typedef struct
     // This field is not used for sparse mappings as they don't have physical
     // backing.
     bool is_sysmem;
+
+    // EGM memory. If true is_sysmem also has to be true and owning_gpu
+    // has to be valid.
+    bool is_egm;
 
     // GPU page tables mapping the allocation
     uvm_page_table_range_vec_t pt_range_vec;
@@ -248,6 +252,10 @@ typedef struct
     // range because each GPU is able to map a completely different set of
     // allocations to the same VA range.
     uvm_ext_gpu_range_tree_t gpu_ranges[UVM_ID_MAX_GPUS];
+
+    // Dynamically allocated page mask allocated in
+    // uvm_va_range_create_external() and used and freed in uvm_free().
+    uvm_processor_mask_t *retained_mask;
 } uvm_va_range_external_t;
 
 // va_range state when va_range.type == UVM_VA_RANGE_TYPE_CHANNEL. This
@@ -537,6 +545,13 @@ NV_STATUS uvm_va_range_split(uvm_va_range_t *existing_va_range,
 
 // TODO: Bug 1707562: Merge va ranges
 
+static uvm_va_range_t *uvm_va_range_container(uvm_range_tree_node_t *node)
+{
+    if (!node)
+        return NULL;
+    return container_of(node, uvm_va_range_t, node);
+}
+
 // Returns the va_range containing addr, if any
 uvm_va_range_t *uvm_va_range_find(uvm_va_space_t *va_space, NvU64 addr);
 
@@ -800,6 +815,7 @@ uvm_va_block_t *uvm_va_range_block_next(uvm_va_range_t *va_range, uvm_va_block_t
 //          mode.
 NV_STATUS uvm_va_range_set_preferred_location(uvm_va_range_t *va_range,
                                               uvm_processor_id_t preferred_location,
+                                              int preferred_cpu_nid,
                                               struct mm_struct *mm,
                                               uvm_tracker_t *out_tracker);
 
@@ -850,24 +866,6 @@ NV_STATUS uvm_va_range_unset_read_duplication(uvm_va_range_t *va_range, struct m
 // Create and destroy vma wrappers
 uvm_vma_wrapper_t *uvm_vma_wrapper_alloc(struct vm_area_struct *vma);
 void uvm_vma_wrapper_destroy(uvm_vma_wrapper_t *vma_wrapper);
-
-// Return the memory access permissions for the vma bound to the given VA range
-uvm_prot_t uvm_va_range_logical_prot(uvm_va_range_t *va_range);
-
-// Check if processor_id is allowed to access the managed va_range with
-// access_type permissions. Return values:
-//
-// NV_ERR_INVALID_ADDRESS       The VA range is logically dead (zombie)
-// NV_ERR_INVALID_ACCESS_TYPE   The vma corresponding to the VA range does not
-//                              allow access_type permissions, or migration is
-//                              disallowed and processor_id cannot access the
-//                              range remotely (UVM-Lite).
-// NV_ERR_INVALID_OPERATION     The access would violate the policies specified
-//                              by UvmPreventMigrationRangeGroups.
-NV_STATUS uvm_va_range_check_logical_permissions(uvm_va_range_t *va_range,
-                                                 uvm_processor_id_t processor_id,
-                                                 uvm_fault_type_t access_type,
-                                                 bool allow_migration);
 
 static uvm_va_policy_t *uvm_va_range_get_policy(uvm_va_range_t *va_range)
 {

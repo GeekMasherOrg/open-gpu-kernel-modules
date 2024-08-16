@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2016-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2016-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -35,6 +35,8 @@
 // headers. TODO: consider sharing a list of forward struct declarations with
 // e.g. eng_desc.h?
 //
+
+struct KernelPmu;
 struct KernelGsp;
 struct KernelSec2;
 
@@ -54,19 +56,28 @@ struct BINDATA_STORAGE_PVT_ALL
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_TU102.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA100.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_AD102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GB100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMCDesc_GH100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMC_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmCcFmcGfwProdSigned_GH100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU116.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA100.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterLoadUcode_AD102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_AD102.c"
 #include "g_bindata_ksec2GetBinArchiveBlUcode_TU102.c"
+#include "g_bindata_ksec2GetBinArchiveSecurescrubUcode_AD10X.c"
 
 #undef BINDATA_INCLUDE_STORAGE_PVT_DECL
 #undef BINDATA_NO_SEGMENTS
@@ -80,19 +91,28 @@ struct BINDATA_STORAGE_PVT_ALL
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_TU102.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA100.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_AD102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GB100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMCDesc_GH100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMC_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmCcFmcGfwProdSigned_GH100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU116.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA100.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterLoadUcode_AD102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_AD102.c"
 #include "g_bindata_ksec2GetBinArchiveBlUcode_TU102.c"
+#include "g_bindata_ksec2GetBinArchiveSecurescrubUcode_AD10X.c"
 
 #undef BINDATA_INCLUDE_DATA
 
@@ -104,19 +124,28 @@ BINDATA_CONST struct BINDATA_STORAGE_PVT_ALL g_bindata_pvt =
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_TU102.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA100.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_AD102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GB100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMCDesc_GH100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMC_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmCcFmcGfwProdSigned_GH100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU116.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA100.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterLoadUcode_AD102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_AD102.c"
 #include "g_bindata_ksec2GetBinArchiveBlUcode_TU102.c"
+#include "g_bindata_ksec2GetBinArchiveSecurescrubUcode_AD10X.c"
 
 #undef BINDATA_INCLUDE_STORAGE_PVT_DEFN
 #undef BINDATA_NO_SEGMENTS
@@ -131,19 +160,28 @@ const NvU32 g_bindata_pvt_count = sizeof(g_bindata_pvt) / sizeof(BINDATA_STORAGE
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_TU102.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA100.c"
 #include "g_bindata_kgspGetBinArchiveGspRmBoot_GA102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_AD102.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmBoot_GB100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMCDesc_GH100.c"
+#include "g_bindata_kgspGetBinArchiveConcatenatedFMC_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwDebugSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GH100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmFmcGfwProdSigned_GB100.c"
+#include "g_bindata_kgspGetBinArchiveGspRmCcFmcGfwProdSigned_GH100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterLoadUcode_GA102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU102.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_TU116.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA100.c"
-#include "g_bindata_kgspGetBinArchiveBooterReloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterLoadUcode_AD102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU102.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_TU116.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA100.c"
 #include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_GA102.c"
+#include "g_bindata_kgspGetBinArchiveBooterUnloadUcode_AD102.c"
 #include "g_bindata_ksec2GetBinArchiveBlUcode_TU102.c"
+#include "g_bindata_ksec2GetBinArchiveSecurescrubUcode_AD10X.c"
 
 #undef BINDATA_INCLUDE_FUNCTION
 #undef BINDATA_INCLUDE_ARCHIVE

@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2013-2021 NVIDIA Corporation
+    Copyright (c) 2013-2023 NVIDIA Corporation
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@ static int uvm_debug_prints = UVM_IS_DEBUG() || UVM_IS_DEVELOP();
 module_param(uvm_debug_prints, int, S_IRUGO|S_IWUSR);
 MODULE_PARM_DESC(uvm_debug_prints, "Enable uvm debug prints.");
 
-bool uvm_debug_prints_enabled()
+bool uvm_debug_prints_enabled(void)
 {
     return uvm_debug_prints != 0;
 }
@@ -47,6 +47,33 @@ int uvm_enable_builtin_tests __read_mostly = 0;
 module_param(uvm_enable_builtin_tests, int, S_IRUGO);
 MODULE_PARM_DESC(uvm_enable_builtin_tests,
                  "Enable the UVM built-in tests. (This is a security risk)");
+
+// Default to release asserts being enabled.
+int uvm_release_asserts __read_mostly = 1;
+
+// Make the module param writable so that release asserts can be enabled or
+// disabled at any time by modifying the module parameter.
+module_param(uvm_release_asserts, int, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(uvm_release_asserts, "Enable uvm asserts included in release builds.");
+
+// Default to failed release asserts not dumping stack.
+int uvm_release_asserts_dump_stack __read_mostly = 0;
+
+// Make the module param writable so that dumping the stack can be enabled and
+// disabled at any time by modifying the module parameter.
+module_param(uvm_release_asserts_dump_stack, int, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(uvm_release_asserts_dump_stack, "dump_stack() on failed UVM release asserts.");
+
+// Default to failed release asserts not setting the global UVM error.
+int uvm_release_asserts_set_global_error __read_mostly = 0;
+
+// Make the module param writable so that setting the global fatal error can be
+// enabled and disabled at any time by modifying the module parameter.
+module_param(uvm_release_asserts_set_global_error, int, S_IRUGO|S_IWUSR);
+MODULE_PARM_DESC(uvm_release_asserts_set_global_error, "Set UVM global fatal error on failed release asserts.");
+
+// A separate flag to enable setting global error, to be used by tests only.
+bool uvm_release_asserts_set_global_error_for_tests __read_mostly = false;
 
 //
 // Convert kernel errno codes to corresponding NV_STATUS
@@ -206,18 +233,6 @@ unsigned uvm_get_stale_thread_id(void)
     return (unsigned)task_pid_vnr(current);
 }
 
-//
-// A simple security rule for allowing access to UVM user space memory: if you
-// are the same user as the owner of the memory, or if you are root, then you
-// are granted access. The idea is to allow debuggers and profilers to work, but
-// without opening up any security holes.
-//
-NvBool uvm_user_id_security_check(uid_t euidTarget)
-{
-    return (NV_CURRENT_EUID() == euidTarget) ||
-           (UVM_ROOT_UID == euidTarget);
-}
-
 void on_uvm_test_fail(void)
 {
     (void)NULL;
@@ -303,9 +318,10 @@ int format_uuid_to_buffer(char *buffer, unsigned bufferLength, const NvProcessor
     unsigned i;
     unsigned dashMask = 1 << 4 | 1 << 6 | 1 << 8 | 1 << 10;
 
-    memcpy(buffer, "UVM-GPU-", 8);
     if (bufferLength < (8 /*prefix*/+ 16 * 2 /*digits*/ + 4 * 1 /*dashes*/ + 1 /*null*/))
         return *buffer = 0;
+
+    memcpy(buffer, "UVM-GPU-", 8);
 
     for (i = 0; i < 16; i++) {
         *str++ = uvm_digit_to_hex(pUuidStruct->uuid[i] >> 4);

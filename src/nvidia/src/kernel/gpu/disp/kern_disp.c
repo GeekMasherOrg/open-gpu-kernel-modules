@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -42,21 +42,24 @@
 #include "gpu/disp/head/kernel_head.h"
 #include "gpu/disp/disp_objs.h"
 #include "gpu_mgr/gpu_mgr.h"
-#include "objtmr.h"
+#include "gpu/timer/objtmr.h"
 #include "core/locks.h"
+#include "ctrl/ctrl402c.h"
+#include "platform/acpi_common.h"
+#include "nvrm_registry.h"
+#include "gpu/mem_mgr/mem_mgr.h"
 
 #include "kernel/gpu/intr/engine_idx.h"
+
+#include "gpu/external_device/external_device.h"
 
 #include "ctrl/ctrl2080.h"
 
 #include "class/cl5070.h"
 #include "class/cl917a.h"
 #include "class/cl917b.h"
-#include "class/cl917c.h"
-#include "class/cl917d.h"
 #include "class/cl917e.h"
 #include "class/cl927c.h"
-#include "class/cl927d.h"
 #include "class/cl947d.h"
 #include "class/cl957d.h"
 #include "class/cl977d.h"
@@ -73,8 +76,14 @@
 #include "class/clc67b.h"
 #include "class/clc67d.h"
 #include "class/clc67e.h"
+#include "class/clc77f.h" //NVC77F_ANY_CHANNEL_DMA
+
+#include "class/clc77d.h"
 
 #include "gpu/disp/rg_line_callback/rg_line_callback.h"
+
+#include "rmapi/rmapi_utils.h"
+#include "class/cl0073.h"
 
 NV_STATUS
 kdispConstructEngine_IMPL(OBJGPU        *pGpu,
@@ -157,11 +166,8 @@ kdispDestructInstMem_IMPL
     KernelDisplay *pKernelDisplay
 )
 {
-    if (pKernelDisplay->pInst != NULL)
-    {
-        objDelete(pKernelDisplay->pInst);
-        pKernelDisplay->pInst = NULL;
-    }
+    objDelete(pKernelDisplay->pInst);
+    pKernelDisplay->pInst = NULL;
 }
 
 /*! Constructor for Kernel head */
@@ -200,12 +206,64 @@ kdispDestructKhead_IMPL
 
     for (headIdx = 0; headIdx < OBJ_MAX_HEADS; headIdx++)
     {
-        if (pKernelDisplay->pKernelHead[headIdx] != NULL)
-        {
-            objDelete(pKernelDisplay->pKernelHead[headIdx]);
-            pKernelDisplay->pKernelHead[headIdx] = NULL;
-        }
+        objDelete(pKernelDisplay->pKernelHead[headIdx]);
+        pKernelDisplay->pKernelHead[headIdx] = NULL;
     }
+}
+
+NV_STATUS
+kdispAllocateCommonHandle_IMPL
+(
+    OBJGPU *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV_STATUS rmStatus;
+    NvHandle  hClient;
+    NvHandle  hDevice;
+    NvHandle  hSubdevice;
+    NvHandle  hSubscription = NV01_NULL_OBJECT;
+    RM_API   *pRmApi        = rmapiGetInterface(RMAPI_GPU_LOCK_INTERNAL);
+
+    rmStatus = rmapiutilAllocClientAndDeviceHandles(pRmApi, pGpu, &hClient,
+                                                    &hDevice, &hSubdevice);
+    NV_ASSERT_OR_RETURN(rmStatus == NV_OK, NV_FALSE);
+
+    rmStatus = pRmApi->AllocWithSecInfo(pRmApi, hClient, hDevice, &hSubscription,
+                                        NV04_DISPLAY_COMMON, NULL, 0, RMAPI_ALLOC_FLAGS_NONE,
+                                        NULL, &pRmApi->defaultSecInfo);
+    NV_ASSERT_OR_RETURN(rmStatus == NV_OK, NV_FALSE);
+
+    pKernelDisplay->hInternalClient = hClient;
+    pKernelDisplay->hInternalDevice = hDevice;
+    pKernelDisplay->hInternalSubdevice = hSubdevice;
+    pKernelDisplay->hDispCommonHandle = hSubscription;
+
+    return NV_OK;
+}
+
+void
+kdispDestroyCommonHandle_IMPL
+(
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV_STATUS rmStatus;
+    RM_API   *pRmApi = rmapiGetInterface(RMAPI_GPU_LOCK_INTERNAL);
+
+    rmStatus = pRmApi->FreeWithSecInfo(pRmApi, pKernelDisplay->hInternalClient,
+                                        pKernelDisplay->hDispCommonHandle,
+                                        RMAPI_ALLOC_FLAGS_NONE, &pRmApi->defaultSecInfo);
+    NV_ASSERT(rmStatus == NV_OK);
+
+    rmapiutilFreeClientAndDeviceHandles(pRmApi, &pKernelDisplay->hInternalClient,
+                                        &pKernelDisplay->hInternalDevice,
+                                        &pKernelDisplay->hInternalSubdevice);
+
+    pKernelDisplay->hInternalClient = 0;
+    pKernelDisplay->hInternalDevice = 0;
+    pKernelDisplay->hInternalSubdevice = 0;
+    pKernelDisplay->hDispCommonHandle = 0;
 }
 
 NV_STATUS
@@ -217,6 +275,9 @@ kdispStatePreInitLocked_IMPL(OBJGPU        *pGpu,
     NvU32   hClient = pGpu->hInternalClient;
     NvU32   hSubdevice = pGpu->hInternalSubdevice;
     NV2080_CTRL_INTERNAL_DISPLAY_GET_IP_VERSION_PARAMS ctrlParams;
+
+    if (!gpuFuseSupportsDisplay_HAL(pGpu))
+       return NV_ERR_NOT_SUPPORTED;
 
     status = pRmApi->Control(pRmApi, hClient, hSubdevice,
                              NV2080_CTRL_CMD_INTERNAL_DISPLAY_GET_IP_VERSION,
@@ -232,7 +293,121 @@ kdispStatePreInitLocked_IMPL(OBJGPU        *pGpu,
     // NOTE: KernelDisplay IpVersion _HAL functions can only be called after this point.
     status = gpuInitDispIpHal(pGpu, ctrlParams.ipVersion);
 
+    kdispUpdatePdbAfterIpHalInit(pKernelDisplay);
+
+    kdispInitRegistryOverrides_HAL(pGpu, pKernelDisplay);
+
+    kdispAllocateCommonHandle(pGpu, pKernelDisplay);
+
     return status;
+}
+
+NV_STATUS
+kdispInitBrightcStateLoad_IMPL(OBJGPU *pGpu,
+                               KernelDisplay *pKernelDisplay)
+{
+    NV2080_CTRL_INTERNAL_INIT_BRIGHTC_STATE_LOAD_PARAMS *pBrightcInfo = NULL;
+    NvU32 status = NV_ERR_NOT_SUPPORTED;
+    RM_API *pRmApi = GPU_GET_PHYSICAL_RMAPI(pGpu);
+
+    pBrightcInfo = portMemAllocNonPaged(sizeof(NV2080_CTRL_INTERNAL_INIT_BRIGHTC_STATE_LOAD_PARAMS));
+    if (pBrightcInfo == NULL)
+    {
+        NV_PRINTF(LEVEL_ERROR, "Could not allocate memory for pBrightcInfo\n");
+        return NV_ERR_NO_MEMORY;
+    }
+    portMemSet(pBrightcInfo, 0, sizeof(*pBrightcInfo));
+
+    pBrightcInfo->status = status;
+    if ((pKernelDisplay != NULL) && (pKernelDisplay->pStaticInfo->internalDispActiveMask != 0))
+    {
+        // Fill in the Backlight Method Data.
+        pBrightcInfo->backLightDataSize = sizeof(pBrightcInfo->backLightData);
+        status = osCallACPI_DSM(pGpu, ACPI_DSM_FUNCTION_CURRENT, NV_ACPI_GENERIC_FUNC_GETBACKLIGHT,
+                                (NvU32 *)(pBrightcInfo->backLightData),
+                                &pBrightcInfo->backLightDataSize);
+        pBrightcInfo->status = status;
+    }
+
+    status = pRmApi->Control(pRmApi, pGpu->hInternalClient, pGpu->hInternalSubdevice,
+                    NV2080_CTRL_CMD_INTERNAL_INIT_BRIGHTC_STATE_LOAD,
+                    pBrightcInfo, sizeof(*pBrightcInfo));
+
+    portMemFree(pBrightcInfo);
+
+    return status;
+}
+
+NV_STATUS
+kdispSetupAcpiEdid_IMPL
+(
+    OBJGPU        *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV2080_CTRL_CMD_INTERNAL_SET_STATIC_EDID_DATA_PARAMS *pEdidParams = NULL;
+    RM_API *pRmApi = GPU_GET_PHYSICAL_RMAPI(pGpu);
+    NvU32 status = NV_ERR_GENERIC;
+    NvU32 index;
+
+    pEdidParams = portMemAllocNonPaged(sizeof(NV2080_CTRL_CMD_INTERNAL_SET_STATIC_EDID_DATA_PARAMS));
+    if (pEdidParams == NULL)
+    {
+        NV_PRINTF(LEVEL_ERROR, "Could not allocate memory for pEdidParams\n");
+        return NV_ERR_NO_MEMORY;
+    }
+    portMemSet(pEdidParams, 0, sizeof(*pEdidParams));
+
+    pEdidParams->tableLen = pGpu->acpiMethodData.dodMethodData.acpiIdListLen / sizeof(NvU32);
+
+    for (index = 0; index < pEdidParams->tableLen; index++)
+    {
+        pEdidParams->edidTable[index].bufferSize = MAX_EDID_SIZE_FROM_SBIOS;
+        status = osCallACPI_DDC(pGpu, pGpu->acpiMethodData.dodMethodData.acpiIdList[index],
+                                    pEdidParams->edidTable[index].edidBuffer,
+                                    &pEdidParams->edidTable[index].bufferSize, NV_TRUE);
+        pEdidParams->edidTable[index].acpiId = pGpu->acpiMethodData.dodMethodData.acpiIdList[index];
+        pEdidParams->edidTable[index].status = status;
+    }
+
+    status = pRmApi->Control(pRmApi, pGpu->hInternalClient, pGpu->hInternalSubdevice,
+                    NV2080_CTRL_CMD_INTERNAL_SET_STATIC_EDID_DATA,
+                    pEdidParams, sizeof(*pEdidParams));
+
+    portMemFree(pEdidParams);
+
+    return status;
+}
+
+void
+kdispInitRegistryOverrides_IMPL(OBJGPU        *pGpu,
+                                KernelDisplay *pKernelDisplay)
+{
+    NvU32 data32 = 0;
+
+    if (pKernelDisplay == NULL)
+    {
+        return;
+    }
+
+    if (NV_OK == osReadRegistryDword(pGpu, NV_REG_STR_RM_BUG_2089053_WAR, &data32))
+    {
+        if (data32 == NV_REG_STR_RM_BUG_2089053_WAR_DISABLE)
+        {
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANK_ALWAYS, NV_FALSE);
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANKS_ONLY_ON_HMD_ACTIVE, NV_FALSE);
+        }
+        else if (data32 == NV_REG_STR_RM_BUG_2089053_WAR_ENABLE_ALWAYS)
+        {
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANK_ALWAYS, NV_TRUE);
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANKS_ONLY_ON_HMD_ACTIVE, NV_FALSE);
+        }
+        else if (data32 == NV_REG_STR_RM_BUG_2089053_WAR_ENABLE_ON_HMD_ACTIVE_ONLY)
+        {
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANKS_ONLY_ON_HMD_ACTIVE, NV_TRUE);
+            pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_BUG_2089053_SERIALIZE_AGGRESSIVE_VBLANK_ALWAYS, NV_FALSE);
+        }
+    }
 }
 
 NV_STATUS
@@ -259,12 +434,48 @@ kdispStateInitLocked_IMPL(OBJGPU        *pGpu,
         exit);
 
     pKernelDisplay->pStaticInfo = pStaticInfo;
+    pKernelDisplay->numHeads = pStaticInfo->numHeads;
     pStaticInfo = NULL;
+
+    // Initiate Brightc module state load
+    status = kdispInitBrightcStateLoad_HAL(pGpu, pKernelDisplay);
+    if (status != NV_OK)
+    {
+        NV_PRINTF(LEVEL_ERROR, "rmapi control call for brightc state load failed\n");
+        goto exit;
+    }
+
+    // Set up ACPI DDC data in Physical RM for future usage
+    status = kdispSetupAcpiEdid_HAL(pGpu, pKernelDisplay);
+    if (status != NV_OK)
+    {
+        NV_PRINTF(LEVEL_WARNING, "rmapi control call for acpi child device init failed\n");
+        goto exit;
+    }
 
     if (pKernelDisplay->pInst != NULL)
     {
         NV_CHECK_OK_OR_GOTO(status, LEVEL_ERROR,
                 instmemStateInitLocked(pGpu, pKernelDisplay->pInst), exit);
+    }
+
+    // Initialize any external daughterboards that
+    // might be out there.
+
+    pGpu->i2cPortForExtdev = NV402C_CTRL_NUM_I2C_PORTS;
+
+    if (pKernelDisplay->pStaticInfo->i2cPort == NV402C_CTRL_NUM_I2C_PORTS)
+    {
+        NV_PRINTF(LEVEL_INFO, "Error in getting valid I2Cport for Extdevice or extdevice doesn't exist\n");
+    }
+    else
+    {
+        pGpu->i2cPortForExtdev = pKernelDisplay->pStaticInfo->i2cPort;
+
+        if (NV_OK != gpuExtdevConstruct_HAL(pGpu))
+        {
+            NV_PRINTF(LEVEL_INFO, "gpuExtdevConstruct() failed or not supported\n");
+        }
     }
 
     if (pKernelDisplay->getProperty(pKernelDisplay, PDB_PROP_KDISP_IMP_ENABLE))
@@ -284,6 +495,8 @@ void
 kdispStateDestroy_IMPL(OBJGPU *pGpu,
                        KernelDisplay *pKernelDisplay)
 {
+    extdevDestroy(pGpu);
+
     if (pKernelDisplay->pInst != NULL)
     {
         instmemStateDestroy(pGpu, pKernelDisplay->pInst);
@@ -291,6 +504,112 @@ kdispStateDestroy_IMPL(OBJGPU *pGpu,
 
     portMemFree((void*) pKernelDisplay->pStaticInfo);
     pKernelDisplay->pStaticInfo = NULL;
+
+    kdispDestroyCommonHandle(pKernelDisplay);
+}
+
+NV_STATUS
+kdispAllocateSharedMem_IMPL
+(
+    OBJGPU *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV_STATUS rmStatus;
+    void *address = NULL;
+    RM_API *pRmApi = GPU_GET_PHYSICAL_RMAPI(pGpu);
+    NV_ADDRESS_SPACE addressSpace = ADDR_FBMEM;
+    struct NV0073_CTRL_CMD_SYSTEM_MAP_SHARED_DATA_PARAMS params = {0};
+    NvBool bIsFbBroken = NV_FALSE;
+
+    NV_ASSERT_OR_RETURN(pKernelDisplay->pSharedData == NULL, NV_ERR_INVALID_STATE);
+
+    bIsFbBroken = pGpu->getProperty(pGpu, PDB_PROP_GPU_BROKEN_FB) ||
+                    pGpu->getProperty(pGpu, PDB_PROP_GPU_IS_ALL_INST_IN_SYSMEM);
+    if (bIsFbBroken)
+        addressSpace = ADDR_SYSMEM;
+
+    rmStatus = memdescCreate(&pKernelDisplay->pSharedMemDesc,
+                             pGpu,
+                             sizeof(KernelDisplaySharedMem),
+                             RM_PAGE_SIZE,
+                             NV_TRUE,
+                             addressSpace,
+                             NV_MEMORY_UNCACHED,
+                             MEMDESC_FLAGS_NONE);
+    if (rmStatus != NV_OK)
+    {
+        NV_PRINTF(LEVEL_ERROR, "failed to create memdesc from FB!\n");
+        return rmStatus;
+    }
+
+    rmStatus = memdescAlloc(pKernelDisplay->pSharedMemDesc);
+    if (rmStatus != NV_OK)
+    {
+        NV_PRINTF(LEVEL_ERROR, "failed to allocate memory from FB!\n");
+        goto exit;
+    }
+
+    address = memdescMapInternal(pGpu, pKernelDisplay->pSharedMemDesc, 0);
+    if (address == NULL)
+    {
+        NV_PRINTF(LEVEL_ERROR, "failed to map memory!\n");
+        goto exit;
+    }
+    pKernelDisplay->pSharedData = (KernelDisplaySharedMem *)address;
+
+    params.memDescInfo.base = memdescGetPhysAddr(pKernelDisplay->pSharedMemDesc, AT_GPU, 0);
+    params.memDescInfo.size = sizeof(KernelDisplaySharedMem);
+    params.memDescInfo.alignment = pKernelDisplay->pSharedMemDesc->Alignment;
+    params.memDescInfo.addressSpace = addressSpace;
+    params.memDescInfo.cpuCacheAttrib = NV_MEMORY_UNCACHED;
+    params.bMap = NV_TRUE;
+    rmStatus = pRmApi->Control(pRmApi,
+                               kdispGetInternalClientHandle(pKernelDisplay),
+                               kdispGetDispCommonHandle(pKernelDisplay),
+                               NV0073_CTRL_CMD_SYSTEM_MAP_SHARED_DATA,
+                               &params, sizeof(params));
+    if (rmStatus != NV_OK)
+    {
+        NV_PRINTF(LEVEL_ERROR, "NV0073_CTRL_CMD_SYSTEM_MAP_SHARED_DATA RM control failed!\n");
+        goto exit;
+    }
+
+    return rmStatus;
+
+exit:
+    kdispFreeSharedMem(pGpu, pKernelDisplay);
+    return rmStatus;
+}
+
+void
+kdispFreeSharedMem_IMPL
+(
+    OBJGPU *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    RM_API *pRmApi = GPU_GET_PHYSICAL_RMAPI(pGpu);;
+    struct NV0073_CTRL_CMD_SYSTEM_MAP_SHARED_DATA_PARAMS params = {0};
+
+    if (pKernelDisplay->pSharedData != NULL)
+    {
+        params.bMap = NV_FALSE;
+        pRmApi->Control(pRmApi, kdispGetInternalClientHandle(pKernelDisplay),
+                        kdispGetDispCommonHandle(pKernelDisplay),
+                        NV0073_CTRL_CMD_SYSTEM_MAP_SHARED_DATA,
+                        &params, sizeof(params));
+ 
+        memdescUnmapInternal(pGpu, pKernelDisplay->pSharedMemDesc, 0);
+        pKernelDisplay->pSharedData = NULL;
+    }
+
+    if (pKernelDisplay->pSharedMemDesc != NULL)
+    {
+        memdescFree(pKernelDisplay->pSharedMemDesc);
+        memdescDestroy(pKernelDisplay->pSharedMemDesc);
+        pKernelDisplay->pSharedMemDesc = NULL;
+    }
 }
 
 NV_STATUS
@@ -305,6 +624,8 @@ kdispStateLoad_IMPL
 
     if (pKernelDisplay->pInst != NULL)
         status = instmemStateLoad(pGpu, pKernelDisplay->pInst, flags);
+
+    kdispAllocateSharedMem_HAL(pGpu, pKernelDisplay);
 
     return status;
 }
@@ -321,6 +642,8 @@ kdispStateUnload_IMPL
 
     if (pKernelDisplay->pInst != NULL)
         status = instmemStateUnload(pGpu, pKernelDisplay->pInst, flags);
+
+    kdispFreeSharedMem_HAL(pGpu, pKernelDisplay);
 
     return status;
 }
@@ -344,7 +667,7 @@ kdispImportImpData_IMPL(KernelDisplay *pKernelDisplay)
     simulationMode = osGetSimulationMode();
     if (simulationMode == NV_SIM_MODE_TEGRA_FPGA)
     {
-        pKernelDisplay->setProperty(pDisp, PDB_PROP_KDISP_IMP_ENABLE, NV_FALSE);
+        pKernelDisplay->setProperty(pKernelDisplay, PDB_PROP_KDISP_IMP_ENABLE, NV_FALSE);
         return NV_OK;
     }
 
@@ -383,13 +706,10 @@ kdispGetIntChnClsForHwCls_IMPL
             *pDispChnClass = dispChnClass_Ovim;
             break;
 
-        case NV917C_BASE_CHANNEL_DMA:
         case NV927C_BASE_CHANNEL_DMA:
             *pDispChnClass = dispChnClass_Base;
             break;
 
-        case NV917D_CORE_CHANNEL_DMA:
-        case NV927D_CORE_CHANNEL_DMA:
         case NV947D_CORE_CHANNEL_DMA:
         case NV957D_CORE_CHANNEL_DMA:
         case NV977D_CORE_CHANNEL_DMA:
@@ -397,6 +717,7 @@ kdispGetIntChnClsForHwCls_IMPL
         case NVC37D_CORE_CHANNEL_DMA:
         case NVC57D_CORE_CHANNEL_DMA:
         case NVC67D_CORE_CHANNEL_DMA:
+        case NVC77D_CORE_CHANNEL_DMA:
             *pDispChnClass = dispChnClass_Core;
             break;
 
@@ -416,12 +737,114 @@ kdispGetIntChnClsForHwCls_IMPL
             *pDispChnClass = dispChnClass_Win;
             break;
 
+        case NVC77F_ANY_CHANNEL_DMA:
+            // Assert incase of physical RM, Any channel is kernel only channel.
+            NV_ASSERT_OR_RETURN(RMCFG_FEATURE_KERNEL_RM, NV_ERR_INVALID_CHANNEL);
+            *pDispChnClass = dispChnClass_Any;
+            break;
+
         default:
             NV_PRINTF(LEVEL_ERROR, "Unknown channel class %x\n", hwClass);
             return NV_ERR_INVALID_ARGUMENT;
     }
 
     return NV_OK;
+}
+
+void
+kdispNotifyCommonEvent_IMPL
+(
+    OBJGPU        *pGpu,
+    KernelDisplay *pKernelDisplay,
+    NvU32          notifyIndex,
+    void          *pNotifyParams
+)
+{
+    PEVENTNOTIFICATION pEventNotifications;
+    NvU32             *pNotifyActions;
+    NvU32              disableCmd, singleCmd;
+    NvU32              subDeviceInst;
+    NOTIFICATION      *pParams = (NOTIFICATION *)pNotifyParams;
+    RS_SHARE_ITERATOR  it = serverutilShareIter(classId(NotifShare));
+
+    // search notifiers with events hooked up for this gpu
+    while (serverutilShareIterNext(&it))
+    {
+        RsShared   *pShared = it.pShared;
+        DispCommon *pDispCommon;
+        DisplayApi *pDisplayApi;
+        Device     *pDevice;
+        INotifier  *pNotifier;
+        NotifShare *pNotifierShare = dynamicCast(pShared, NotifShare);
+
+        if ((pNotifierShare == NULL) || (pNotifierShare->pNotifier == NULL))
+            continue;
+
+        pNotifier = pNotifierShare->pNotifier;
+        pDispCommon = dynamicCast(pNotifier, DispCommon);
+
+        // Only notify matching GPUs
+        if (pDispCommon == NULL)
+            continue;
+
+        pDevice = dynamicCast(RES_GET_REF(pDispCommon)->pParentRef->pResource, Device);
+        if (GPU_RES_GET_GPU(pDevice) != pGpu)
+            continue;
+        pDisplayApi = staticCast(pDispCommon, DisplayApi);
+
+        gpuSetThreadBcState(GPU_RES_GET_GPU(pDevice), pDisplayApi->bBcResource);
+
+        disableCmd = NV0073_CTRL_EVENT_SET_NOTIFICATION_ACTION_DISABLE;
+        singleCmd = NV0073_CTRL_EVENT_SET_NOTIFICATION_ACTION_SINGLE;
+
+        // get notify actions list
+        subDeviceInst = gpumgrGetSubDeviceInstanceFromGpu(pGpu);
+        pNotifyActions = pDisplayApi->pNotifyActions[subDeviceInst];
+        if (pNotifyActions == NULL)
+        {
+            continue;
+        }
+
+        // get event list
+        pEventNotifications = inotifyGetNotificationList(pNotifier);
+        if (pEventNotifications == NULL)
+        {
+            continue;
+        }
+
+        // skip if client not "listening" to events of this type
+        if (pNotifyActions[notifyIndex] == disableCmd)
+        {
+            continue;
+        }
+
+        if (pDisplayApi->hNotifierMemory != NV01_NULL_OBJECT &&
+            pDisplayApi->pNotifierMemory != NULL)
+        {
+            NvV32 Info32 = 0;
+            NvV16 Info16 = 0;
+
+            if (pParams != NULL)
+            {
+                Info32 = pParams->OtherInfo32;
+                Info16 = pParams->Info16Status.Info16Status_16.OtherInfo16;
+            }
+
+            notifyFillNotifierMemory(pGpu, pDisplayApi->pNotifierMemory, Info32, Info16,
+                                     NV0073_NOTIFICATION_STATUS_DONE_SUCCESS, notifyIndex);
+        }
+
+        // ping events bound to subdevice associated with pGpu
+        osEventNotification(pGpu, pEventNotifications,
+                            (notifyIndex | OS_EVENT_NOTIFICATION_INDEX_MATCH_SUBDEV),
+                            pParams, sizeof(*pParams));
+
+        // reset if single shot notify action
+        if (pNotifyActions[notifyIndex] == singleCmd)
+        {
+            pNotifyActions[notifyIndex] = disableCmd;
+        }
+    }
 }
 
 void
@@ -446,6 +869,7 @@ kdispNotifyEvent_IMPL
     while (serverutilShareIterNext(&it))
     {
         RsShared   *pShared = it.pShared;
+        DispObject *pDispObject;
         DisplayApi *pDisplayApi;
         INotifier  *pNotifier;
         Device     *pDevice;
@@ -455,16 +879,18 @@ kdispNotifyEvent_IMPL
             continue;
 
         pNotifier = pNotifierShare->pNotifier;
-        pDisplayApi = dynamicCast(pNotifier, DisplayApi);
+        pDispObject = dynamicCast(pNotifier, DispObject);
 
         // Only notify matching GPUs
-        if (pDisplayApi == NULL)
+        if (pDispObject == NULL)
             continue;
 
-        pDevice = dynamicCast(RES_GET_REF(pDisplayApi)->pParentRef->pResource, Device);
+        pDevice = dynamicCast(RES_GET_REF(pDispObject)->pParentRef->pResource, Device);
 
         if (GPU_RES_GET_GPU(pDevice) != pGpu)
             continue;
+
+        pDisplayApi = staticCast(pDispObject, DisplayApi);
 
         gpuSetThreadBcState(GPU_RES_GET_GPU(pDevice), pDisplayApi->bBcResource);
 
@@ -833,11 +1259,12 @@ kdispServiceVblank_KERNEL
     if (!unionNonEmptyQueues)
     {
         // all queues (belonging to heads with pending vblank ints) are empty.
-        kheadResetPendingVblankForKernel_HAL(pGpu, pKernelHead, pThreadState);
+        if (IS_GSP_CLIENT(pGpu))
+        {
+            kheadResetPendingVblank_HAL(pGpu, pKernelHead, pThreadState);
+        }
         return;
     }
-
-    NVRM_TRACE('VBLK');
 
     //
     // Although we have separate handlers for each head, attempt to process all
@@ -853,7 +1280,7 @@ kdispServiceVblank_KERNEL
         }
 
         // Process the callback list for this Head...
-        kheadProcessVblankCallbacks_HAL(pGpu, pKernelHead, state);
+        kheadProcessVblankCallbacks(pGpu, pKernelHead, state);
     }
 
     //
@@ -874,7 +1301,10 @@ kdispServiceVblank_KERNEL
         for(i=0; i< OBJ_MAX_HEADS; i++)
         {
             pKernelHead = KDISP_GET_HEAD(pKernelDisplay, i);
-            kheadResetPendingVblankForKernel_HAL(pGpu, pKernelHead, pThreadState);
+            if (IS_GSP_CLIENT(pGpu))
+            {
+                kheadResetPendingVblank_HAL(pGpu, pKernelHead, pThreadState);
+            }
         }
     }
     else
@@ -891,22 +1321,23 @@ kdispServiceVblank_KERNEL
     }
 
     return;
-    NVRM_TRACE('vblk');
 }
 
-NvU32 kdispReadPendingVblank_KERNEL(OBJGPU *pGpu, KernelDisplay *pKernelDisplay, THREAD_STATE_NODE *pThreadState)
+NvU32 kdispReadPendingVblank_IMPL(OBJGPU *pGpu, KernelDisplay *pKernelDisplay, THREAD_STATE_NODE *pThreadState)
 {
-    KernelHead     *pKernelHead;
-    NvU32    headIntrMask;
-    NvU32    pending = 0;
-    NvU8     headIdx;
+    KernelHead *pKernelHead;
+    NvU32       headIdx, pending = 0;
 
-    for(headIdx = 0; headIdx < OBJ_MAX_HEADS; headIdx++)
+    for (headIdx = 0; headIdx < kdispGetNumHeads(pKernelDisplay); headIdx++)
     {
         pKernelHead = KDISP_GET_HEAD(pKernelDisplay, headIdx);
-        headIntrMask = headIntr_none;
-        pending |= kheadReadPendingVblank_HAL(pGpu, pKernelHead, headIntrMask);
+
+        if (kheadReadPendingVblank_HAL(pGpu, pKernelHead, NULL, pThreadState))
+        {
+            pending |= NVBIT(headIdx);
+        }
     }
+
     return pending;
 }
 
@@ -976,4 +1407,59 @@ kdispInvokeDisplayModesetCallback_KERNEL
     // is possible.
     //
     NV_ASSERT_OK(status);
+}
+
+/*! Get the supported display mask */
+NvU32
+kdispGetSupportedDisplayMask_IMPL
+(
+    OBJGPU *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV0073_CTRL_SYSTEM_GET_SUPPORTED_PARAMS supportParams = { 0 };
+    NV_STATUS status;
+
+    RM_API   *pRmApi = rmapiGetInterface(RMAPI_GPU_LOCK_INTERNAL);
+
+    NV_ASSERT_OK_OR_ELSE(status,
+        pRmApi->Control(pRmApi,
+                        kdispGetInternalClientHandle(pKernelDisplay),
+                        kdispGetDispCommonHandle(pKernelDisplay),
+                        NV0073_CTRL_CMD_SYSTEM_GET_SUPPORTED,
+                        &supportParams,
+                        sizeof(supportParams)),
+        return 0U);
+
+    return supportParams.displayMask;
+}
+
+/*! This determines if a GPU has a display attached on any head. */
+NvBool
+kdispIsDisplayConnected_IMPL
+(
+    OBJGPU *pGpu,
+    KernelDisplay *pKernelDisplay
+)
+{
+    NV_STATUS   status;
+    NvU32       supportedMask = 0U;
+    RM_API     *pRmApi = rmapiGetInterface(RMAPI_GPU_LOCK_INTERNAL);
+
+    supportedMask = kdispGetSupportedDisplayMask(pGpu, pKernelDisplay);
+
+    NV0073_CTRL_SYSTEM_GET_CONNECT_STATE_PARAMS connectParams = { 0 };
+    connectParams.displayMask = supportedMask;
+    connectParams.flags = NV0073_CTRL_SYSTEM_GET_CONNECT_STATE_FLAGS_METHOD_CACHED;
+
+    NV_ASSERT_OK_OR_ELSE(status,
+        pRmApi->Control(pRmApi,
+                        kdispGetInternalClientHandle(pKernelDisplay),
+                        kdispGetDispCommonHandle(pKernelDisplay),
+                        NV0073_CTRL_CMD_SYSTEM_GET_CONNECT_STATE,
+                        &connectParams,
+                        sizeof(connectParams)),
+        return NV_FALSE);
+
+    return connectParams.displayMask != 0U;
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2020-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2020-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,6 +32,8 @@
 
 #include "gpu/gpu.h"
 #include "gpu/disp/kern_disp.h"
+#include "gpu/disp/head/kernel_head.h"
+#include "gpu/external_device/gsync.h"
 
 #include "disp/v03_00/dev_disp.h"
 
@@ -106,6 +108,13 @@ kdispGetChannelNum_v03_00
                     status = NV_ERR_NOT_SUPPORTED;
                 }
             }
+            break;
+
+        case dispChnClass_Any:
+            // Assert incase of physical RM, Any channel is kernel only channel.
+            NV_ASSERT_OR_RETURN(RMCFG_FEATURE_KERNEL_RM, NV_ERR_INVALID_CHANNEL);
+            *pChannelNum = NV_PDISP_CHN_NUM_ANY;
+            status = NV_OK;
             break;
 
         default:
@@ -269,4 +278,243 @@ kdispSelectClass_v03_00_KERNEL
     }
 
     return NV_OK;
+}
+
+/*!
+ * @brief Read line count and frame count from RG_DPCA.
+ *
+ * @param[in]  pGpu           OBJGPU pointer
+ * @param[in]  pKernelDisplay KernelDisplay pointer
+ * @param[in]  head           head index
+ * @param[out] pLineCount     line count
+ * @param[out] pFrameCount    frame count
+ *
+ * @return NV_STATUS
+ */
+NV_STATUS
+kdispReadRgLineCountAndFrameCount_v03_00_KERNEL
+(
+    OBJGPU        *pGpu,
+    KernelDisplay *pKernelDisplay,
+    NvU32          head,
+    NvU32         *pLineCount,
+    NvU32         *pFrameCount
+)
+{
+    NvU32 data32;
+
+    if (head >= kdispGetNumHeads(pKernelDisplay))
+    {
+        return NV_ERR_INVALID_ARGUMENT;
+    }
+
+    data32 = GPU_REG_RD32(pGpu,NV_PDISP_RG_DPCA(head));
+
+    *pLineCount = DRF_VAL(_PDISP, _RG_DPCA, _LINE_CNT, data32);
+    *pFrameCount = DRF_VAL(_PDISP, _RG_DPCA, _FRM_CNT, data32);
+
+    return NV_OK;
+}
+
+/*!
+ * @brief - restore original  LSR_MIN_TIME
+ *
+ * @param[in]  pGpu            GPU  object pointer
+ * @param[in]  pKernelDisplay  KernelDisplay pointer
+ * @param[in]  head            head number
+ * @param[out] oriLsrMinTime   original LSR_MIN_TIME value
+ */
+void
+kdispRestoreOriginalLsrMinTime_v03_00
+(
+    OBJGPU  *pGpu,
+    KernelDisplay *pKernelDisplay,
+    NvU32    head,
+    NvU32    origLsrMinTime
+)
+{
+    NvU32 feFliplock;
+
+    feFliplock = GPU_REG_RD32(pGpu, NV_PDISP_FE_FLIPLOCK);
+
+    feFliplock = FLD_SET_DRF_NUM(_PDISP, _FE_FLIPLOCK, _LSR_MIN_TIME,
+            origLsrMinTime, feFliplock);
+
+    GPU_REG_WR32(pGpu, NV_PDISP_FE_FLIPLOCK, feFliplock);
+}
+
+/*!
+ * @brief - Set LSR_MIN_TIME for swap barrier
+ *
+ * @param[in]  pGpu            GPU  object pointer
+ * @param[in]  pKernelDisplay  KernelDisplay pointer
+ * @param[in]  head            head number
+ * @param[out] pOriLsrMinTime  pointer to original LSR_MIN_TIME value
+ * @param[in]  pNewLsrMinTime  new LSR_MIN_TIME value to be set. If this is 0
+ *                             use default LSR_MIN_TIME value of respective gpu.
+ */
+void
+kdispSetSwapBarrierLsrMinTime_v03_00
+(
+    OBJGPU  *pGpu,
+    KernelDisplay *pKernelDisplay,
+    NvU32    head,
+    NvU32   *pOrigLsrMinTime,
+    NvU32    newLsrMinTime
+)
+{
+    NvU32    dsiFliplock;
+
+    dsiFliplock = GPU_REG_RD32(pGpu, NV_PDISP_FE_FLIPLOCK);
+    *pOrigLsrMinTime = DRF_VAL(_PDISP, _FE_FLIPLOCK, _LSR_MIN_TIME, dsiFliplock);
+
+    if (newLsrMinTime == 0)
+    {
+        dsiFliplock = FLD_SET_DRF_NUM(_PDISP, _FE_FLIPLOCK, _LSR_MIN_TIME,
+                      FLIPLOCK_LSR_MIN_TIME_FOR_SAWP_BARRIER_V02, dsiFliplock);
+    }
+    else
+    {
+        dsiFliplock = FLD_SET_DRF_NUM(_PDISP, _FE_FLIPLOCK, _LSR_MIN_TIME,
+                                      newLsrMinTime, dsiFliplock);
+    }
+
+    GPU_REG_WR32(pGpu, NV_PDISP_FE_FLIPLOCK, dsiFliplock);
+}
+
+/*!
+ * @brief Get the LOADV counter
+ *
+ * @param[in]  pGpu                    OBJGPU pointer
+ * @param[in]  pKernelHead             KernelHead object pointer
+ *
+ * @return the current LOADV counter
+ */
+NvU32
+kheadGetLoadVCounter_v03_00
+(
+    OBJGPU                 *pGpu,
+    KernelHead             *pKernelHead
+)
+{
+    return GPU_REG_RD32(pGpu, NV_PDISP_POSTCOMP_HEAD_LOADV_COUNTER(pKernelHead->PublicId));
+}
+
+NvU32
+kdispGetPBTargetAperture_v03_00
+(
+    OBJGPU        *pGpu,
+    KernelDisplay *pKernelDisplay,
+    NvU32         memAddrSpace,
+    NvU32         cacheSnoop
+)
+{
+    NvU32 pbTargetAperture = PHYS_NVM;
+
+    if ((memAddrSpace == ADDR_SYSMEM) && (cacheSnoop != 0U))
+    {
+        pbTargetAperture = PHYS_PCI_COHERENT;
+    }
+    else if (memAddrSpace == ADDR_SYSMEM)
+    {
+        pbTargetAperture = PHYS_PCI;
+    }
+    else
+    {
+        pbTargetAperture = PHYS_NVM;
+    }
+
+    return pbTargetAperture;
+}
+
+NvU32
+kheadReadPendingRgLineIntr_v03_00
+(
+    OBJGPU *pGpu,
+    KernelHead *pKernelHead,
+    THREAD_STATE_NODE   *pThreadState
+)
+{
+    NvU32 intr;
+    NvU32 headIntrMask = 0;
+
+    intr = GPU_REG_RD32_EX(pGpu, NV_PDISP_FE_RM_INTR_DISPATCH, pThreadState);
+
+    if (!FLD_IDX_TEST_DRF(_PDISP, _FE_RM_INTR_DISPATCH, _HEAD_TIMING, pKernelHead->PublicId, _PENDING, intr))
+    {
+        return headIntrMask;
+    }
+
+    intr = GPU_REG_RD32_EX(pGpu, NV_PDISP_FE_RM_INTR_STAT_HEAD_TIMING(pKernelHead->PublicId), pThreadState);
+
+    if (FLD_TEST_DRF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _RG_LINE_A, _PENDING, intr))
+    {
+        headIntrMask |= headIntr_RgLineA;
+    }
+
+    if (FLD_TEST_DRF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _RG_LINE_B, _PENDING, intr))
+    {
+        headIntrMask |= headIntr_RgLineB;
+    }
+
+    return headIntrMask;
+}
+
+void
+kheadResetRgLineIntrMask_v03_00
+(
+    OBJGPU *pGpu,
+    KernelHead *pKernelHead,
+    NvU32 headIntrMask,
+    THREAD_STATE_NODE   *pThreadState
+)
+{
+    NvU32 writeIntr = 0;
+
+    if (headIntrMask & headIntr_RgLineA)
+    {
+        writeIntr |= DRF_DEF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _RG_LINE_A, _RESET);
+    }
+
+    if (headIntrMask & headIntr_RgLineB)
+    {
+        writeIntr |= DRF_DEF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _RG_LINE_B, _RESET);
+    }
+
+    GPU_REG_WR32_EX(pGpu, NV_PDISP_FE_EVT_STAT_HEAD_TIMING(pKernelHead->PublicId), writeIntr, pThreadState);
+}
+
+NvBool
+kheadReadPendingVblank_v03_00
+(
+    OBJGPU *pGpu,
+    KernelHead *pKernelHead,
+    NvU32 *pCachedIntr,
+    THREAD_STATE_NODE *pThreadState
+)
+{
+    NvU32  intr = pCachedIntr ? *pCachedIntr : GPU_REG_RD32_EX(pGpu, NV_PDISP_FE_RM_INTR_DISPATCH, pThreadState);
+
+    if (!FLD_IDX_TEST_DRF(_PDISP, _FE_RM_INTR_DISPATCH, _HEAD_TIMING, pKernelHead->PublicId, _PENDING, intr))
+    {
+        return NV_FALSE;
+    }
+
+    intr = GPU_REG_RD32_EX(pGpu, NV_PDISP_FE_RM_INTR_STAT_HEAD_TIMING(pKernelHead->PublicId), pThreadState);
+
+    if (FLD_TEST_DRF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _LAST_DATA, _PENDING, intr))
+    {
+        return NV_TRUE;
+    }
+
+    return NV_FALSE;
+}
+
+void kheadResetPendingVblank_KERNEL(OBJGPU *pGpu, KernelHead *pKernelHead, THREAD_STATE_NODE *pThreadState)
+{
+    NvU32 writeIntr = GPU_REG_RD32(pGpu, NV_PDISP_FE_EVT_STAT_HEAD_TIMING(pKernelHead->PublicId));
+
+    writeIntr = DRF_DEF(_PDISP, _FE_EVT_STAT_HEAD_TIMING, _LAST_DATA, _RESET);
+
+    GPU_REG_WR32(pGpu, NV_PDISP_FE_EVT_STAT_HEAD_TIMING(pKernelHead->PublicId), writeIntr);
 }

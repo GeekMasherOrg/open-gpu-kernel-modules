@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2016-2021 NVIDIA Corporation
+    Copyright (c) 2016-2024 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -168,10 +168,9 @@ static NV_STATUS uvm_user_channel_create(uvm_va_space_t *va_space,
     user_channel->tsg.valid                 = channel_info->bTsgChannel == NV_TRUE;
     user_channel->tsg.id                    = channel_info->tsgId;
     user_channel->tsg.max_subctx_count      = channel_info->tsgMaxSubctxCount;
-    user_channel->work_submission_token     = channel_info->workSubmissionToken;
-    user_channel->work_submission_offset    = channel_info->workSubmissionOffset;
     user_channel->clear_faulted_token       = channel_info->clearFaultedToken;
     user_channel->chram_channel_register    = channel_info->pChramChannelRegister;
+    user_channel->runlist_pri_base_register = channel_info->pRunlistPRIBaseRegister;
     user_channel->smc_engine_id             = channel_info->smcEngineId;
     user_channel->smc_engine_ve_id_offset   = channel_info->smcEngineVeIdOffset;
 
@@ -619,7 +618,7 @@ static NV_STATUS uvm_register_channel(uvm_va_space_t *va_space,
     uvm_va_space_up_read_rm(va_space);
 
     // The mm needs to be locked in order to remove stale HMM va_blocks.
-    mm = uvm_va_space_mm_retain_lock(va_space);
+    mm = uvm_va_space_mm_or_current_retain_lock(va_space);
 
     // We have the RM objects now so we know what the VA range layout should be.
     // Re-take the VA space lock in write mode to create and insert them.
@@ -654,10 +653,8 @@ static NV_STATUS uvm_register_channel(uvm_va_space_t *va_space,
     if (status != NV_OK)
         goto error_under_write;
 
-    if (mm) {
+    if (mm)
         uvm_up_read_mmap_lock_out_of_order(mm);
-        uvm_va_space_mm_release(va_space);
-    }
 
     // The subsequent mappings will need to call into RM, which means we must
     // downgrade the VA space lock to read mode. Although we're in read mode no
@@ -673,7 +670,7 @@ static NV_STATUS uvm_register_channel(uvm_va_space_t *va_space,
 
     // Tell the GPU page fault handler about this instance_ptr -> user_channel
     // mapping
-    status = uvm_gpu_add_user_channel(gpu, user_channel);
+    status = uvm_parent_gpu_add_user_channel(gpu->parent, user_channel);
     if (status != NV_OK)
         goto error_under_read;
 
@@ -682,6 +679,7 @@ static NV_STATUS uvm_register_channel(uvm_va_space_t *va_space,
         goto error_under_read;
 
     uvm_va_space_up_read_rm(va_space);
+    uvm_va_space_mm_or_current_release(va_space, mm);
     uvm_gpu_release(gpu);
     return NV_OK;
 
@@ -689,7 +687,7 @@ error_under_write:
     if (user_channel->gpu_va_space)
         uvm_user_channel_detach(user_channel, &deferred_free_list);
     uvm_va_space_up_write(va_space);
-    uvm_va_space_mm_release_unlock(va_space, mm);
+    uvm_va_space_mm_or_current_release_unlock(va_space, mm);
     uvm_deferred_free_object_list(&deferred_free_list);
     uvm_gpu_release(gpu);
     return status;
@@ -715,10 +713,12 @@ error_under_read:
     if (user_channel->gpu_va_space) {
         uvm_user_channel_detach(user_channel, &deferred_free_list);
         uvm_va_space_up_write(va_space);
+        uvm_va_space_mm_or_current_release(va_space, mm);
         uvm_deferred_free_object_list(&deferred_free_list);
     }
     else {
         uvm_va_space_up_write(va_space);
+        uvm_va_space_mm_or_current_release(va_space, mm);
     }
 
     uvm_user_channel_release(user_channel);
@@ -806,7 +806,7 @@ void uvm_user_channel_detach(uvm_user_channel_t *user_channel, struct list_head 
         // that this only prevents new faults from being serviced. It doesn't
         // flush out faults currently being serviced, nor prior faults still
         // pending in the fault buffer. Those are handled separately.
-        uvm_gpu_remove_user_channel(user_channel->gpu_va_space->gpu, user_channel);
+        uvm_parent_gpu_remove_user_channel(user_channel->gpu->parent, user_channel);
 
         // We can't release the channel back to RM here because leftover state
         // for this channel (such as the instance pointer) could still be in the
@@ -959,6 +959,7 @@ NV_STATUS uvm_test_check_channel_va_space(UVM_TEST_CHECK_CHANNEL_VA_SPACE_PARAMS
     uvm_va_space_t *va_space = NULL;
     uvm_va_space_t *channel_va_space;
     uvm_gpu_t *gpu;
+    uvm_gpu_t *channel_gpu;
     uvm_fault_buffer_entry_t fault_entry;
     UvmGpuChannelInstanceInfo *channel_info;
     NV_STATUS status;
@@ -984,14 +985,13 @@ NV_STATUS uvm_test_check_channel_va_space(UVM_TEST_CHECK_CHANNEL_VA_SPACE_PARAMS
         goto out;
     }
 
-    va_space = uvm_va_space_get(va_space_filp);
-    uvm_va_space_down_read(va_space);
-
-    // We can do this query outside of the lock, but doing it within the lock
-    // simplifies error handling.
-    status = uvm_va_space_initialized(va_space);
-    if (status != NV_OK)
+    va_space = uvm_fd_va_space(va_space_filp);
+    if (!va_space) {
+        status = NV_ERR_INVALID_ARGUMENT;
         goto out;
+    }
+
+    uvm_va_space_down_read(va_space);
 
     gpu = uvm_va_space_get_gpu_by_uuid(va_space, &params->gpu_uuid);
     if (!gpu || !uvm_processor_mask_test(&va_space->faultable_processors, gpu->id)) {
@@ -1004,7 +1004,7 @@ NV_STATUS uvm_test_check_channel_va_space(UVM_TEST_CHECK_CHANNEL_VA_SPACE_PARAMS
         goto out;
     }
 
-    // Craft enough of the fault entry to do a VA space translation
+    // Craft enough of the fault entry to do a VA space translation.
     fault_entry.fault_type = UVM_FAULT_TYPE_INVALID_PTE;
 
     if (channel_info->sysmem)
@@ -1035,10 +1035,13 @@ NV_STATUS uvm_test_check_channel_va_space(UVM_TEST_CHECK_CHANNEL_VA_SPACE_PARAMS
     // We can ignore the return code because this ioctl only cares about whether
     // the provided channel + VEID matches the provided VA space. In all of the
     // non-NV_OK cases the translation will fail and we should return
-    // NV_ERR_INVALID_CHANNEL. channel_va_space == NULL for all such cases.
-    (void)uvm_gpu_fault_entry_to_va_space(gpu, &fault_entry, &channel_va_space);
+    // NV_ERR_INVALID_CHANNEL. channel_gpu_va_space == NULL for all such cases.
+    (void)uvm_parent_gpu_fault_entry_to_va_space(gpu->parent,
+                                                 &fault_entry,
+                                                 &channel_va_space,
+                                                 &channel_gpu);
 
-    if (channel_va_space == va_space)
+    if (channel_va_space == va_space && channel_gpu == gpu)
         status = NV_OK;
     else
         status = NV_ERR_INVALID_CHANNEL;

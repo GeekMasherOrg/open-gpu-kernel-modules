@@ -37,6 +37,9 @@
 #endif
 
 #include <linux/io.h>
+#if defined(NV_BSD)
+#include <vm/vm_pageout.h>
+#endif
 
 #include "nv-mm.h"
 
@@ -93,9 +96,19 @@ static vm_fault_t __nv_drm_gem_nvkms_handle_vma_fault(
     if (nv_nvkms_memory->pages_count == 0) {
         pfn = (unsigned long)(uintptr_t)nv_nvkms_memory->pPhysicalAddress;
         pfn >>= PAGE_SHIFT;
+#if defined(NV_LINUX)
+        /*
+         * FreeBSD doesn't set pgoff. We instead have pfn be the base physical
+         * address, and we will calculate the index pidx from the virtual address.
+         *
+         * This only works because linux_cdev_pager_populate passes the pidx as
+         * vmf->virtual_address. Then we turn the virtual address
+         * into a physical page number.
+         */
         pfn += page_offset;
+#endif
     } else {
-        BUG_ON(page_offset > nv_nvkms_memory->pages_count);
+        BUG_ON(page_offset >= nv_nvkms_memory->pages_count);
         pfn = page_to_pfn(nv_nvkms_memory->pages[page_offset]);
     }
 
@@ -131,11 +144,11 @@ static struct drm_gem_object *__nv_drm_gem_nvkms_prime_dup(
     const struct nv_drm_gem_object *nv_gem_src);
 
 static int __nv_drm_gem_nvkms_map(
-    struct nv_drm_device *nv_dev,
-    struct NvKmsKapiMemory *pMemory,
-    struct nv_drm_gem_nvkms_memory *nv_nvkms_memory,
-    uint64_t size)
+    struct nv_drm_gem_nvkms_memory *nv_nvkms_memory)
 {
+    struct nv_drm_device *nv_dev = nv_nvkms_memory->base.nv_dev;
+    struct NvKmsKapiMemory *pMemory = nv_nvkms_memory->base.pMemory;
+
     if (!nv_dev->hasVideoMemory) {
         return 0;
     }
@@ -153,7 +166,7 @@ static int __nv_drm_gem_nvkms_map(
 
     nv_nvkms_memory->pWriteCombinedIORemapAddress = ioremap_wc(
             (uintptr_t)nv_nvkms_memory->pPhysicalAddress,
-            size);
+            nv_nvkms_memory->base.base.size);
 
     if (!nv_nvkms_memory->pWriteCombinedIORemapAddress) {
         NV_DRM_DEV_LOG_INFO(
@@ -167,6 +180,22 @@ static int __nv_drm_gem_nvkms_map(
     return 0;
 }
 
+static void *__nv_drm_gem_nvkms_prime_vmap(
+    struct nv_drm_gem_object *nv_gem)
+{
+    struct nv_drm_gem_nvkms_memory *nv_nvkms_memory =
+        to_nv_nvkms_memory(nv_gem);
+
+    if (!nv_nvkms_memory->physically_mapped) {
+        int ret = __nv_drm_gem_nvkms_map(nv_nvkms_memory);
+        if (ret) {
+           return ERR_PTR(ret);
+        }
+    }
+
+    return nv_nvkms_memory->pWriteCombinedIORemapAddress;
+}
+
 static int __nv_drm_gem_map_nvkms_memory_offset(
     struct nv_drm_device *nv_dev,
     struct nv_drm_gem_object *nv_gem,
@@ -176,10 +205,7 @@ static int __nv_drm_gem_map_nvkms_memory_offset(
         to_nv_nvkms_memory(nv_gem);
 
     if (!nv_nvkms_memory->physically_mapped) {
-        int ret = __nv_drm_gem_nvkms_map(nv_dev,
-                                         nv_nvkms_memory->base.pMemory,
-                                         nv_nvkms_memory,
-                                         nv_nvkms_memory->base.base.size);
+        int ret = __nv_drm_gem_nvkms_map(nv_nvkms_memory);
         if (ret) {
            return ret;
         }
@@ -201,7 +227,7 @@ static struct sg_table *__nv_drm_gem_nvkms_memory_prime_get_sg_table(
                 nv_dev,
                 "Cannot create sg_table for NvKmsKapiMemory 0x%p",
                 nv_gem->pMemory);
-        return NULL;
+        return ERR_PTR(-ENOMEM);
     }
 
     sg_table = nv_drm_prime_pages_to_sg(nv_dev->dev,
@@ -214,6 +240,7 @@ static struct sg_table *__nv_drm_gem_nvkms_memory_prime_get_sg_table(
 const struct nv_drm_gem_object_funcs nv_gem_nvkms_memory_ops = {
     .free = __nv_drm_gem_nvkms_memory_free,
     .prime_dup = __nv_drm_gem_nvkms_prime_dup,
+    .prime_vmap = __nv_drm_gem_nvkms_prime_vmap,
     .mmap = __nv_drm_gem_nvkms_mmap,
     .handle_vma_fault = __nv_drm_gem_nvkms_handle_vma_fault,
     .create_mmap_offset = __nv_drm_gem_map_nvkms_memory_offset,
@@ -228,6 +255,15 @@ static int __nv_drm_nvkms_gem_obj_init(
 {
     NvU64 *pages = NULL;
     NvU32 numPages = 0;
+
+    if ((size % PAGE_SIZE) != 0) {
+        NV_DRM_DEV_LOG_ERR(
+            nv_dev,
+            "NvKmsKapiMemory 0x%p size should be in a multiple of page size to "
+            "create a gem object",
+            pMemory);
+        return -EINVAL;
+    }
 
     nv_nvkms_memory->pPhysicalAddress = NULL;
     nv_nvkms_memory->pWriteCombinedIORemapAddress = NULL;
@@ -285,11 +321,13 @@ int nv_drm_dumb_create(
     if (nv_dev->hasVideoMemory) {
         pMemory = nvKms->allocateVideoMemory(nv_dev->pDevice,
                                              NvKmsSurfaceMemoryLayoutPitch,
+                                             NVKMS_KAPI_ALLOCATION_TYPE_SCANOUT,
                                              args->size,
                                              &compressible);
     } else {
         pMemory = nvKms->allocateSystemMemory(nv_dev->pDevice,
                                               NvKmsSurfaceMemoryLayoutPitch,
+                                              NVKMS_KAPI_ALLOCATION_TYPE_SCANOUT,
                                               args->size,
                                               &compressible);
     }
@@ -298,7 +336,7 @@ int nv_drm_dumb_create(
         ret = -ENOMEM;
         NV_DRM_DEV_LOG_ERR(
             nv_dev,
-            "Failed to allocate NvKmsKapiMemory for dumb object of size %llu",
+            "Failed to allocate NvKmsKapiMemory for dumb object of size %" NvU64_fmtu,
             args->size);
         goto nvkms_alloc_memory_failed;
     }
@@ -312,7 +350,7 @@ int nv_drm_dumb_create(
      * to use dumb buffers for software rendering, so they're not much use
      * without a CPU mapping.
      */
-    ret = __nv_drm_gem_nvkms_map(nv_dev, pMemory, nv_nvkms_memory, args->size);
+    ret = __nv_drm_gem_nvkms_map(nv_nvkms_memory);
     if (ret) {
         nv_drm_gem_object_unreference_unlocked(&nv_nvkms_memory->base);
         goto fail;
@@ -342,7 +380,7 @@ int nv_drm_gem_import_nvkms_memory_ioctl(struct drm_device *dev,
     int ret;
 
     if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
-        ret = -EINVAL;
+        ret = -EOPNOTSUPP;
         goto failed;
     }
 
@@ -392,7 +430,7 @@ int nv_drm_gem_export_nvkms_memory_ioctl(struct drm_device *dev,
     int ret = 0;
 
     if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
-        ret = -EINVAL;
+        ret = -EOPNOTSUPP;
         goto done;
     }
 
@@ -441,14 +479,16 @@ int nv_drm_gem_alloc_nvkms_memory_ioctl(struct drm_device *dev,
     struct nv_drm_gem_nvkms_memory *nv_nvkms_memory = NULL;
     struct NvKmsKapiMemory *pMemory;
     enum NvKmsSurfaceMemoryLayout layout;
+    enum NvKmsKapiAllocationType type;
     int ret = 0;
 
     if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
-        ret = -EINVAL;
+        ret = -EOPNOTSUPP;
         goto failed;
     }
 
-    if (p->__pad != 0) {
+    if ((p->__pad0 != 0) || (p->__pad1 != 0)) {
+        ret = -EINVAL;
         NV_DRM_DEV_LOG_ERR(nv_dev, "non-zero value in padding field");
         goto failed;
     }
@@ -461,15 +501,19 @@ int nv_drm_gem_alloc_nvkms_memory_ioctl(struct drm_device *dev,
 
     layout = p->block_linear ?
         NvKmsSurfaceMemoryLayoutBlockLinear : NvKmsSurfaceMemoryLayoutPitch;
+    type = (p->flags & NV_GEM_ALLOC_NO_SCANOUT) ?
+        NVKMS_KAPI_ALLOCATION_TYPE_OFFSCREEN : NVKMS_KAPI_ALLOCATION_TYPE_SCANOUT;
 
     if (nv_dev->hasVideoMemory) {
         pMemory = nvKms->allocateVideoMemory(nv_dev->pDevice,
                                              layout,
+                                             type,
                                              p->memory_size,
                                              &p->compressible);
     } else {
         pMemory = nvKms->allocateSystemMemory(nv_dev->pDevice,
                                               layout,
+                                              type,
                                               p->memory_size,
                                               &p->compressible);
     }
@@ -507,14 +551,12 @@ static struct drm_gem_object *__nv_drm_gem_nvkms_prime_dup(
 {
     struct nv_drm_device *nv_dev = to_nv_device(dev);
     const struct nv_drm_device *nv_dev_src;
-    const struct nv_drm_gem_nvkms_memory *nv_nvkms_memory_src;
     struct nv_drm_gem_nvkms_memory *nv_nvkms_memory;
     struct NvKmsKapiMemory *pMemory;
 
     BUG_ON(nv_gem_src == NULL || nv_gem_src->ops != &nv_gem_nvkms_memory_ops);
 
     nv_dev_src = to_nv_device(nv_gem_src->base.dev);
-    nv_nvkms_memory_src = to_nv_nvkms_memory_const(nv_gem_src);
 
     if ((nv_nvkms_memory =
             nv_drm_calloc(1, sizeof(*nv_nvkms_memory))) == NULL) {
@@ -575,11 +617,13 @@ int nv_drm_dumb_map_offset(struct drm_file *file,
     return ret;
 }
 
+#if defined(NV_DRM_DRIVER_HAS_DUMB_DESTROY)
 int nv_drm_dumb_destroy(struct drm_file *file,
                         struct drm_device *dev,
                         uint32_t handle)
 {
     return drm_gem_handle_delete(file, handle);
 }
+#endif /* NV_DRM_DRIVER_HAS_DUMB_DESTROY */
 
 #endif

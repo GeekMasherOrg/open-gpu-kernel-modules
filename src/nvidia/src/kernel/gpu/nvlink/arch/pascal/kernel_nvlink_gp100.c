@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,13 +21,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define NVOC_KERNEL_NVLINK_H_PRIVATE_ACCESS_ALLOWED
+
 #include "os/os.h"
 #include "kernel/gpu/nvlink/kernel_nvlink.h"
 #include "kernel/gpu/nvlink/kernel_ioctrl.h"
 
 #include "gpu/gpu.h"
 #include "gpu/ce/kernel_ce.h"
-#include "nvRmReg.h"
+#include "nvrm_registry.h"
 
 //
 // NVLINK Override Configuration
@@ -203,28 +205,17 @@ knvlinkGetP2POptimalCEs_GP100
     NvU32        *p2pOptimalWriteCEs
 )
 {
-    KernelCE *kce             = NULL;
-    NvU32     maxCes          = 0;
+    KernelCE *pKCe            = NULL;
     NvU32     sysmemReadCE    = 0;
     NvU32     sysmemWriteCE   = 0;
     NvU32     nvlinkP2PCeMask = 0;
-    NvU32     i;
 
-    maxCes = gpuGetNumCEs(pGpu);
-
-    for (i = 0; i < maxCes; i++)
-    {
-        kce = GPU_GET_KCE(pGpu, i);
-        if (kce)
-        {
-            kceGetCeFromNvlinkConfig(pGpu, kce,
-                                     gpuMask,
-                                     &sysmemReadCE,
-                                     &sysmemWriteCE,
-                                     &nvlinkP2PCeMask);
-            break;
-        }
-    }
+    NV_CHECK_OK_OR_RETURN(LEVEL_ERROR, kceFindFirstInstance(pGpu, &pKCe));
+    kceGetCeFromNvlinkConfig(pGpu, pKCe,
+                             gpuMask,
+                             &sysmemReadCE,
+                             &sysmemWriteCE,
+                             &nvlinkP2PCeMask);
 
     if (sysmemOptimalReadCEs != NULL)
     {
@@ -286,12 +277,14 @@ knvlinkSetupPeerMapping_GP100
         }
 
         peerLinkMask = pKernelNvlink->peerLinkMasks[gpuGetInstance(pRemoteGpu)];
+        knvlinkGetEffectivePeerLinkMask_HAL(pGpu, pKernelNvlink, pRemoteGpu, &peerLinkMask);
 
         if (peerLinkMask != 0)
         {
             portMemSet(&preSetupNvlinkPeerParams, 0, sizeof(preSetupNvlinkPeerParams));
             preSetupNvlinkPeerParams.peerId        = peerId;
             preSetupNvlinkPeerParams.peerLinkMask  = peerLinkMask;
+            preSetupNvlinkPeerParams.bEgmPeer      = GPU_GET_KERNEL_BUS(pGpu)->p2p.bEgmPeer[peerId];
             preSetupNvlinkPeerParams.bNvswitchConn = knvlinkIsGpuConnectedToNvswitch(pGpu, pKernelNvlink);
 
             status = knvlinkExecGspRmRpc(pGpu, pKernelNvlink,
@@ -371,3 +364,28 @@ knvlinkProgramLinkSpeed_GP100
 
     return NV_OK;
 }
+
+/*!
+ * @brief Get the device PCI info and store it in 
+ * nvlink_device_info struct which will be passed to corelib
+ *
+ * @param[in]  pGpu                 OBJGPU pointer
+ * @param[in]  pKernelNvlink        KernelNvlink pointer
+ * @param[out] nvlink_device_info   Nvlink device info pointer
+ *
+ */
+#if defined(INCLUDE_NVLINK_LIB)
+void
+knvlinkCoreGetDevicePciInfo_GP100
+(
+    OBJGPU             *pGpu,
+    KernelNvlink       *pKernelNvlink,
+    nvlink_device_info *devInfo
+)
+{
+    devInfo->pciInfo.domain   = gpuGetDomain(pGpu);
+    devInfo->pciInfo.bus      = gpuGetBus(pGpu);
+    devInfo->pciInfo.device   = gpuGetDevice(pGpu);
+    devInfo->pciInfo.function = 0;
+}
+#endif

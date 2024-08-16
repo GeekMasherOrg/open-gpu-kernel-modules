@@ -47,7 +47,8 @@ void nvEvoIncrementSurfaceStructRefCnt(NVSurfaceEvoPtr pSurfaceEvo);
 void nvEvoDecrementSurfaceStructRefCnt(NVSurfaceEvoPtr pSurfaceEvo);
 
 void nvEvoIncrementSurfaceRefCnts(NVSurfaceEvoPtr pSurfaceEvo);
-void nvEvoDecrementSurfaceRefCnts(NVSurfaceEvoPtr pSurfaceEvo);
+void nvEvoDecrementSurfaceRefCnts(NVDevEvoPtr pDevEvo,
+                                  NVSurfaceEvoPtr pSurfaceEvo);
 
 NvBool nvEvoSurfaceRefCntsTooLarge(const NVSurfaceEvoRec *pSurfaceEvo);
 
@@ -55,9 +56,15 @@ NVSurfaceEvoPtr nvEvoGetSurfaceFromHandle(
     const NVDevEvoRec *pDevEvo,
     const NVEvoApiHandlesRec *pOpenDevSurfaceHandles,
     const NvKmsSurfaceHandle surfaceHandle,
-    const NVEvoChannelMask channelMask);
+    const NvBool isUsedByCursorChannel,
+    const NvBool isUsedByLayerChannel);
 
-NVSurfaceEvoPtr nvEvoGetSurfaceFromHandleNoCtxDmaOk(
+NVSurfaceEvoPtr nvEvoGetSurfaceFromHandleNoDispHWAccessOk(
+    const NVDevEvoRec *pDevEvo,
+    const NVEvoApiHandlesRec *pOpenDevSurfaceHandles,
+    NvKmsSurfaceHandle surfaceHandle);
+
+NVSurfaceEvoPtr nvEvoGetSurfaceFromHandleNoHWAccess(
     const NVDevEvoRec *pDevEvo,
     const NVEvoApiHandlesRec *pOpenDevSurfaceHandles,
     NvKmsSurfaceHandle surfaceHandle);
@@ -69,6 +76,22 @@ NVDeferredRequestFifoRec *nvEvoRegisterDeferredRequestFifo(
 void nvEvoUnregisterDeferredRequestFifo(
     NVDevEvoPtr pDevEvo,
     NVDeferredRequestFifoRec *pDeferredRequestFifo);
+
+NVVblankSemControl *nvEvoEnableVblankSemControl(
+    NVDevEvoRec *pDevEvo,
+    NVDispEvoRec *pDispEvo,
+    NvU32 apiHeadMask,
+    NVSurfaceEvoRec *pSurfaceEvo,
+    NvU64 surfaceOffset);
+
+NvBool nvEvoDisableVblankSemControl(
+    NVDevEvoRec *pDevEvo,
+    NVVblankSemControl *pVblankSemControl);
+
+NvBool nvEvoAccelVblankSemControls(
+    NVDevEvoPtr pDevEvo,
+    NvU32 dispIndex,
+    NvU32 hwHeadMask);
 
 static inline NvBool nvEvoIsSurfaceOwner(const NVSurfaceEvoRec *pSurfaceEvo,
                                          const struct NvKmsPerOpenDev *pOpenDev,

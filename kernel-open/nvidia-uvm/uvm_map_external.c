@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2016-2021 NVIDIA Corporation
+    Copyright (c) 2016-2024 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -39,6 +39,7 @@
 #include "uvm_pte_batch.h"
 #include "uvm_tlb_batch.h"
 #include "nv_uvm_interface.h"
+#include "nv_uvm_types.h"
 
 #include "uvm_pushbuffer.h"
 
@@ -60,7 +61,7 @@ typedef struct
     size_t buffer_size;
 
     // Page size in bytes
-    NvU32 page_size;
+    NvU64 page_size;
 
     // Size of a single PTE in bytes
     NvU32 pte_size;
@@ -90,7 +91,7 @@ static NV_STATUS uvm_pte_buffer_init(uvm_va_range_t *va_range,
                                      uvm_gpu_t *gpu,
                                      const uvm_map_rm_params_t *map_rm_params,
                                      NvU64 length,
-                                     NvU32 page_size,
+                                     NvU64 page_size,
                                      uvm_pte_buffer_t *pte_buffer)
 {
     uvm_gpu_va_space_t *gpu_va_space = uvm_gpu_va_space_get(va_range->va_space, gpu);
@@ -101,11 +102,14 @@ static NV_STATUS uvm_pte_buffer_init(uvm_va_range_t *va_range,
 
     pte_buffer->va_range = va_range;
     pte_buffer->gpu = gpu;
-    pte_buffer->mapping_info.cachingType = map_rm_params->caching_type;
-    pte_buffer->mapping_info.mappingType = map_rm_params->mapping_type;
-    pte_buffer->mapping_info.formatType = map_rm_params->format_type;
-    pte_buffer->mapping_info.elementBits = map_rm_params->element_bits;
-    pte_buffer->mapping_info.compressionType = map_rm_params->compression_type;
+    pte_buffer->mapping_info.cachingType        = (UvmRmGpuCachingType) map_rm_params->caching_type;
+    pte_buffer->mapping_info.mappingType        = (UvmRmGpuMappingType) map_rm_params->mapping_type;
+    pte_buffer->mapping_info.formatType         = (UvmRmGpuFormatType) map_rm_params->format_type;
+    pte_buffer->mapping_info.elementBits        = (UvmRmGpuFormatElementBits) map_rm_params->element_bits;
+    pte_buffer->mapping_info.compressionType    = (UvmRmGpuCompressionType) map_rm_params->compression_type;
+    if (va_range->type == UVM_VA_RANGE_TYPE_EXTERNAL)
+        pte_buffer->mapping_info.mappingPageSize = page_size;
+
     pte_buffer->page_size = page_size;
     pte_buffer->pte_size = uvm_mmu_pte_size(tree, page_size);
     num_all_ptes = uvm_div_pow2_64(length, page_size);
@@ -341,9 +345,8 @@ static NV_STATUS map_rm_pt_range(uvm_page_tree_t *tree,
 static uvm_membar_t va_range_downgrade_membar(uvm_va_range_t *va_range, uvm_ext_gpu_map_t *ext_gpu_map)
 {
     if (va_range->type == UVM_VA_RANGE_TYPE_CHANNEL) {
-        if (va_range->channel.aperture == UVM_APERTURE_VID)
-            return UVM_MEMBAR_GPU;
-        return UVM_MEMBAR_SYS;
+        return uvm_hal_downgrade_membar_type(va_range->channel.gpu_va_space->gpu,
+                                             va_range->channel.aperture == UVM_APERTURE_VID);
     }
 
     // If there is no mem_handle, this is a sparse mapping.
@@ -353,9 +356,9 @@ static uvm_membar_t va_range_downgrade_membar(uvm_va_range_t *va_range, uvm_ext_
     if (!ext_gpu_map->mem_handle)
         return UVM_MEMBAR_GPU;
 
-    if (ext_gpu_map->is_sysmem || ext_gpu_map->gpu != ext_gpu_map->owning_gpu)
-            return UVM_MEMBAR_SYS;
-    return UVM_MEMBAR_GPU;
+    // EGM uses the same barriers as sysmem.
+    return uvm_hal_downgrade_membar_type(ext_gpu_map->gpu,
+                                         !ext_gpu_map->is_sysmem && ext_gpu_map->gpu == ext_gpu_map->owning_gpu);
 }
 
 NV_STATUS uvm_va_range_map_rm_allocation(uvm_va_range_t *va_range,
@@ -398,9 +401,7 @@ NV_STATUS uvm_va_range_map_rm_allocation(uvm_va_range_t *va_range,
 
     page_tree = &gpu_va_space->page_tables;
 
-    // Verify that the GPU VA space supports this page size
-    if ((mem_info->pageSize & page_tree->hal->page_sizes()) == 0)
-        return NV_ERR_INVALID_ADDRESS;
+    UVM_ASSERT(uvm_mmu_page_size_supported(page_tree, mem_info->pageSize));
 
     if (va_range->type == UVM_VA_RANGE_TYPE_EXTERNAL) {
         // We should be never called with ext_gpu_map == NULL
@@ -414,13 +415,12 @@ NV_STATUS uvm_va_range_map_rm_allocation(uvm_va_range_t *va_range,
         pt_range_vec = &va_range->channel.pt_range_vec;
     }
 
-    if (!IS_ALIGNED(map_offset, mem_info->pageSize) ||
-        map_offset + uvm_range_tree_node_size(node) > mem_info->size)
+    if (map_offset + uvm_range_tree_node_size(node) > mem_info->size)
         return NV_ERR_INVALID_OFFSET;
 
-    // Consolidate input checks for API-level callers
-    if (!IS_ALIGNED(node->start, mem_info->pageSize) || !IS_ALIGNED(node->end + 1, mem_info->pageSize))
-        return NV_ERR_INVALID_ADDRESS;
+    UVM_ASSERT(IS_ALIGNED(node->start, mem_info->pageSize) &&
+               IS_ALIGNED(node->end + 1, mem_info->pageSize) &&
+               IS_ALIGNED(map_offset, mem_info->pageSize));
 
     status = uvm_pte_buffer_init(va_range,
                                  mapping_gpu,
@@ -605,7 +605,7 @@ static NV_STATUS uvm_create_external_range(uvm_va_space_t *va_space, UVM_CREATE_
         return NV_ERR_INVALID_ADDRESS;
 
     // The mm needs to be locked in order to remove stale HMM va_blocks.
-    mm = uvm_va_space_mm_retain_lock(va_space);
+    mm = uvm_va_space_mm_or_current_retain_lock(va_space);
     uvm_va_space_down_write(va_space);
 
     // Create the new external VA range.
@@ -619,7 +619,7 @@ static NV_STATUS uvm_create_external_range(uvm_va_space_t *va_space, UVM_CREATE_
     }
 
     uvm_va_space_up_write(va_space);
-    uvm_va_space_mm_release_unlock(va_space, mm);
+    uvm_va_space_mm_or_current_release_unlock(va_space, mm);
     return status;
 }
 
@@ -636,21 +636,21 @@ static NV_STATUS set_ext_gpu_map_location(uvm_ext_gpu_map_t *ext_gpu_map,
 {
     uvm_gpu_t *owning_gpu;
 
+    if (mem_info->egm)
+        UVM_ASSERT(mem_info->sysmem);
 
-
-
-
-
-
-
-
-
-
-
-
-
+    // !mem_info->deviceDescendant && !mem_info->sysmem imply fabric allocation.
+    // !mem_info->deviceDescendant also means that mem_info->uuid is invalid. In
+    // this case the owning GPU is NULL, meaning that UVM is oblivious to the
+    // topology and relies on RM and/or the fabric manager (FM) for memory
+    // lifetime management and GPU ref counting.
+    if (!mem_info->deviceDescendant && !mem_info->sysmem) {
+        ext_gpu_map->owning_gpu = NULL;
+        ext_gpu_map->is_sysmem = false;
+        return NV_OK;
+    }
     // This is a local or peer allocation, so the owning GPU must have been
-    // registered.
+    // registered. This also checks for if EGM owning GPU is registered.
     owning_gpu = uvm_va_space_get_gpu_by_uuid(va_space, &mem_info->uuid);
     if (!owning_gpu)
         return NV_ERR_INVALID_DEVICE;
@@ -661,13 +661,9 @@ static NV_STATUS set_ext_gpu_map_location(uvm_ext_gpu_map_t *ext_gpu_map,
     // crashes when it's eventually freed.
     // TODO: Bug 1811006: Bug tracking the RM issue, its fix might change the
     // semantics of sysmem allocations.
-    if (mem_info->sysmem) {
-        ext_gpu_map->owning_gpu = owning_gpu;
-        ext_gpu_map->is_sysmem = true;
-        return NV_OK;
-    }
 
-    if (owning_gpu != mapping_gpu) {
+    // Check if peer access for peer memory is enabled.
+    if (owning_gpu != mapping_gpu && (!mem_info->sysmem || mem_info->egm)) {
         // TODO: Bug 1757136: In SLI, the returned UUID may be different but a
         //       local mapping must be used. We need to query SLI groups to know
         //       that.
@@ -676,7 +672,9 @@ static NV_STATUS set_ext_gpu_map_location(uvm_ext_gpu_map_t *ext_gpu_map,
     }
 
     ext_gpu_map->owning_gpu = owning_gpu;
-    ext_gpu_map->is_sysmem = false;
+    ext_gpu_map->is_sysmem = mem_info->sysmem;
+    ext_gpu_map->is_egm = mem_info->egm;
+
     return NV_OK;
 }
 
@@ -729,6 +727,7 @@ static NV_STATUS uvm_ext_gpu_map_split(uvm_range_tree_t *tree,
     new->gpu = existing_map->gpu;
     new->owning_gpu = existing_map->owning_gpu;
     new->is_sysmem = existing_map->is_sysmem;
+    new->is_egm = existing_map->is_egm;
 
     // Initialize the new ext_gpu_map tracker as a copy of the existing_map tracker.
     // This way, any operations on any of the two ext_gpu_maps will be able to
@@ -853,6 +852,11 @@ static NV_STATUS uvm_map_external_allocation_on_gpu(uvm_va_range_t *va_range,
     uvm_ext_gpu_map_t *ext_gpu_map = NULL;
     uvm_ext_gpu_range_tree_t *range_tree = uvm_ext_gpu_range_tree(va_range, mapping_gpu);
     UvmGpuMemoryInfo mem_info;
+    uvm_gpu_va_space_t *gpu_va_space = uvm_gpu_va_space_get(va_space, mapping_gpu);
+    NvU64 mapping_page_size;
+    NvU64 biggest_mapping_page_size;
+    NvU64 alignments;
+    NvU64 smallest_alignment;
     NV_STATUS status;
 
     uvm_assert_rwsem_locked_read(&va_space->lock);
@@ -923,12 +927,33 @@ static NV_STATUS uvm_map_external_allocation_on_gpu(uvm_va_range_t *va_range,
     if (status != NV_OK)
         goto error;
 
-    status = uvm_va_range_map_rm_allocation(va_range,
-                                            mapping_gpu,
-                                            &mem_info,
-                                            map_rm_params,
-                                            ext_gpu_map,
-                                            out_tracker);
+    // Determine the proper mapping page size.
+    // This will be the largest supported page size less than or equal to the
+    // smallest of the base VA address, length, offset, and allocation page size
+    // alignments.
+    alignments = mem_info.pageSize | base | length | map_rm_params->map_offset;
+    smallest_alignment = alignments & ~(alignments - 1);
+
+    // Check that alignment bits did not get truncated.
+    UVM_ASSERT(smallest_alignment);
+
+    mapping_page_size = uvm_mmu_biggest_page_size_up_to(&gpu_va_space->page_tables, smallest_alignment);
+    if (!mapping_page_size) {
+        status = NV_ERR_INVALID_ADDRESS;
+        goto error;
+    }
+
+    // Check for the maximum page size for the mapping of vidmem allocations,
+    // the vMMU segment size may limit the range of page sizes.
+    biggest_mapping_page_size = uvm_mmu_biggest_page_size_up_to(&gpu_va_space->page_tables,
+                                                                mapping_gpu->mem_info.max_vidmem_page_size);
+    if (!ext_gpu_map->is_sysmem && (ext_gpu_map->gpu == ext_gpu_map->owning_gpu) &&
+        (mapping_page_size > biggest_mapping_page_size))
+        mapping_page_size = biggest_mapping_page_size;
+
+    mem_info.pageSize = mapping_page_size;
+
+    status = uvm_va_range_map_rm_allocation(va_range, mapping_gpu, &mem_info, map_rm_params, ext_gpu_map, out_tracker);
     if (status != NV_OK)
         goto error;
 
@@ -946,7 +971,7 @@ static NV_STATUS uvm_map_external_allocation(uvm_va_space_t *va_space, UVM_MAP_E
 {
     uvm_va_range_t *va_range = NULL;
     uvm_gpu_t *mapping_gpu;
-    uvm_processor_mask_t mapped_gpus;
+    uvm_processor_mask_t *mapped_gpus;
     NV_STATUS status = NV_OK;
     size_t i;
     uvm_map_rm_params_t map_rm_params;
@@ -964,6 +989,10 @@ static NV_STATUS uvm_map_external_allocation(uvm_va_space_t *va_space, UVM_MAP_E
     if (params->gpuAttributesCount == 0 || params->gpuAttributesCount > UVM_MAX_GPUS)
         return NV_ERR_INVALID_ARGUMENT;
 
+    mapped_gpus = uvm_processor_mask_cache_alloc();
+    if (!mapped_gpus)
+        return NV_ERR_NO_MEMORY;
+
     uvm_va_space_down_read_rm(va_space);
     va_range = uvm_va_range_find(va_space, params->base);
 
@@ -971,10 +1000,11 @@ static NV_STATUS uvm_map_external_allocation(uvm_va_space_t *va_space, UVM_MAP_E
         va_range->type != UVM_VA_RANGE_TYPE_EXTERNAL ||
         va_range->node.end < params->base + params->length - 1) {
         uvm_va_space_up_read_rm(va_space);
+        uvm_processor_mask_cache_free(mapped_gpus);
         return NV_ERR_INVALID_ADDRESS;
     }
 
-    uvm_processor_mask_zero(&mapped_gpus);
+    uvm_processor_mask_zero(mapped_gpus);
     for (i = 0; i < params->gpuAttributesCount; i++) {
         if (uvm_api_mapping_type_invalid(params->perGpuAttributes[i].gpuMappingType) ||
             uvm_api_caching_type_invalid(params->perGpuAttributes[i].gpuCachingType) ||
@@ -1010,7 +1040,7 @@ static NV_STATUS uvm_map_external_allocation(uvm_va_space_t *va_space, UVM_MAP_E
         if (status != NV_OK)
             goto error;
 
-        uvm_processor_mask_set(&mapped_gpus, mapping_gpu->id);
+        uvm_processor_mask_set(mapped_gpus, mapping_gpu->id);
     }
 
     // Wait for outstanding page table operations to finish across all GPUs. We
@@ -1019,6 +1049,8 @@ static NV_STATUS uvm_map_external_allocation(uvm_va_space_t *va_space, UVM_MAP_E
     status = uvm_tracker_wait_deinit(&tracker);
 
     uvm_va_space_up_read_rm(va_space);
+    uvm_processor_mask_cache_free(mapped_gpus);
+
     return status;
 
 error:
@@ -1027,7 +1059,7 @@ error:
     (void)uvm_tracker_wait_deinit(&tracker);
 
     // Tear down only those mappings we created during this call
-    for_each_va_space_gpu_in_mask(mapping_gpu, va_space, &mapped_gpus) {
+    for_each_va_space_gpu_in_mask(mapping_gpu, va_space, mapped_gpus) {
         uvm_ext_gpu_range_tree_t *range_tree = uvm_ext_gpu_range_tree(va_range, mapping_gpu);
         uvm_ext_gpu_map_t *ext_map, *ext_map_next;
 
@@ -1043,6 +1075,7 @@ error:
     }
 
     uvm_va_space_up_read_rm(va_space);
+    uvm_processor_mask_cache_free(mapped_gpus);
 
     return status;
 }
@@ -1332,7 +1365,7 @@ static NV_STATUS uvm_free(uvm_va_space_t *va_space, NvU64 base, NvU64 length)
 {
     uvm_va_range_t *va_range;
     NV_STATUS status = NV_OK;
-    uvm_global_processor_mask_t retained_mask;
+    uvm_processor_mask_t *retained_mask = NULL;
     LIST_HEAD(deferred_free_list);
 
     if (uvm_api_range_invalid_4k(base, length))
@@ -1365,17 +1398,25 @@ static NV_STATUS uvm_free(uvm_va_space_t *va_space, NvU64 base, NvU64 length)
     }
 
     if (va_range->type == UVM_VA_RANGE_TYPE_EXTERNAL) {
+        retained_mask = va_range->external.retained_mask;
+
+        // Set the retained_mask to NULL to prevent
+        // uvm_va_range_destroy_external() from freeing the mask.
+        va_range->external.retained_mask = NULL;
+
+        UVM_ASSERT(retained_mask);
+
         // External ranges may have deferred free work, so the GPUs may have to
         // be retained. Construct the mask of all the GPUs that need to be
         // retained.
-        uvm_va_space_global_gpus_in_mask(va_space, &retained_mask, &va_range->external.mapped_gpus);
+        uvm_processor_mask_and(retained_mask, &va_range->external.mapped_gpus, &va_space->registered_gpus);
     }
 
     uvm_va_range_destroy(va_range, &deferred_free_list);
 
     // If there is deferred work, retain the required GPUs.
     if (!list_empty(&deferred_free_list))
-        uvm_global_mask_retain(&retained_mask);
+        uvm_global_gpu_retain(retained_mask);
 
 out:
     uvm_va_space_up_write(va_space);
@@ -1383,8 +1424,12 @@ out:
     if (!list_empty(&deferred_free_list)) {
         UVM_ASSERT(status == NV_OK);
         uvm_deferred_free_object_list(&deferred_free_list);
-        uvm_global_mask_release(&retained_mask);
+        uvm_global_gpu_release(retained_mask);
     }
+
+    // Free the mask allocated in uvm_va_range_create_external() since
+    // uvm_va_range_destroy() won't free this mask.
+    uvm_processor_mask_cache_free(retained_mask);
 
     return status;
 }

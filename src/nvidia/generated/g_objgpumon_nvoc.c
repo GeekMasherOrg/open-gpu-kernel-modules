@@ -66,85 +66,78 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_OBJGPUMON =
     /*pExportInfo=*/        &__nvoc_export_info_OBJGPUMON
 };
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonReconcileTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void *pTunableState) {
-    return engstateReconcileTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), pTunableState);
+// 14 up-thunk(s) defined to bridge methods in OBJGPUMON to superclasses
+
+// gpumonConstructEngine: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonConstructEngine(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, ENGDESCRIPTOR arg3) {
+    return engstateConstructEngine(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStateLoad(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStateLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
+// gpumonInitMissing: virtual inherited (engstate) base (engstate)
+static void __nvoc_up_thunk_OBJENGSTATE_gpumonInitMissing(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    engstateInitMissing(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStateUnload(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStateUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
+// gpumonStatePreInitLocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePreInitLocked(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    return engstateStatePreInitLocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStateInitLocked(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    return engstateStateInitLocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStatePreInitUnlocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePreInitUnlocked(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    return engstateStatePreInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePreLoad(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStatePreLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
+// gpumonStateInitLocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStateInitLocked(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    return engstateStateInitLocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePostUnload(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStatePostUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
+// gpumonStateInitUnlocked: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStateInitUnlocked(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    return engstateStateInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static void __nvoc_thunk_OBJENGSTATE_gpumonStateDestroy(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    engstateStateDestroy(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStatePreLoad: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePreLoad(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStatePreLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePreUnload(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStatePreUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
+// gpumonStateLoad: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStateLoad(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStateLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStateInitUnlocked(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    return engstateStateInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStatePostLoad: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePostLoad(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStatePostLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static void __nvoc_thunk_OBJENGSTATE_gpumonInitMissing(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    engstateInitMissing(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStatePreUnload: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePreUnload(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStatePreUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePreInitLocked(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    return engstateStatePreInitLocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStateUnload: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStateUnload(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStateUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePreInitUnlocked(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    return engstateStatePreInitUnlocked(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
+// gpumonStatePostUnload: virtual inherited (engstate) base (engstate)
+static NV_STATUS __nvoc_up_thunk_OBJENGSTATE_gpumonStatePostUnload(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate, NvU32 arg3) {
+    return engstateStatePostUnload(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg3);
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonGetTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void *pTunableState) {
-    return engstateGetTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), pTunableState);
+// gpumonStateDestroy: virtual inherited (engstate) base (engstate)
+static void __nvoc_up_thunk_OBJENGSTATE_gpumonStateDestroy(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    engstateStateDestroy(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonCompareTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void *pTunables1, void *pTunables2) {
-    return engstateCompareTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), pTunables1, pTunables2);
+// gpumonIsPresent: virtual inherited (engstate) base (engstate)
+static NvBool __nvoc_up_thunk_OBJENGSTATE_gpumonIsPresent(struct OBJGPU *pGpu, struct OBJGPUMON *pEngstate) {
+    return engstateIsPresent(pGpu, (struct OBJENGSTATE *)(((unsigned char *) pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
 }
 
-static void __nvoc_thunk_OBJENGSTATE_gpumonFreeTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void *pTunableState) {
-    engstateFreeTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), pTunableState);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonStatePostLoad(POBJGPU pGpu, struct OBJGPUMON *pEngstate, NvU32 arg0) {
-    return engstateStatePostLoad(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonAllocTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void **ppTunableState) {
-    return engstateAllocTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), ppTunableState);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonSetTunableState(POBJGPU pGpu, struct OBJGPUMON *pEngstate, void *pTunableState) {
-    return engstateSetTunableState(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), pTunableState);
-}
-
-static NV_STATUS __nvoc_thunk_OBJENGSTATE_gpumonConstructEngine(POBJGPU pGpu, struct OBJGPUMON *pEngstate, ENGDESCRIPTOR arg0) {
-    return engstateConstructEngine(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset), arg0);
-}
-
-static NvBool __nvoc_thunk_OBJENGSTATE_gpumonIsPresent(POBJGPU pGpu, struct OBJGPUMON *pEngstate) {
-    return engstateIsPresent(pGpu, (struct OBJENGSTATE *)(((unsigned char *)pEngstate) + __nvoc_rtti_OBJGPUMON_OBJENGSTATE.offset));
-}
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_OBJGPUMON = 
 {
@@ -181,6 +174,7 @@ __nvoc_ctor_OBJGPUMON_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_OBJGPUMON_1(OBJGPUMON *pThis, RmHalspecOwner *pRmhalspecowner) {
     ChipHal *chipHal = &pRmhalspecowner->chipHal;
     const unsigned long chipHal_HalVarIdx = (unsigned long)chipHal->__nvoc_HalVarIdx;
@@ -189,48 +183,54 @@ static void __nvoc_init_funcTable_OBJGPUMON_1(OBJGPUMON *pThis, RmHalspecOwner *
     PORT_UNREFERENCED_VARIABLE(chipHal);
     PORT_UNREFERENCED_VARIABLE(chipHal_HalVarIdx);
 
-    pThis->__gpumonReconcileTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonReconcileTunableState;
+    // gpumonConstructEngine -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonConstructEngine__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonConstructEngine;
 
-    pThis->__gpumonStateLoad__ = &__nvoc_thunk_OBJENGSTATE_gpumonStateLoad;
+    // gpumonInitMissing -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonInitMissing__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonInitMissing;
 
-    pThis->__gpumonStateUnload__ = &__nvoc_thunk_OBJENGSTATE_gpumonStateUnload;
+    // gpumonStatePreInitLocked -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePreInitLocked__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePreInitLocked;
 
-    pThis->__gpumonStateInitLocked__ = &__nvoc_thunk_OBJENGSTATE_gpumonStateInitLocked;
+    // gpumonStatePreInitUnlocked -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePreInitUnlocked__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePreInitUnlocked;
 
-    pThis->__gpumonStatePreLoad__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePreLoad;
+    // gpumonStateInitLocked -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStateInitLocked__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStateInitLocked;
 
-    pThis->__gpumonStatePostUnload__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePostUnload;
+    // gpumonStateInitUnlocked -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStateInitUnlocked__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStateInitUnlocked;
 
-    pThis->__gpumonStateDestroy__ = &__nvoc_thunk_OBJENGSTATE_gpumonStateDestroy;
+    // gpumonStatePreLoad -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePreLoad__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePreLoad;
 
-    pThis->__gpumonStatePreUnload__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePreUnload;
+    // gpumonStateLoad -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStateLoad__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStateLoad;
 
-    pThis->__gpumonStateInitUnlocked__ = &__nvoc_thunk_OBJENGSTATE_gpumonStateInitUnlocked;
+    // gpumonStatePostLoad -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePostLoad__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePostLoad;
 
-    pThis->__gpumonInitMissing__ = &__nvoc_thunk_OBJENGSTATE_gpumonInitMissing;
+    // gpumonStatePreUnload -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePreUnload__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePreUnload;
 
-    pThis->__gpumonStatePreInitLocked__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePreInitLocked;
+    // gpumonStateUnload -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStateUnload__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStateUnload;
 
-    pThis->__gpumonStatePreInitUnlocked__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePreInitUnlocked;
+    // gpumonStatePostUnload -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStatePostUnload__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStatePostUnload;
 
-    pThis->__gpumonGetTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonGetTunableState;
+    // gpumonStateDestroy -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonStateDestroy__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonStateDestroy;
 
-    pThis->__gpumonCompareTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonCompareTunableState;
+    // gpumonIsPresent -- virtual inherited (engstate) base (engstate)
+    pThis->__gpumonIsPresent__ = &__nvoc_up_thunk_OBJENGSTATE_gpumonIsPresent;
+} // End __nvoc_init_funcTable_OBJGPUMON_1 with approximately 14 basic block(s).
 
-    pThis->__gpumonFreeTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonFreeTunableState;
 
-    pThis->__gpumonStatePostLoad__ = &__nvoc_thunk_OBJENGSTATE_gpumonStatePostLoad;
-
-    pThis->__gpumonAllocTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonAllocTunableState;
-
-    pThis->__gpumonSetTunableState__ = &__nvoc_thunk_OBJENGSTATE_gpumonSetTunableState;
-
-    pThis->__gpumonConstructEngine__ = &__nvoc_thunk_OBJENGSTATE_gpumonConstructEngine;
-
-    pThis->__gpumonIsPresent__ = &__nvoc_thunk_OBJENGSTATE_gpumonIsPresent;
-}
-
+// Initialize vtable(s) for 14 virtual method(s).
 void __nvoc_init_funcTable_OBJGPUMON(OBJGPUMON *pThis, RmHalspecOwner *pRmhalspecowner) {
+
+    // Initialize vtable(s) with 14 per-object function pointer(s).
     __nvoc_init_funcTable_OBJGPUMON_1(pThis, pRmhalspecowner);
 }
 
@@ -243,20 +243,31 @@ void __nvoc_init_OBJGPUMON(OBJGPUMON *pThis, RmHalspecOwner *pRmhalspecowner) {
     __nvoc_init_funcTable_OBJGPUMON(pThis, pRmhalspecowner);
 }
 
-NV_STATUS __nvoc_objCreate_OBJGPUMON(OBJGPUMON **ppThis, Dynamic *pParent, NvU32 createFlags) {
+NV_STATUS __nvoc_objCreate_OBJGPUMON(OBJGPUMON **ppThis, Dynamic *pParent, NvU32 createFlags)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     OBJGPUMON *pThis;
     RmHalspecOwner *pRmhalspecowner;
 
-    pThis = portMemAllocNonPaged(sizeof(OBJGPUMON));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(OBJGPUMON), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(OBJGPUMON));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_OBJGPUMON);
 
-    if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
+    pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object.createFlags = createFlags;
+
+    // pParent must be a valid object that derives from a halspec owner class.
+    NV_ASSERT_OR_RETURN(pParent != NULL, NV_ERR_INVALID_ARGUMENT);
+
+    // Link the child into the parent unless flagged not to do so.
+    if (!(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
         objAddChild(pParentObj, &pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object);
@@ -274,12 +285,27 @@ NV_STATUS __nvoc_objCreate_OBJGPUMON(OBJGPUMON **ppThis, Dynamic *pParent, NvU32
     status = __nvoc_ctor_OBJGPUMON(pThis, pRmhalspecowner);
     if (status != NV_OK) goto __nvoc_objCreate_OBJGPUMON_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_OBJGPUMON_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_OBJENGSTATE.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(OBJGPUMON));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

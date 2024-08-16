@@ -1,5 +1,5 @@
 /*******************************************************************************
-    Copyright (c) 2015-2022 NVIDIA Corporation
+    Copyright (c) 2015-2024 NVIDIA Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to
@@ -98,41 +98,29 @@ typedef enum
 
 // This helper needs to stay in sync with the one in uvm_pmm_gpu.c
 // It is duplicated because we do not want to expose it as an API.
-static uvm_pmm_gpu_memory_type_t pmm_squash_memory_type(uvm_parent_gpu_t *parent_gpu, uvm_pmm_gpu_memory_type_t type)
+static uvm_pmm_gpu_memory_type_t pmm_squash_memory_type(uvm_pmm_gpu_memory_type_t type)
 {
+    if (g_uvm_global.conf_computing_enabled)
+        return type;
 
+    // Enforce the contract that when the Confidential Computing feature is
+    // disabled, all user types are alike, as well as all kernel types,
+    // respectively. See uvm_pmm_gpu_memory_type_t.
+    if (uvm_pmm_gpu_memory_type_is_user(type))
+        return UVM_PMM_GPU_MEMORY_TYPE_USER;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    return type;
+    return UVM_PMM_GPU_MEMORY_TYPE_KERNEL;
 }
 
 // Verify that the input chunks are in the correct state following alloc
-static NV_STATUS check_chunks(uvm_pmm_gpu_t *pmm,
-                              uvm_gpu_chunk_t **chunks,
+static NV_STATUS check_chunks(uvm_gpu_chunk_t **chunks,
                               size_t num_chunks,
                               uvm_chunk_size_t chunk_size,
                               uvm_pmm_gpu_memory_type_t mem_type)
 {
-    uvm_gpu_t *gpu = uvm_pmm_to_gpu(pmm);
     size_t i;
 
-    mem_type = pmm_squash_memory_type(gpu->parent, mem_type);
+    mem_type = pmm_squash_memory_type(mem_type);
     for (i = 0; i < num_chunks; i++) {
         TEST_CHECK_RET(chunks[i]);
         TEST_CHECK_RET(chunks[i]->suballoc == NULL);
@@ -189,7 +177,7 @@ static NV_STATUS chunk_alloc_check_common(uvm_pmm_gpu_t *pmm,
     if (check_status != NV_OK)
         return check_status;
 
-    return check_chunks(pmm, chunks, num_chunks, chunk_size, mem_type);
+    return check_chunks(chunks, num_chunks, chunk_size, mem_type);
 }
 
 static NV_STATUS chunk_alloc_check(uvm_pmm_gpu_t *pmm,
@@ -324,14 +312,13 @@ static NV_STATUS gpu_mem_check(uvm_gpu_t *gpu,
     NvU32 *verif_cpu_addr = uvm_mem_get_cpu_addr_kernel(verif_mem);
     size_t i;
 
-
-
-
-
-
-
-
-
+    // TODO: Bug 3839176: [UVM][HCC][uvm_test] Update tests that assume GPU
+    //                     engines can directly access sysmem
+    // Skip this test for now. To enable this test in Confidential Computing,
+    // The GPU->CPU CE copy needs to be updated so it uses encryption when
+    // CC is enabled.
+    if (g_uvm_global.conf_computing_enabled)
+        return NV_OK;
     UVM_ASSERT(verif_mem->size >= size);
     memset(verif_cpu_addr, 0, size);
 
@@ -367,6 +354,11 @@ static NV_STATUS gpu_mem_check(uvm_gpu_t *gpu,
     return NV_OK;
 }
 
+static uvm_gpu_address_t chunk_copy_addr(uvm_gpu_t *gpu, uvm_gpu_chunk_t *chunk)
+{
+    return uvm_gpu_address_copy(gpu, uvm_gpu_phys_address(UVM_APERTURE_VID, chunk->address));
+}
+
 static NV_STATUS init_test_chunk(uvm_va_space_t *va_space,
                                  uvm_pmm_gpu_t *pmm,
                                  test_chunk_t *test_chunk,
@@ -388,10 +380,7 @@ static NV_STATUS init_test_chunk(uvm_va_space_t *va_space,
 
     TEST_NV_CHECK_GOTO(uvm_mmu_chunk_map(test_chunk->chunk), chunk_free);
 
-    if (uvm_mmu_gpu_needs_static_vidmem_mapping(gpu) || uvm_mmu_gpu_needs_dynamic_vidmem_mapping(gpu))
-        chunk_addr = uvm_gpu_address_virtual_from_vidmem_phys(gpu, test_chunk->chunk->address);
-    else
-        chunk_addr = uvm_gpu_address_physical(UVM_APERTURE_VID, test_chunk->chunk->address);
+    chunk_addr = chunk_copy_addr(gpu, test_chunk->chunk);
 
     // Fill the chunk
     TEST_NV_CHECK_GOTO(do_memset_4(gpu, chunk_addr, pattern, size, &test_chunk->tracker), chunk_unmap);
@@ -433,14 +422,9 @@ static NV_STATUS destroy_test_chunk(uvm_pmm_gpu_t *pmm, test_chunk_t *test_chunk
 {
     uvm_gpu_t *gpu = uvm_pmm_to_gpu(pmm);
     NV_STATUS status;
-    uvm_gpu_address_t chunk_addr;
     uvm_gpu_chunk_t *chunk = test_chunk->chunk;
+    uvm_gpu_address_t chunk_addr = chunk_copy_addr(gpu, chunk);
     uvm_chunk_size_t size = uvm_gpu_chunk_get_size(chunk);
-
-    if (uvm_mmu_gpu_needs_static_vidmem_mapping(gpu) || uvm_mmu_gpu_needs_dynamic_vidmem_mapping(gpu))
-        chunk_addr = uvm_gpu_address_virtual_from_vidmem_phys(gpu, chunk->address);
-    else
-        chunk_addr = uvm_gpu_address_physical(UVM_APERTURE_VID, chunk->address);
 
     status = gpu_mem_check(gpu, verif_mem, chunk_addr, size, test_chunk->pattern, &test_chunk->tracker);
 
@@ -537,11 +521,7 @@ static NV_STATUS basic_test(uvm_va_space_t *va_space, uvm_gpu_t *gpu,
 
     if (mode == UvmTestPmmSanityModeBasic) {
         first_memory_type = UVM_PMM_GPU_MEMORY_TYPE_USER;
-
-
-
-        last_memory_type = UVM_PMM_GPU_MEMORY_TYPE_USER;
-
+        last_memory_type = UVM_PMM_GPU_MEMORY_TYPE_USER_UNPROTECTED;
         first_free_pattern = BASIC_TEST_FREE_PATTERN_EVERY_N;
         last_free_pattern = BASIC_TEST_FREE_PATTERN_EVERY_N;
     }
@@ -571,7 +551,8 @@ static NV_STATUS basic_test(uvm_va_space_t *va_space, uvm_gpu_t *gpu,
         // In SR-IOV heavy, virtual mappings will be created for each chunk
         // this test allocates before accessing it on the GPU. But currently
         // it is not allowed to map a kernel chunk, so skip those.
-        if (uvm_gpu_is_virt_mode_sriov_heavy(gpu) && uvm_pmm_gpu_memory_type_is_kernel(test_state.type))
+        if (uvm_parent_gpu_is_virt_mode_sriov_heavy(gpu->parent) &&
+            uvm_pmm_gpu_memory_type_is_kernel(test_state.type))
             continue;
 
         chunk_sizes = gpu->pmm.chunk_sizes[test_state.type];
@@ -801,7 +782,8 @@ static NV_STATUS split_test(uvm_va_space_t *va_space, uvm_gpu_t *gpu)
         // In SR-IOV heavy, virtual mappings will be created for each chunk
         // this test allocates before accessing it on the GPU. But currently
         // it is not allowed to map a kernel chunk, so skip those.
-        if (uvm_gpu_is_virt_mode_sriov_heavy(gpu) && uvm_pmm_gpu_memory_type_is_kernel(type))
+        if (uvm_parent_gpu_is_virt_mode_sriov_heavy(gpu->parent) &&
+            uvm_pmm_gpu_memory_type_is_kernel(type))
             continue;
 
         // Test every available parent size except the smallest, which obviously
@@ -897,9 +879,7 @@ NV_STATUS uvm_test_pmm_check_leak(UVM_TEST_PMM_CHECK_LEAK_PARAMS *params, struct
     uvm_pmm_gpu_memory_type_t last_user_mode = UVM_PMM_GPU_MEMORY_TYPE_USER;
     uvm_pmm_gpu_memory_type_t current_user_mode = first_user_mode;
 
-
-
-
+    last_user_mode = UVM_PMM_GPU_MEMORY_TYPE_USER_UNPROTECTED;
 
     if (params->alloc_limit < -1)
         return NV_ERR_INVALID_ARGUMENT;
@@ -918,11 +898,11 @@ NV_STATUS uvm_test_pmm_check_leak(UVM_TEST_PMM_CHECK_LEAK_PARAMS *params, struct
     return status;
 }
 
-NV_STATUS __test_pmm_async_alloc_type(uvm_va_space_t *va_space,
-                                      uvm_gpu_t *gpu,
-                                      size_t num_chunks,
-                                      uvm_pmm_gpu_memory_type_t mem_type,
-                                      size_t work_iterations)
+static NV_STATUS __test_pmm_async_alloc_type(uvm_va_space_t *va_space,
+                                             uvm_gpu_t *gpu,
+                                             size_t num_chunks,
+                                             uvm_pmm_gpu_memory_type_t mem_type,
+                                             size_t work_iterations)
 {
     NV_STATUS status;
     NV_STATUS tracker_status = NV_OK;
@@ -934,7 +914,6 @@ NV_STATUS __test_pmm_async_alloc_type(uvm_va_space_t *va_space,
     uvm_tracker_t tracker = UVM_TRACKER_INIT();
     uvm_push_t push;
     NvU32 i;
-    uvm_global_processor_mask_t global_mask;
 
     chunks = uvm_kvmalloc_zero(num_chunks * sizeof(chunks[0]));
     if (!chunks)
@@ -948,9 +927,7 @@ NV_STATUS __test_pmm_async_alloc_type(uvm_va_space_t *va_space,
     if (status != NV_OK)
         goto out;
 
-    uvm_va_space_global_gpus(va_space, &global_mask);
-
-    status = uvm_mem_map_kernel(dummy_buffer, &global_mask);
+    status = uvm_mem_map_kernel(dummy_buffer, &va_space->registered_gpus);
     if (status != NV_OK)
         goto out;
 
@@ -1036,9 +1013,7 @@ NV_STATUS uvm_test_pmm_async_alloc(UVM_TEST_PMM_ASYNC_ALLOC_PARAMS *params, stru
     uvm_pmm_gpu_memory_type_t last_user_mode = UVM_PMM_GPU_MEMORY_TYPE_USER;
     uvm_pmm_gpu_memory_type_t current_user_mode = first_user_mode;
 
-
-
-
+    last_user_mode = UVM_PMM_GPU_MEMORY_TYPE_USER_UNPROTECTED;
 
     uvm_va_space_down_read(va_space);
     gpu = uvm_va_space_get_gpu_by_uuid(va_space, &params->gpu_uuid);
@@ -1082,7 +1057,7 @@ static NV_STATUS test_pmm_reverse_map_single(uvm_gpu_t *gpu, uvm_va_space_t *va_
     uvm_mutex_lock(&va_block->lock);
 
     is_resident = uvm_processor_mask_test(&va_block->resident, gpu->id) &&
-                  uvm_page_mask_full(uvm_va_block_resident_mask_get(va_block, gpu->id));
+                  uvm_page_mask_full(uvm_va_block_resident_mask_get(va_block, gpu->id, NUMA_NO_NODE));
     if (is_resident)
         phys_addr = uvm_va_block_gpu_phys_page_address(va_block, 0, gpu);
 
@@ -1107,6 +1082,7 @@ static NV_STATUS test_pmm_reverse_map_many_blocks(uvm_gpu_t *gpu, uvm_va_space_t
 {
     uvm_va_range_t *va_range;
     uvm_va_block_t *va_block = NULL;
+    uvm_va_block_context_t *va_block_context = NULL;
     NvU32 num_blocks;
     NvU32 index = 0;
     uvm_gpu_phys_address_t phys_addr = {0};
@@ -1124,15 +1100,20 @@ static NV_STATUS test_pmm_reverse_map_many_blocks(uvm_gpu_t *gpu, uvm_va_space_t
     }
     TEST_CHECK_RET(va_block);
 
+    va_block_context = uvm_va_block_context_alloc(NULL);
+    TEST_CHECK_RET(va_block_context);
+
     uvm_mutex_lock(&va_block->lock);
 
-    is_resident = uvm_id_equal(uvm_va_block_page_get_closest_resident(va_block, 0, gpu->id), gpu->id);
+    is_resident = uvm_id_equal(uvm_va_block_page_get_closest_resident(va_block, va_block_context, 0, gpu->id), gpu->id);
     if (is_resident) {
         phys_addr = uvm_va_block_gpu_phys_page_address(va_block, 0, gpu);
         phys_addr.address = UVM_ALIGN_DOWN(phys_addr.address, UVM_VA_BLOCK_SIZE);
     }
 
     uvm_mutex_unlock(&va_block->lock);
+
+    uvm_va_block_context_free(va_block_context);
 
     TEST_CHECK_RET(is_resident);
 
@@ -1168,7 +1149,7 @@ static NV_STATUS test_pmm_reverse_map_many_blocks(uvm_gpu_t *gpu, uvm_va_space_t
                 uvm_mutex_lock(&va_block->lock);
 
                 // Verify that all pages are populated on the GPU
-                is_resident = uvm_page_mask_region_full(uvm_va_block_resident_mask_get(va_block, gpu->id),
+                is_resident = uvm_page_mask_region_full(uvm_va_block_resident_mask_get(va_block, gpu->id, NUMA_NO_NODE),
                                                         reverse_mapping->region);
 
                 uvm_mutex_unlock(&va_block->lock);
@@ -1215,124 +1196,6 @@ exit_unlock:
     uvm_va_space_up_write(va_space);
     uvm_mutex_unlock(&g_uvm_global.global_lock);
 
-    return status;
-}
-
-static NV_STATUS test_indirect_peers(uvm_gpu_t *owning_gpu, uvm_gpu_t *accessing_gpu)
-{
-    uvm_pmm_gpu_t *pmm = &owning_gpu->pmm;
-    size_t chunk_size = uvm_chunk_find_first_size(pmm->chunk_sizes[UVM_PMM_GPU_MEMORY_TYPE_USER]);
-    uvm_gpu_chunk_t *parent_chunk = NULL;
-    uvm_gpu_chunk_t **chunks = NULL;
-    size_t i, num_chunks = UVM_CHUNK_SIZE_MAX / chunk_size;
-    NV_STATUS tracker_status, status = NV_OK;
-    uvm_mem_t *verif_mem = NULL;
-    uvm_tracker_t tracker = UVM_TRACKER_INIT();
-    uvm_gpu_address_t local_addr;
-    uvm_gpu_address_t peer_addr;
-    NvU32 init_val = 0x12345678;
-    NvU32 new_val = 0xabcdc0de;
-
-    chunks = uvm_kvmalloc_zero(num_chunks * sizeof(chunks[0]));
-    if (!chunks)
-        return NV_ERR_NO_MEMORY;
-
-
-
-
-
-    TEST_NV_CHECK_GOTO(uvm_mem_alloc_sysmem_and_map_cpu_kernel(UVM_CHUNK_SIZE_MAX, current->mm, &verif_mem), out);
-    TEST_NV_CHECK_GOTO(uvm_mem_map_gpu_kernel(verif_mem, owning_gpu), out);
-    TEST_NV_CHECK_GOTO(uvm_mem_map_gpu_kernel(verif_mem, accessing_gpu), out);
-
-    // Allocate a root chunk then split it to test multiple mappings across
-    // contiguous chunks under the same root.
-    TEST_NV_CHECK_GOTO(uvm_pmm_gpu_alloc_user(pmm,
-                                              1,
-                                              UVM_CHUNK_SIZE_MAX,
-                                              UVM_PMM_ALLOC_FLAGS_EVICT,
-                                              &parent_chunk,
-                                              NULL), out);
-
-    TEST_NV_CHECK_GOTO(uvm_pmm_gpu_split_chunk(pmm, parent_chunk, chunk_size, chunks), out);
-    parent_chunk = NULL;
-
-    // Verify contiguity and multiple mappings under a root chunk
-    for (i = 0; i < num_chunks; i++) {
-        TEST_NV_CHECK_GOTO(uvm_pmm_gpu_indirect_peer_map(pmm, chunks[i], accessing_gpu), out);
-        TEST_CHECK_GOTO(uvm_pmm_gpu_indirect_peer_addr(pmm, chunks[i], accessing_gpu) ==
-                        uvm_pmm_gpu_indirect_peer_addr(pmm, chunks[0], accessing_gpu) + i * chunk_size,
-                        out);
-    }
-
-    // Check that accessing_gpu can read and write
-    local_addr = uvm_gpu_address_physical(UVM_APERTURE_VID, chunks[0]->address);
-    peer_addr  = uvm_pmm_gpu_peer_copy_address(&owning_gpu->pmm, chunks[0], accessing_gpu);
-
-    // Init on local GPU
-    TEST_NV_CHECK_GOTO(do_memset_4(owning_gpu, local_addr, init_val, UVM_CHUNK_SIZE_MAX, &tracker), out);
-
-    // Read using indirect peer and verify
-    TEST_NV_CHECK_GOTO(gpu_mem_check(accessing_gpu,
-                                     verif_mem,
-                                     peer_addr,
-                                     UVM_CHUNK_SIZE_MAX,
-                                     init_val,
-                                     &tracker), out);
-
-    // Write from indirect peer
-    TEST_NV_CHECK_GOTO(do_memset_4(accessing_gpu, peer_addr, new_val, UVM_CHUNK_SIZE_MAX, &tracker), out);
-
-    // Read using local gpu and verify
-    TEST_NV_CHECK_GOTO(gpu_mem_check(owning_gpu, verif_mem, local_addr, UVM_CHUNK_SIZE_MAX, new_val, &tracker), out);
-
-out:
-    tracker_status = uvm_tracker_wait_deinit(&tracker);
-    if (status == NV_OK && tracker_status != NV_OK) {
-        UVM_TEST_PRINT("Tracker wait failed\n");
-        status = tracker_status;
-    }
-
-    if (parent_chunk) {
-        uvm_pmm_gpu_free(pmm, parent_chunk, NULL);
-    }
-    else {
-        for (i = 0; i < num_chunks; i++) {
-            if (chunks[i])
-                uvm_pmm_gpu_free(pmm, chunks[i], NULL);
-        }
-    }
-
-    if (verif_mem)
-        uvm_mem_free(verif_mem);
-
-    uvm_kvfree(chunks);
-    return status;
-}
-
-NV_STATUS uvm_test_pmm_indirect_peers(UVM_TEST_PMM_INDIRECT_PEERS_PARAMS *params, struct file *filp)
-{
-    NV_STATUS status = NV_OK;
-    uvm_va_space_t *va_space = uvm_va_space_get(filp);
-    uvm_gpu_t *owning_gpu, *accessing_gpu;
-    bool ran_test = false;
-
-    uvm_va_space_down_read(va_space);
-
-    for_each_va_space_gpu(owning_gpu, va_space) {
-        for_each_va_space_gpu_in_mask(accessing_gpu, va_space, &va_space->indirect_peers[uvm_id_value(owning_gpu->id)]) {
-            ran_test = true;
-            status = test_indirect_peers(owning_gpu, accessing_gpu);
-            if (status != NV_OK)
-                goto out;
-        }
-    }
-
-    if (!ran_test)
-        status = NV_WARN_NOTHING_TO_DO;
-
-out:
-    uvm_va_space_up_read(va_space);
     return status;
 }
 
@@ -1431,7 +1294,7 @@ NV_STATUS uvm_test_pmm_chunk_with_elevated_page(UVM_TEST_PMM_CHUNK_WITH_ELEVATED
     uvm_va_space_down_read(va_space);
 
     for_each_va_space_gpu(gpu, va_space) {
-        if (!gpu->parent->numa_info.enabled)
+        if (!gpu->mem_info.numa.enabled)
             continue;
 
         ran_test = true;

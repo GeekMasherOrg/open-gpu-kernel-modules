@@ -75,26 +75,29 @@
 //
 //      Protects:
 //      - gpu->parent->isr.replayable_faults.service_lock:
-//        Changes to the state of a GPU as it transitions from top-half to bottom-half
-//        interrupt handler for replayable faults. This lock is acquired for that GPU,
-//        in the ISR top-half. Then a bottom-half is scheduled (to run in a workqueue).
-//        Then the bottom-half releases the lock when that GPU's processing appears to
-//        be done.
+//        Changes to the state of a GPU as it transitions from top-half to
+//        bottom-half interrupt handler for replayable faults. This lock is
+//        acquired for that GPU, in the ISR top-half. Then a bottom-half is
+//        scheduled (to run in a workqueue). Then the bottom-half releases the
+//        lock when that GPU's processing appears to be done.
+//
 //      - gpu->parent->isr.non_replayable_faults.service_lock:
-//        Changes to the state of a GPU in the bottom-half for non-replayable faults.
-//        Non-replayable faults are handed-off from RM instead of directly from the GPU
-//        hardware. This means that we do not keep receiving interrupts after RM pops
-//        out the faults from the HW buffer. In order not to miss fault notifications,
-//        we will always schedule a bottom-half for non-replayable faults if there are
-//        faults ready to be consumed in the buffer, even if there already is some
-//        bottom-half running or scheduled. This lock serializes all scheduled bottom
-//        halves per GPU which service non-replayable faults.
+//        Changes to the state of a GPU in the bottom-half for non-replayable
+//        faults. Non-replayable faults are handed-off from RM instead of
+//        directly from the GPU hardware. This means that we do not keep
+//        receiving interrupts after RM pops out the faults from the HW buffer.
+//        In order not to miss fault notifications, we will always schedule a
+//        bottom-half for non-replayable faults if there are faults ready to be
+//        consumed in the buffer, even if there already is some bottom-half
+//        running or scheduled. This lock serializes all scheduled bottom halves
+//        per GPU which service non-replayable faults.
+//
 //      - gpu->parent->isr.access_counters.service_lock:
-//        Changes to the state of a GPU as it transitions from top-half to bottom-half
-//        interrupt handler for access counter notifications. This lock is acquired for
-//        that GPU, in the ISR top-half. Then a bottom-half is scheduled (to run in a
-//        workqueue). Then the bottom-half releases the lock when that GPU's processing
-//        appears to be done.
+//        Changes to the state of a GPU as it transitions from top-half to
+//        bottom-half interrupt handler for access counter notifications. This
+//        lock is acquired for that GPU, in the ISR top-half. Then a bottom-half
+//        is scheduled (to run in a workqueue). Then the bottom-half releases
+//        the lock when that GPU's processing appears to be done.
 //
 // - mmap_lock (mmap_sem in kernels < 5.8)
 //      Order: UVM_LOCK_ORDER_MMAP_LOCK
@@ -276,16 +279,15 @@
 //      Operations not allowed while holding the lock:
 //      - GPU memory allocation which can evict memory (would require nesting
 //        block locks)
-
-
-
-
-
-
-
-
-
-
+//
+// - GPU DMA Allocation pool lock (gpu->conf_computing.dma_buffer_pool.lock)
+//      Order: UVM_LOCK_ORDER_CONF_COMPUTING_DMA_BUFFER_POOL
+//      Condition: The Confidential Computing feature is enabled
+//      Exclusive lock (mutex)
+//
+//      Protects:
+//      - Protect the state of the uvm_conf_computing_dma_buffer_pool_t
+//
 // - Chunk mapping lock (gpu->root_chunk_mappings.bitlocks and
 //   gpu->sysmem_mappings.bitlock)
 //      Order: UVM_LOCK_ORDER_CHUNK_MAPPING
@@ -320,20 +322,62 @@
 //      Operations not allowed while holding this lock
 //      - GPU memory allocation which can evict
 //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// - CE channel CSL channel pool semaphore
+//      Order: UVM_LOCK_ORDER_CSL_PUSH
+//      Condition: The Confidential Computing feature is enabled
+//      Semaphore per CE channel pool
+//
+//      The semaphore controls concurrent pushes to CE channels that are not WCL
+//      channels. Secure work submission depends on channel availability in
+//      GPFIFO entries (as in any other channel type) but also on channel
+//      locking. Each channel has a lock to enforce ordering of pushes. The
+//      channel's CSL lock is taken on channel reservation until uvm_push_end.
+//      When the Confidential Computing feature is enabled, channels are
+//      stateful, and the CSL lock protects their CSL state/context.
+//
+//      Operations allowed while holding this lock
+//      - Pushing work to CE channels (except for WLC channels)
+//
+// - WLC CSL channel pool semaphore
+//      Order: UVM_LOCK_ORDER_CSL_WLC_PUSH
+//      Condition: The Confidential Computing feature is enabled
+//      Semaphore per WLC channel pool
+//
+//      The semaphore controls concurrent pushes to WLC channels. WLC work
+//      submission depends on channel availability in GPFIFO entries (as in any
+//      other channel type) but also on channel locking. Each WLC channel has a
+//      lock to enforce ordering of pushes. The channel's CSL lock is taken on
+//      channel reservation until uvm_push_end. SEC2 channels are stateful
+//      channels and the CSL lock protects their CSL state/context.
+//
+//      This lock ORDER is different and sits below the generic channel CSL
+//      lock and above the SEC2 CSL lock. This reflects the dual nature of WLC
+//      channels; they use SEC2 indirect work launch during initialization,
+//      and after their schedule is initialized they provide indirect launch
+//      functionality to other CE channels.
+//
+//      Operations allowed while holding this lock
+//      - Pushing work to WLC channels
+//
+// - SEC2 CSL channel pool semaphore
+//      Order: UVM_LOCK_ORDER_SEC2_CSL_PUSH
+//      Condition: The Confidential Computing feature is enabled
+//      Semaphore per SEC2 channel pool
+//
+//      The semaphore controls concurrent pushes to SEC2 channels. SEC2 work
+//      submission depends on channel availability in GPFIFO entries (as in any
+//      other channel type) but also on channel locking. Each SEC2 channel has a
+//      lock to enforce ordering of pushes. The channel's CSL lock is taken on
+//      channel reservation until uvm_push_end. SEC2 channels are stateful
+//      channels and the CSL lock protects their CSL state/context.
+//
+//      This lock ORDER is different and lower than UVM_LOCK_ORDER_CSL_PUSH
+//      to allow secure work submission to use a SEC2 channel to submit
+//      work before releasing the CSL lock of the originating channel.
+//
+//      Operations allowed while holding this lock
+//      - Pushing work to SEC2 channels
+//
 // - Concurrent push semaphore
 //      Order: UVM_LOCK_ORDER_PUSH
 //      Semaphore (uvm_semaphore_t)
@@ -361,11 +405,26 @@
 //
 // - Channel lock
 //      Order: UVM_LOCK_ORDER_CHANNEL
+//      Spinlock (uvm_spinlock_t) or exclusive lock (mutex)
+//
+//      Lock protecting the state of all the channels in a channel pool. The
+//      channel pool lock documentation contains the guidelines about which lock
+//      type (mutex or spinlock) to use.
+//
+// - WLC Channel lock
+//      Order: UVM_LOCK_ORDER_WLC_CHANNEL
+//      Condition: The Confidential Computing feature is enabled
 //      Spinlock (uvm_spinlock_t)
+//
+//      Lock protecting the state of WLC channels in a channel pool. This lock
+//      is separate from the generic channel lock (UVM_LOCK_ORDER_CHANNEL)
+//      to allow for indirect worklaunch pushes while holding the main channel
+//      lock (WLC pushes don't need any of the pushbuffer locks described
+//      above)
 //
 // - Tools global VA space list lock (g_tools_va_space_list_lock)
 //      Order: UVM_LOCK_ORDER_TOOLS_VA_SPACE_LIST
-//      Reader/writer lock (rw_sempahore)
+//      Reader/writer lock (rw_semaphore)
 //
 //      This lock protects the list of VA spaces used when broadcasting
 //      UVM profiling events.
@@ -382,6 +441,19 @@
 //      reporting with tools register/unregister. Since some of the tools
 //      events come from perf events, both VA_SPACE_EVENTS and VA_SPACE_TOOLS
 //      must be taken to register/report some tools events.
+//
+// - Tracking semaphores
+//      Order: UVM_LOCK_ORDER_SECURE_SEMAPHORE
+//      Condition: The Confidential Computing feature is enabled
+//
+//      CE semaphore payloads are encrypted, and require to take the CSL lock
+//      (UVM_LOCK_ORDER_LEAF) to decrypt the payload.
+
+// - CSL Context
+//      Order: UVM_LOCK_ORDER_CSL_CTX
+//      When the Confidential Computing feature is enabled, encrypt/decrypt
+//      operations to communicate with GPU are handled by the CSL context.
+//      This lock protects RM calls that use this context.
 //
 // - Leaf locks
 //      Order: UVM_LOCK_ORDER_LEAF
@@ -407,24 +479,30 @@ typedef enum
     UVM_LOCK_ORDER_GPU_SEMAPHORE_POOL,
     UVM_LOCK_ORDER_RM_API,
     UVM_LOCK_ORDER_RM_GPUS,
+    UVM_LOCK_ORDER_VA_BLOCK_MIGRATE,
     UVM_LOCK_ORDER_VA_BLOCK,
-
-
-
+    UVM_LOCK_ORDER_CONF_COMPUTING_DMA_BUFFER_POOL,
     UVM_LOCK_ORDER_CHUNK_MAPPING,
     UVM_LOCK_ORDER_PAGE_TREE,
-
-
-
+    UVM_LOCK_ORDER_CSL_PUSH,
+    UVM_LOCK_ORDER_CSL_WLC_PUSH,
+    UVM_LOCK_ORDER_CSL_SEC2_PUSH,
     UVM_LOCK_ORDER_PUSH,
     UVM_LOCK_ORDER_PMM,
     UVM_LOCK_ORDER_PMM_PMA,
     UVM_LOCK_ORDER_PMM_ROOT_CHUNK,
     UVM_LOCK_ORDER_CHANNEL,
+    UVM_LOCK_ORDER_WLC_CHANNEL,
     UVM_LOCK_ORDER_TOOLS_VA_SPACE_LIST,
     UVM_LOCK_ORDER_VA_SPACE_EVENTS,
     UVM_LOCK_ORDER_VA_SPACE_TOOLS,
     UVM_LOCK_ORDER_SEMA_POOL_TRACKER,
+    UVM_LOCK_ORDER_SECURE_SEMAPHORE,
+
+    // TODO: Bug 4184836: [uvm][hcc] Remove UVM_LOCK_ORDER_CSL_CTX
+    // This lock order can be removed after RM no longer relies on RPC event
+    // notifications.
+    UVM_LOCK_ORDER_CSL_CTX,
     UVM_LOCK_ORDER_LEAF,
     UVM_LOCK_ORDER_COUNT,
 } uvm_lock_order_t;
@@ -581,6 +659,15 @@ bool __uvm_locking_initialized(void);
 #define uvm_assert_lockable_order(order) UVM_ASSERT(__uvm_check_lockable_order(order, UVM_LOCK_FLAGS_MODE_ANY))
 #define uvm_assert_unlocked_order(order) UVM_ASSERT(__uvm_check_unlocked_order(order))
 
+#if UVM_IS_DEBUG()
+#define uvm_lock_debug_init(lock, order) ({        \
+        uvm_locking_assert_initialized();          \
+        (lock)->lock_order = (order);              \
+    })
+#else
+#define uvm_lock_debug_init(lock, order) ((void) order)
+#endif
+
 // Helpers for locking mmap_lock (mmap_sem in kernels < 5.8)
 // and recording its usage
 #define uvm_assert_mmap_lock_locked_mode(mm, flags) ({                                      \
@@ -671,15 +758,12 @@ typedef struct
 
 #define uvm_assert_rwsem_unlocked(uvm_sem) UVM_ASSERT(!rwsem_is_locked(&(uvm_sem)->sem))
 
-static void uvm_init_rwsem(uvm_rw_semaphore_t *uvm_sem, uvm_lock_order_t lock_order)
-{
-    init_rwsem(&uvm_sem->sem);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    uvm_sem->lock_order = lock_order;
-#endif
-    uvm_assert_rwsem_unlocked(uvm_sem);
-}
+#define uvm_init_rwsem(uvm_sem, order) ({                   \
+        uvm_rw_semaphore_t *uvm_sem_ ## order = (uvm_sem);  \
+        init_rwsem(&uvm_sem_ ## order->sem);                \
+        uvm_lock_debug_init(uvm_sem, order);                \
+        uvm_assert_rwsem_unlocked(uvm_sem);                 \
+    })
 
 #define uvm_down_read(uvm_sem) ({                          \
         typeof(uvm_sem) _sem = (uvm_sem);                  \
@@ -807,15 +891,12 @@ typedef struct
         UVM_ASSERT_MSG(!irqs_disabled() && !in_interrupt(), "Mutexes cannot be used with interrupts disabled"); \
     })
 
-static void uvm_mutex_init(uvm_mutex_t *mutex, uvm_lock_order_t lock_order)
-{
-    mutex_init(&mutex->m);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    mutex->lock_order = lock_order;
-#endif
-    uvm_assert_mutex_unlocked(mutex);
-}
+#define uvm_mutex_init(mutex, order) ({                \
+        uvm_mutex_t *mutex_ ## order = (mutex);        \
+        mutex_init(&mutex_ ## order->m);               \
+        uvm_lock_debug_init(mutex, order);             \
+        uvm_assert_mutex_unlocked(mutex);              \
+    })
 
 #define uvm_mutex_lock(mutex) ({                                \
         typeof(mutex) _mutex = (mutex);                         \
@@ -825,11 +906,14 @@ static void uvm_mutex_init(uvm_mutex_t *mutex, uvm_lock_order_t lock_order)
         uvm_assert_mutex_locked(_mutex);                        \
     })
 
-// Lock w/o any tracking. This should be extremely rare and *_no_tracking
-// helpers will be added only as needed.
-#define uvm_mutex_lock_no_tracking(mutex) ({    \
+// Lock while already holding a lock of the same order taken with
+// uvm_mutex_lock() variant. Note this shouldn't be used if the held lock was
+// taken with uvm_mutex_lock_nested() because we only support a single level of
+// nesting. This should be extremely rare and *_nested helpers will only be
+// added as needed.
+#define uvm_mutex_lock_nested(mutex) ({         \
         uvm_assert_mutex_interrupts();          \
-        mutex_lock(&(mutex)->m);                \
+        mutex_lock_nested(&(mutex)->m, 1);      \
     })
 
 #define uvm_mutex_trylock(mutex) ({                                                      \
@@ -859,9 +943,8 @@ static void uvm_mutex_init(uvm_mutex_t *mutex, uvm_lock_order_t lock_order)
         uvm_record_unlock_out_of_order(_mutex, UVM_LOCK_FLAGS_MODE_EXCLUSIVE); \
     })
 
-// Unlock w/o any tracking. This should be extremely rare and *_no_tracking
-// helpers will be added only as needed.
-#define uvm_mutex_unlock_no_tracking(mutex) ({  \
+// Unlock w/o any tracking.
+#define uvm_mutex_unlock_nested(mutex) ({       \
         uvm_assert_mutex_interrupts();          \
         mutex_unlock(&(mutex)->m);              \
     })
@@ -874,14 +957,11 @@ typedef struct
 #endif
 } uvm_semaphore_t;
 
-static void uvm_sema_init(uvm_semaphore_t *semaphore, int val, uvm_lock_order_t lock_order)
-{
-    sema_init(&semaphore->sem, val);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    semaphore->lock_order = lock_order;
-#endif
-}
+#define uvm_sema_init(semaphore, val, order) ({         \
+        uvm_semaphore_t *sem_ ## order = (semaphore);   \
+        sema_init(&sem_ ## order->sem, (val));          \
+        uvm_lock_debug_init(semaphore, order);          \
+    })
 
 #define uvm_sem_is_locked(uvm_sem) uvm_check_locked(uvm_sem, UVM_LOCK_FLAGS_MODE_SHARED)
 
@@ -937,22 +1017,20 @@ typedef struct
 // be the same as the string passed to "spinlock".
 // See uvm_spin_lock() and uvm_spin_unlock() below as examples.
 //
-#define uvm_assert_spinlock_locked(spinlock) ({                                                               \
-        typeof(spinlock) _lock_ = (spinlock);                                                                 \
-        UVM_ASSERT(spin_is_locked(&_lock_->lock) && uvm_check_locked(_lock_, UVM_LOCK_FLAGS_MODE_EXCLUSIVE)); \
+#define uvm_assert_spinlock_locked(spinlock) ({                              \
+        typeof(spinlock) _lock_ = (spinlock);                                \
+        UVM_ASSERT(spin_is_locked(&_lock_->lock));                           \
+        UVM_ASSERT(uvm_check_locked(_lock_, UVM_LOCK_FLAGS_MODE_EXCLUSIVE)); \
     })
 
 #define uvm_assert_spinlock_unlocked(spinlock) UVM_ASSERT(!spin_is_locked(&(spinlock)->lock))
 
-static void uvm_spin_lock_init(uvm_spinlock_t *spinlock, uvm_lock_order_t lock_order)
-{
-    spin_lock_init(&spinlock->lock);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    spinlock->lock_order = lock_order;
-#endif
-    uvm_assert_spinlock_unlocked(spinlock);
-}
+#define uvm_spin_lock_init(spinlock, order) ({                  \
+            uvm_spinlock_t *spinlock_ ## order = (spinlock);    \
+            spin_lock_init(&spinlock_ ## order->lock);          \
+            uvm_lock_debug_init(spinlock, order);               \
+            uvm_assert_spinlock_unlocked(spinlock);             \
+    })
 
 #define uvm_spin_lock(uvm_lock) ({                             \
         typeof(uvm_lock) _lock = (uvm_lock);                   \
@@ -968,15 +1046,12 @@ static void uvm_spin_lock_init(uvm_spinlock_t *spinlock, uvm_lock_order_t lock_o
         uvm_record_unlock(_lock, UVM_LOCK_FLAGS_MODE_EXCLUSIVE); \
     })
 
-static void uvm_spin_lock_irqsave_init(uvm_spinlock_irqsave_t *spinlock, uvm_lock_order_t lock_order)
-{
-    spin_lock_init(&spinlock->lock);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    spinlock->lock_order = lock_order;
-#endif
-    uvm_assert_spinlock_unlocked(spinlock);
-}
+#define uvm_spin_lock_irqsave_init(spinlock, order) ({                  \
+            uvm_spinlock_irqsave_t *spinlock_ ## order = (spinlock);    \
+            spin_lock_init(&spinlock_ ## order->lock);                  \
+            uvm_lock_debug_init(spinlock, order);                       \
+            uvm_assert_spinlock_unlocked(spinlock);                     \
+    })
 
 // Use a temp to not rely on flags being written after acquiring the lock.
 #define uvm_spin_lock_irqsave(uvm_lock) ({                     \
@@ -1051,16 +1126,12 @@ static void uvm_rwlock_irqsave_dec(uvm_rwlock_irqsave_t *rwlock)
     #define uvm_assert_rwlock_unlocked(uvm_rwlock)
 #endif
 
-static void uvm_rwlock_irqsave_init(uvm_rwlock_irqsave_t *rwlock, uvm_lock_order_t lock_order)
-{
-    rwlock_init(&rwlock->lock);
-#if UVM_IS_DEBUG()
-    uvm_locking_assert_initialized();
-    rwlock->lock_order = lock_order;
-    atomic_set(&rwlock->lock_count, 0);
-#endif
-    uvm_assert_rwlock_unlocked(rwlock);
-}
+#define uvm_rwlock_irqsave_init(rwlock, order) ({               \
+            uvm_rwlock_irqsave_t *rwlock_ ## order = rwlock;    \
+            rwlock_init(&rwlock_ ## order->lock);               \
+            uvm_lock_debug_init(rwlock, order);                 \
+            uvm_assert_rwlock_unlocked(rwlock);                 \
+        })
 
 // We can't store the irq_flags within the lock itself for readers, so they must
 // pass in their flags.

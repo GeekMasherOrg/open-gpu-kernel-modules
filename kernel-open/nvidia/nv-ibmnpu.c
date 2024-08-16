@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2017-2019 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2017-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -37,7 +37,6 @@
  */
 const NvU32 P9_L1D_CACHE_DEFAULT_BLOCK_SIZE = 0x80;
 
-#if defined(NV_OF_GET_PROPERTY_PRESENT)
 static NvU32 nv_ibm_get_cpu_l1d_cache_block_size(void)
 {
     const __be32 *block_size_prop;
@@ -60,12 +59,6 @@ static NvU32 nv_ibm_get_cpu_l1d_cache_block_size(void)
 
     return be32_to_cpu(*block_size_prop);
 }
-#else
-static NvU32 nv_ibm_get_cpu_l1d_cache_block_size(void)
-{
-    return P9_L1D_CACHE_DEFAULT_BLOCK_SIZE;
-}
-#endif
 
 /*
  * GPU device memory can be exposed to the kernel as NUMA node memory via the
@@ -383,7 +376,7 @@ void NV_API_CALL nv_ibmnpu_cache_flush_range(nv_state_t *nv, NvU64 cpu_virtual, 
 
     cbsize = nvl->npu->numa_info.l1d_cache_block_size;
 
-    CACHE_FLUSH();
+    asm volatile("sync; isync" ::: "memory");
 
     /* Force eviction of any cache lines from the NUMA-onlined region. */
     for (offset = 0; offset < size; offset += cbsize)
@@ -394,7 +387,7 @@ void NV_API_CALL nv_ibmnpu_cache_flush_range(nv_state_t *nv, NvU64 cpu_virtual, 
         cond_resched();
     }
 
-    CACHE_FLUSH();
+    asm volatile("sync; isync" ::: "memory");
 }
 
 #else

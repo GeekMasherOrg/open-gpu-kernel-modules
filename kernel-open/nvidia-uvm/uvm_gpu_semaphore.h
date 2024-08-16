@@ -45,8 +45,16 @@ struct uvm_gpu_semaphore_struct
     // The semaphore pool page the semaphore came from
     uvm_gpu_semaphore_pool_page_t *page;
 
-    // Pointer to the memory location
-    NvU32 *payload;
+    // Index of the semaphore in semaphore page
+    NvU16 index;
+
+    struct {
+        UvmCslIv *ivs;
+        NvU32 cached_payload;
+
+        NvU32 last_pushed_notifier;
+        NvU32 last_observed_notifier;
+    } conf_computing;
 };
 
 // A primitive used for tracking progress of the GPU
@@ -67,7 +75,10 @@ struct uvm_gpu_tracking_semaphore_struct
     atomic64_t completed_value;
 
     // Lock protecting updates to the completed_value
-    uvm_spinlock_t lock;
+    union {
+        uvm_spinlock_t s_lock;
+        uvm_mutex_t m_lock;
+    };
 
     // Last queued value
     // All accesses to the queued value should be handled by the user of the GPU
@@ -77,6 +88,12 @@ struct uvm_gpu_tracking_semaphore_struct
 
 // Create a semaphore pool for a GPU.
 NV_STATUS uvm_gpu_semaphore_pool_create(uvm_gpu_t *gpu, uvm_gpu_semaphore_pool_t **pool_out);
+
+// When the Confidential Computing feature is enabled, semaphore pools
+// associated with CE channels are allocated in the CPR of vidmem and as such
+// have all the associated access restrictions. Because of this, they're called
+// secure pools and secure semaphores are allocated out of said secure pools.
+NV_STATUS uvm_gpu_semaphore_secure_pool_create(uvm_gpu_t *gpu, uvm_gpu_semaphore_pool_t **pool_out);
 
 // Destroy a semaphore pool
 // Locking:
@@ -90,6 +107,9 @@ void uvm_gpu_semaphore_pool_destroy(uvm_gpu_semaphore_pool_t *pool);
 // Allocate a semaphore from the pool.
 // The semaphore will be mapped on all GPUs currently registered with the UVM
 // driver, and on all new GPUs which will be registered in the future.
+// Unless the Confidential Computing feature is enabled and the pool is a
+// secure pool. In this case, it is only mapped to the GPU that holds the
+// allocation.
 // The mappings are added to UVM's internal address space, and (in SR-IOV heavy)
 // to the proxy address space.
 //
@@ -128,6 +148,17 @@ NvU64 uvm_gpu_semaphore_get_gpu_uvm_va(uvm_gpu_semaphore_t *semaphore, uvm_gpu_t
 NvU64 uvm_gpu_semaphore_get_gpu_proxy_va(uvm_gpu_semaphore_t *semaphore, uvm_gpu_t *gpu);
 
 NvU64 uvm_gpu_semaphore_get_gpu_va(uvm_gpu_semaphore_t *semaphore, uvm_gpu_t *gpu, bool is_proxy_va_space);
+
+NvU32 *uvm_gpu_semaphore_get_cpu_va(uvm_gpu_semaphore_t *semaphore);
+
+NvU32 *uvm_gpu_semaphore_get_encrypted_payload_cpu_va(uvm_gpu_semaphore_t *semaphore);
+uvm_gpu_address_t uvm_gpu_semaphore_get_encrypted_payload_gpu_va(uvm_gpu_semaphore_t *semaphore);
+
+NvU32 *uvm_gpu_semaphore_get_notifier_cpu_va(uvm_gpu_semaphore_t *semaphore);
+uvm_gpu_address_t uvm_gpu_semaphore_get_notifier_gpu_va(uvm_gpu_semaphore_t *semaphore);
+
+void *uvm_gpu_semaphore_get_auth_tag_cpu_va(uvm_gpu_semaphore_t *semaphore);
+uvm_gpu_address_t uvm_gpu_semaphore_get_auth_tag_gpu_va(uvm_gpu_semaphore_t *semaphore);
 
 // Read the 32-bit payload of the semaphore
 // Notably doesn't provide any memory ordering guarantees and needs to be used with

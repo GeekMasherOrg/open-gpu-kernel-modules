@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2014-2015 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,6 +29,7 @@
 #include <nvlimits.h>
 
 #define NVKMS_MAX_SUBDEVICES                  NV_MAX_SUBDEVICES
+#define NVKMS_MAX_HEADS_PER_DISP              NV_MAX_HEADS
 
 #define NVKMS_LEFT                            0
 #define NVKMS_RIGHT                           1
@@ -44,6 +45,11 @@
 
 #define NVKMS_DEVICE_ID_TEGRA                 0x0000ffff
 
+#define NVKMS_MAX_SUPERFRAME_VIEWS            4
+
+#define NVKMS_LOG2_LUT_ARRAY_SIZE             10
+#define NVKMS_LUT_ARRAY_SIZE                  (1 << NVKMS_LOG2_LUT_ARRAY_SIZE)
+
 typedef NvU32 NvKmsDeviceHandle;
 typedef NvU32 NvKmsDispHandle;
 typedef NvU32 NvKmsConnectorHandle;
@@ -52,6 +58,7 @@ typedef NvU32 NvKmsFrameLockHandle;
 typedef NvU32 NvKmsDeferredRequestFifoHandle;
 typedef NvU32 NvKmsSwapGroupHandle;
 typedef NvU32 NvKmsVblankSyncObjectHandle;
+typedef NvU32 NvKmsVblankSemControlHandle;
 
 struct NvKmsSize {
     NvU16 width;
@@ -178,6 +185,14 @@ enum NvKmsEventType {
     NVKMS_EVENT_TYPE_FLIP_OCCURRED,
 };
 
+enum NvKmsFlipResult {
+    NV_KMS_FLIP_RESULT_SUCCESS = 0,    /* Success */
+    NV_KMS_FLIP_RESULT_INVALID_PARAMS, /* Parameter validation failed */
+    NV_KMS_FLIP_RESULT_IN_PROGRESS,    /* Flip would fail because an outstanding
+                                          flip containing changes that cannot be
+                                          queued is in progress */
+};
+
 typedef enum {
     NV_EVO_SCALER_1TAP      = 0,
     NV_EVO_SCALER_2TAPS     = 1,
@@ -218,6 +233,16 @@ struct NvKmsUsageBounds {
         struct NvKmsScalingUsageBounds scaling;
         NvU64 supportedSurfaceMemoryFormats NV_ALIGN_BYTES(8);
     } layer[NVKMS_MAX_LAYERS_PER_HEAD];
+};
+
+/*!
+ * Per-component arrays of NvU16s describing the LUT; used for both the input
+ * LUT and output LUT.
+ */
+struct NvKmsLutRamps {
+    NvU16 red[NVKMS_LUT_ARRAY_SIZE];   /*! in */
+    NvU16 green[NVKMS_LUT_ARRAY_SIZE]; /*! in */
+    NvU16 blue[NVKMS_LUT_ARRAY_SIZE];  /*! in */
 };
 
 /*
@@ -415,9 +440,9 @@ struct NvKmsLayerCapabilities {
     NvBool supportsWindowMode              :1;
 
     /*!
-     * Whether layer supports HDR pipe.
+     * Whether layer supports ICtCp pipe.
      */
-    NvBool supportsHDR                     :1;
+    NvBool supportsICtCp                   :1;
 
 
     /*!
@@ -529,5 +554,133 @@ typedef struct {
     NvBool coherent;
     NvBool noncoherent;
 } NvKmsDispIOCoherencyModes;
+
+enum NvKmsInputColorRange {
+    /*
+     * If DEFAULT is provided, driver will assume full range for RGB formats
+     * and limited range for YUV formats.
+     */
+    NVKMS_INPUT_COLORRANGE_DEFAULT = 0,
+
+    NVKMS_INPUT_COLORRANGE_LIMITED = 1,
+
+    NVKMS_INPUT_COLORRANGE_FULL = 2,
+};
+
+enum NvKmsInputColorSpace {
+    /* Unknown colorspace; no de-gamma will be applied */
+    NVKMS_INPUT_COLORSPACE_NONE = 0,
+
+    /* Linear, Rec.709 [-0.5, 7.5) */
+    NVKMS_INPUT_COLORSPACE_SCRGB_LINEAR = 1,
+
+    /* PQ, Rec.2020 unity */
+    NVKMS_INPUT_COLORSPACE_BT2100_PQ = 2,
+};
+
+enum NvKmsOutputColorimetry {
+    NVKMS_OUTPUT_COLORIMETRY_DEFAULT = 0,
+
+    NVKMS_OUTPUT_COLORIMETRY_BT2100 = 1,
+};
+
+enum NvKmsOutputTf {
+    /*
+     * NVKMS itself won't apply any OETF (clients are still
+     * free to provide a custom OLUT)
+     */
+    NVKMS_OUTPUT_TF_NONE = 0,
+    NVKMS_OUTPUT_TF_TRADITIONAL_GAMMA_SDR = 1,
+    NVKMS_OUTPUT_TF_PQ = 2,
+};
+
+/*!
+ * EOTF Data Byte 1 as per CTA-861-G spec.
+ * This is expected to match exactly with the spec.
+ */
+enum NvKmsInfoFrameEOTF {
+    NVKMS_INFOFRAME_EOTF_SDR_GAMMA = 0,
+    NVKMS_INFOFRAME_EOTF_HDR_GAMMA = 1,
+    NVKMS_INFOFRAME_EOTF_ST2084 = 2,
+    NVKMS_INFOFRAME_EOTF_HLG = 3,
+};
+
+/*!
+ * HDR Static Metadata Type1 Descriptor as per CEA-861.3 spec.
+ * This is expected to match exactly with the spec.
+ */
+struct NvKmsHDRStaticMetadata {
+    /*!
+     * Color primaries of the data.
+     * These are coded as unsigned 16-bit values in units of 0.00002,
+     * where 0x0000 represents zero and 0xC350 represents 1.0000.
+     */
+    struct {
+        NvU16 x, y;
+    } displayPrimaries[3];
+
+    /*!
+     * White point of colorspace data.
+     * These are coded as unsigned  16-bit values in units of 0.00002,
+     * where 0x0000 represents zero and 0xC350 represents 1.0000.
+     */
+    struct {
+        NvU16 x, y;
+    } whitePoint;
+
+    /**
+     * Maximum mastering display luminance.
+     * This value is coded as an unsigned 16-bit value in units of 1 cd/m2,
+     * where 0x0001 represents 1 cd/m2 and 0xFFFF represents 65535 cd/m2.
+     */
+    NvU16 maxDisplayMasteringLuminance;
+
+    /*!
+     * Minimum mastering display luminance.
+     * This value is coded as an unsigned 16-bit value in units of
+     * 0.0001 cd/m2, where 0x0001 represents 0.0001 cd/m2 and 0xFFFF
+     * represents 6.5535 cd/m2.
+     */
+    NvU16 minDisplayMasteringLuminance;
+
+    /*!
+     * Maximum content light level.
+     * This value is coded as an unsigned 16-bit value in units of 1 cd/m2,
+     * where 0x0001 represents 1 cd/m2 and 0xFFFF represents 65535 cd/m2.
+     */
+    NvU16 maxCLL;
+
+    /*!
+     * Maximum frame-average light level.
+     * This value is coded as an unsigned 16-bit value in units of 1 cd/m2,
+     * where 0x0001 represents 1 cd/m2 and 0xFFFF represents 65535 cd/m2.
+     */
+    NvU16 maxFALL;
+};
+
+/*!
+ * A superframe is made of two or more video streams that are combined in
+ * a specific way. A DP serializer (an external device connected to a Tegra
+ * ARM SOC over DP or HDMI) can receive a video stream comprising multiple
+ * videos combined into a single frame and then split it into multiple
+ * video streams. The following structure describes the number of views
+ * and dimensions of each view inside a superframe.
+ */
+struct NvKmsSuperframeInfo {
+    NvU8 numViews;
+    struct {
+        /* x offset inside superframe at which this view starts */
+        NvU16 x;
+
+        /* y offset inside superframe at which this view starts */
+        NvU16 y;
+
+        /* Horizontal active width in pixels for this view */
+        NvU16 width;
+
+        /* Vertical active height in lines for this view */
+        NvU16 height;
+    } view[NVKMS_MAX_SUPERFRAME_VIEWS];
+};
 
 #endif /* NVKMS_API_TYPES_H */

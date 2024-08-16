@@ -36,6 +36,10 @@
 #include "linux/mm.h"
 #include "nv-mm.h"
 
+#if defined(NV_BSD)
+#include <vm/vm_pageout.h>
+#endif
+
 static inline
 void __nv_drm_gem_user_memory_free(struct nv_drm_gem_object *nv_gem)
 {
@@ -92,9 +96,9 @@ static int __nv_drm_gem_user_memory_mmap(struct nv_drm_gem_object *nv_gem,
         return -EINVAL;
     }
 
-    vma->vm_flags &= ~VM_PFNMAP;
-    vma->vm_flags &= ~VM_IO;
-    vma->vm_flags |= VM_MIXEDMAP;
+    nv_vm_flags_clear(vma, VM_PFNMAP);
+    nv_vm_flags_clear(vma, VM_IO);
+    nv_vm_flags_set(vma, VM_MIXEDMAP);
 
     return 0;
 }
@@ -112,8 +116,11 @@ static vm_fault_t __nv_drm_gem_user_memory_handle_vma_fault(
 
     page_offset = vmf->pgoff - drm_vma_node_start(&gem->vma_node);
 
-    BUG_ON(page_offset > nv_user_memory->pages_count);
+    BUG_ON(page_offset >= nv_user_memory->pages_count);
 
+#if !defined(NV_LINUX)
+    ret = vmf_insert_pfn(vma, address, page_to_pfn(nv_user_memory->pages[page_offset]));
+#else /* !defined(NV_LINUX) */
     ret = vm_insert_page(vma, address, nv_user_memory->pages[page_offset]);
     switch (ret) {
         case 0:
@@ -132,6 +139,7 @@ static vm_fault_t __nv_drm_gem_user_memory_handle_vma_fault(
             ret = VM_FAULT_SIGBUS;
             break;
     }
+#endif /* !defined(NV_LINUX) */
 
     return ret;
 }
@@ -171,7 +179,7 @@ int nv_drm_gem_import_userspace_memory_ioctl(struct drm_device *dev,
     if ((params->size % PAGE_SIZE) != 0) {
         NV_DRM_DEV_LOG_ERR(
             nv_dev,
-            "Userspace memory 0x%llx size should be in a multiple of page "
+            "Userspace memory 0x%" NvU64_fmtx " size should be in a multiple of page "
             "size to create a gem object",
             params->address);
         return -EINVAL;
@@ -184,7 +192,7 @@ int nv_drm_gem_import_userspace_memory_ioctl(struct drm_device *dev,
     if (ret != 0) {
         NV_DRM_DEV_LOG_ERR(
             nv_dev,
-            "Failed to lock user pages for address 0x%llx: %d",
+            "Failed to lock user pages for address 0x%" NvU64_fmtx ": %d",
             params->address, ret);
         return ret;
     }

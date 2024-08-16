@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2020-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2020-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -32,6 +32,7 @@
 #include "deprecated/rmapi_deprecated.h"
 #include "gpu/mem_mgr/mem_utils.h"
 #include "core/system.h"
+#include "ctrl/ctrl0000/ctrl0000gpu.h"
 
 #include "gpu/mem_sys/kern_mem_sys.h"
 
@@ -46,7 +47,6 @@
  * @brief
  *     This routine provides common allocation services used by the
  *     following heap allocation functions:
- *       NVOS32_FUNCTION_ALLOC_DEPTH_WIDTH_HEIGHT
  *       NVOS32_FUNCTION_ALLOC_SIZE
  *       NVOS32_FUNCTION_ALLOC_SIZE_RANGE
  *       NVOS32_FUNCTION_ALLOC_TILED_PITCH_HEIGHT
@@ -210,9 +210,63 @@ sysmemConstruct_IMPL
 
     memdescSetFlag(pMemDesc, MEMDESC_FLAGS_SYSMEM_OWNED_BY_CLIENT, NV_TRUE);
 
+    if ((sysGetStaticConfig(SYS_GET_INSTANCE()))->bOsCCEnabled &&
+        gpuIsCCorApmFeatureEnabled(pGpu) &&
+        FLD_TEST_DRF(OS32, _ATTR2, _MEMORY_PROTECTION, _UNPROTECTED,
+                     pAllocData->attr2))
+        {
+            memdescSetFlag(pMemDesc, MEMDESC_FLAGS_ALLOC_IN_UNPROTECTED_MEMORY,
+                           NV_TRUE);
+        }
+
     memdescSetGpuCacheAttrib(pMemDesc, gpuCacheAttrib);
 
-    rmStatus = memdescAlloc(pMemDesc);
+    if (FLD_TEST_DRF(OS32, _ATTR2, _FIXED_NUMA_NODE_ID, _YES, pAllocData->attr2))
+    {
+
+        if (memdescGetFlag(pMemDesc, MEMDESC_FLAGS_ALLOC_IN_UNPROTECTED_MEMORY))
+        {
+            NV_PRINTF(LEVEL_ERROR, "Cannot specify NUMA node in unprotected memory.\n");
+            memdescDestroy(pMemDesc);
+            rmStatus = NV_ERR_INVALID_ARGUMENT;
+            goto failed;
+        }
+
+        if ((pGpu->cpuNumaNodeId != NV0000_CTRL_NO_NUMA_NODE) && 
+            (pAllocData->numaNode != pGpu->cpuNumaNodeId))
+        {
+            NV_PRINTF(LEVEL_ERROR, "NUMA node mismatch. Requested node: %u CPU node: %u\n",
+                      pAllocData->numaNode, pGpu->cpuNumaNodeId);
+            memdescDestroy(pMemDesc);
+            rmStatus = NV_ERR_INVALID_ARGUMENT;
+            goto failed;
+        }
+
+        memdescSetNumaNode(pMemDesc, pAllocData->numaNode);
+        //
+        // In order to allow EGM memory allocation to specify
+        // the page granularity of the physical allocation
+        // we need to force set the page size here.
+        //
+        // The expectation is that the EGM NUMA allocator is able to support any requested pagesize
+        // and that subsequent memdesc pagesize set requests will NOP as the pagesize matches.
+        //
+        if (memdescIsEgm(pMemDesc))
+        {
+            RM_ATTR_PAGE_SIZE pageSizeAttr = dmaNvos32ToPageSizeAttr(pAllocData->attr, pAllocData->attr2);
+            rmStatus = memmgrSetMemDescPageSize_HAL(pGpu, GPU_GET_MEMORY_MANAGER(pGpu), pMemDesc,
+                                                    AT_GPU, pageSizeAttr);
+            if (rmStatus != NV_OK)
+            {
+                NV_PRINTF(LEVEL_ERROR, "Failed to set memdesc page size for EGM.\n");
+                memdescDestroy(pMemDesc);
+                goto failed;
+            }
+        }
+    }
+
+    memdescTagAlloc(rmStatus, NV_FB_ALLOC_RM_INTERNAL_OWNER_UNNAMED_TAG_132, 
+                    pMemDesc);
     if (rmStatus != NV_OK)
     {
         NV_PRINTF(LEVEL_ERROR,
@@ -274,6 +328,7 @@ sysmemConstruct_IMPL
     else if ((FLD_TEST_DRF(OS32, _ATTR, _PAGE_SIZE, _BIG, pAllocData->attr) ||
               FLD_TEST_DRF(OS32, _ATTR, _PAGE_SIZE, _HUGE, pAllocData->attr)) &&
               FLD_TEST_DRF(OS32, _ATTR, _PHYSICALITY, _NONCONTIGUOUS, pAllocData->attr) &&
+              !memdescIsEgm(pMemDesc) &&
              (stdmemGetSysmemPageSize_HAL(pGpu, pStdMemory) == RM_PAGE_SIZE))
     {
         NV_PRINTF(LEVEL_ERROR,
@@ -477,8 +532,8 @@ sysmemAllocResources
     // While replaying a trace, it is possible for the playback OS to have a smaller page size
     // than the capture OS so if we're running a replay where the requested page size is larger,
     // assume this is a contiguous piece of memory, if contiguity is not specified.
-    // 
-    if (FLD_TEST_DRF(OS32, _ATTR, _PHYSICALITY, _DEFAULT, pVidHeapAlloc->attr))
+    //
+    if (RMCFG_FEATURE_PLATFORM_MODS && FLD_TEST_DRF(OS32, _ATTR, _PHYSICALITY, _DEFAULT, pVidHeapAlloc->attr))
     {
         if ((FLD_TEST_DRF(OS32, _ATTR, _PAGE_SIZE, _BIG, pVidHeapAlloc->attr) ||
              FLD_TEST_DRF(OS32, _ATTR, _PAGE_SIZE, _HUGE, pVidHeapAlloc->attr)) &&

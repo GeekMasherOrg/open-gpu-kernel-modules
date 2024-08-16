@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2018-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2018-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,11 +27,11 @@
 #include "rmapi/mapping_list.h"
 #include "gpu/mem_mgr/mem_desc.h"
 #include "os/os.h"
-#include "gpu/device/device.h"
 #include "vgpu/rpc.h"
 #include "mem_mgr/mem.h"
 #include "gpu/mem_mgr/mem_mgr.h"
 #include "deprecated/rmapi_deprecated.h"
+#include "vgpu/vgpu_util.h"
 
 #include "class/cl0071.h" // NV01_MEMORY_SYSTEM_OS_DESCRIPTOR
 
@@ -171,6 +171,7 @@ osdescConstruct_IMPL
             if (status == NV_OK)
                 pMemory->bRpcAlloc = NV_TRUE;
 
+            NV_ASSERT_OK_OR_RETURN(vgpuUpdateGuestSysmemPfnBitMap(pGpu, pMemDesc, NV_TRUE));
         }
     }
 
@@ -178,29 +179,6 @@ osdescConstruct_IMPL
     // RM support for MODS PTE kind in external allocations
     // bug 1858656
     //
-    if (status == NV_OK && NV_IS_MODS)
-    {
-        MemoryManager       *pMemoryManager    = GPU_GET_MEMORY_MANAGER(pGpu);
-        NvU32                kind;
-        FB_ALLOC_PAGE_FORMAT fbAllocPageFormat = {0};
-
-        NV_ASSERT_OR_RETURN(
-            DRF_VAL(OS32, _ATTR, _COMPR, pUserParams->attr) ==
-                NVOS32_ATTR_COMPR_NONE, NV_ERR_NOT_SUPPORTED);
-
-        fbAllocPageFormat.flags = pUserParams->flags;
-        fbAllocPageFormat.type  = pUserParams->type;
-        fbAllocPageFormat.attr  = pUserParams->attr;
-        fbAllocPageFormat.attr2 = pUserParams->attr2;
-
-        // memmgrChooseKind will select kind based on format
-        status = memmgrChooseKind_HAL(pGpu, pMemoryManager, &fbAllocPageFormat,
-                                                DRF_VAL(OS32, _ATTR, _COMPR, pUserParams->attr), &kind);
-        if (status == NV_OK)
-        {
-            memdescSetPteKind(pMemDesc, kind);
-        }
-    }
 
     // failure case
     if (status != NV_OK)
@@ -212,11 +190,36 @@ osdescConstruct_IMPL
     return status;
 }
 
+void
+osdescDestruct_IMPL
+(
+    OsDescMemory *pOsDescMemory
+)
+{
+    Memory *pMemory = staticCast(pOsDescMemory, Memory);
+    OBJGPU *pGpu = pMemory->pGpu;
+    MEMORY_DESCRIPTOR *pMemDesc = pMemory->pMemDesc;
+
+    if (pMemDesc->DupCount == 1)
+    {
+        if (pMemDesc->RefCount > 1)
+        {
+            NV_ASSERT_FAILED("Destroying memdesc but not all refs destroyed!\n");
+        }
+
+        if (IS_VIRTUAL(pGpu))
+        {
+            NV_ASSERT_OR_RETURN_VOID(vgpuUpdateGuestSysmemPfnBitMap(pGpu, pMemDesc, NV_FALSE) == NV_OK);
+        }
+    }
+}
+
 NvBool
 osdescCanCopy_IMPL
 (
     OsDescMemory *pOsDescMemory
 )
 {
-    return RMCFG_FEATURE_PLATFORM_UNIX;
+    // In case of MODS the caller is responsible for not freeing the memory.
+    return (RMCFG_FEATURE_PLATFORM_UNIX || RMCFG_FEATURE_PLATFORM_MODS);
 }

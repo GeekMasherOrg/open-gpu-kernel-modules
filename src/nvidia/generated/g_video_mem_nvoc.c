@@ -102,89 +102,141 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_VideoMemory =
     /*pExportInfo=*/        &__nvoc_export_info_VideoMemory
 };
 
-static NV_STATUS __nvoc_thunk_VideoMemory_memCheckCopyPermissions(struct Memory *pVideoMemory, struct OBJGPU *pDstGpu, NvHandle hDstClientNvBool) {
-    return vidmemCheckCopyPermissions((struct VideoMemory *)(((unsigned char *)pVideoMemory) - __nvoc_rtti_VideoMemory_Memory.offset), pDstGpu, hDstClientNvBool);
+// 1 down-thunk(s) defined to bridge methods in VideoMemory from superclasses
+
+// vidmemCheckCopyPermissions: virtual override (mem) base (stdmem)
+static NV_STATUS __nvoc_down_thunk_VideoMemory_memCheckCopyPermissions(struct Memory *pVideoMemory, struct OBJGPU *pDstGpu, struct Device *pDstDevice) {
+    return vidmemCheckCopyPermissions((struct VideoMemory *)(((unsigned char *) pVideoMemory) - __nvoc_rtti_VideoMemory_Memory.offset), pDstGpu, pDstDevice);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemCheckMemInterUnmap(struct VideoMemory *pMemory, NvBool bSubdeviceHandleProvided) {
-    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), bSubdeviceHandleProvided);
+
+// 25 up-thunk(s) defined to bridge methods in VideoMemory to superclasses
+
+// vidmemCanCopy: virtual inherited (stdmem) base (stdmem)
+static NvBool __nvoc_up_thunk_StandardMemory_vidmemCanCopy(struct VideoMemory *pStandardMemory) {
+    return stdmemCanCopy((struct StandardMemory *)(((unsigned char *) pStandardMemory) + __nvoc_rtti_VideoMemory_StandardMemory.offset));
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemControl(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return memControl((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pParams);
+// vidmemIsDuplicate: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemIsDuplicate(struct VideoMemory *pMemory, NvHandle hMemory, NvBool *pDuplicate) {
+    return memIsDuplicate((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), hMemory, pDuplicate);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemUnmap(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
-    return memUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pCpuMapping);
+// vidmemGetMapAddrSpace: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemGetMapAddrSpace(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return memGetMapAddrSpace((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, mapFlags, pAddrSpace);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemGetMemInterMapParams(struct VideoMemory *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return memGetMemInterMapParams((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pParams);
+// vidmemControl: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemControl(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return memControl((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemGetMemoryMappingDescriptor(struct VideoMemory *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
-    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), ppMemDesc);
+// vidmemMap: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemMap(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
+    return memMap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pParams, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemGetMapAddrSpace(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return memGetMapAddrSpace((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, mapFlags, pAddrSpace);
+// vidmemUnmap: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemUnmap(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
+    return memUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pCpuMapping);
 }
 
-static NvBool __nvoc_thunk_RmResource_vidmemShareCallback(struct VideoMemory *pResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return rmresShareCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+// vidmemGetMemInterMapParams: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemGetMemInterMapParams(struct VideoMemory *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return memGetMemInterMapParams((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vidmemControlFilter(struct VideoMemory *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pCallContext, pParams);
+// vidmemCheckMemInterUnmap: inline virtual inherited (mem) base (stdmem) body
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemCheckMemInterUnmap(struct VideoMemory *pMemory, NvBool bSubdeviceHandleProvided) {
+    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), bSubdeviceHandleProvided);
 }
 
-static void __nvoc_thunk_RsResource_vidmemAddAdditionalDependants(struct RsClient *pClient, struct VideoMemory *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pReference);
+// vidmemGetMemoryMappingDescriptor: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemGetMemoryMappingDescriptor(struct VideoMemory *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
+    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), ppMemDesc);
 }
 
-static NvU32 __nvoc_thunk_RsResource_vidmemGetRefCount(struct VideoMemory *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset));
+// vidmemIsReady: virtual inherited (mem) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vidmemIsReady(struct VideoMemory *pMemory, NvBool bCopyConstructorContext) {
+    return memIsReady((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), bCopyConstructorContext);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vidmemMapTo(struct VideoMemory *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
-    return resMapTo((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pParams);
+// vidmemIsGpuMapAllowed: inline virtual inherited (mem) base (stdmem) body
+static NvBool __nvoc_up_thunk_Memory_vidmemIsGpuMapAllowed(struct VideoMemory *pMemory, struct OBJGPU *pGpu) {
+    return memIsGpuMapAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pGpu);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_vidmemControl_Prologue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
+// vidmemIsExportAllowed: inline virtual inherited (mem) base (stdmem) body
+static NvBool __nvoc_up_thunk_Memory_vidmemIsExportAllowed(struct VideoMemory *pMemory) {
+    return memIsExportAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VideoMemory_Memory.offset));
 }
 
-static NvBool __nvoc_thunk_StandardMemory_vidmemCanCopy(struct VideoMemory *pStandardMemory) {
-    return stdmemCanCopy((struct StandardMemory *)(((unsigned char *)pStandardMemory) + __nvoc_rtti_VideoMemory_StandardMemory.offset));
+// vidmemAccessCallback: virtual inherited (rmres) base (stdmem)
+static NvBool __nvoc_up_thunk_RmResource_vidmemAccessCallback(struct VideoMemory *pResource, RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemIsReady(struct VideoMemory *pMemory) {
-    return memIsReady((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset));
+// vidmemShareCallback: virtual inherited (rmres) base (stdmem)
+static NvBool __nvoc_up_thunk_RmResource_vidmemShareCallback(struct VideoMemory *pResource, RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return rmresShareCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
 }
 
-static void __nvoc_thunk_RsResource_vidmemPreDestruct(struct VideoMemory *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset));
+// vidmemControlSerialization_Prologue: virtual inherited (rmres) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_RmResource_vidmemControlSerialization_Prologue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vidmemUnmapFrom(struct VideoMemory *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return resUnmapFrom((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pParams);
+// vidmemControlSerialization_Epilogue: virtual inherited (rmres) base (stdmem)
+static void __nvoc_up_thunk_RmResource_vidmemControlSerialization_Epilogue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
 }
 
-static void __nvoc_thunk_RmResource_vidmemControl_Epilogue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
+// vidmemControl_Prologue: virtual inherited (rmres) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_RmResource_vidmemControl_Prologue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vidmemControlLookup(struct VideoMemory *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pParams, ppEntry);
+// vidmemControl_Epilogue: virtual inherited (rmres) base (stdmem)
+static void __nvoc_up_thunk_RmResource_vidmemControl_Epilogue(struct VideoMemory *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vidmemMap(struct VideoMemory *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
-    return memMap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VideoMemory_Memory.offset), pCallContext, pParams, pCpuMapping);
+// vidmemPreDestruct: virtual inherited (res) base (stdmem)
+static void __nvoc_up_thunk_RsResource_vidmemPreDestruct(struct VideoMemory *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset));
 }
 
-static NvBool __nvoc_thunk_RmResource_vidmemAccessCallback(struct VideoMemory *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VideoMemory_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+// vidmemControlFilter: virtual inherited (res) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_RsResource_vidmemControlFilter(struct VideoMemory *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pCallContext, pParams);
 }
+
+// vidmemIsPartialUnmapSupported: inline virtual inherited (res) base (stdmem) body
+static NvBool __nvoc_up_thunk_RsResource_vidmemIsPartialUnmapSupported(struct VideoMemory *pResource) {
+    return resIsPartialUnmapSupported((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset));
+}
+
+// vidmemMapTo: virtual inherited (res) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_RsResource_vidmemMapTo(struct VideoMemory *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
+    return resMapTo((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pParams);
+}
+
+// vidmemUnmapFrom: virtual inherited (res) base (stdmem)
+static NV_STATUS __nvoc_up_thunk_RsResource_vidmemUnmapFrom(struct VideoMemory *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return resUnmapFrom((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pParams);
+}
+
+// vidmemGetRefCount: virtual inherited (res) base (stdmem)
+static NvU32 __nvoc_up_thunk_RsResource_vidmemGetRefCount(struct VideoMemory *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset));
+}
+
+// vidmemAddAdditionalDependants: virtual inherited (res) base (stdmem)
+static void __nvoc_up_thunk_RsResource_vidmemAddAdditionalDependants(struct RsClient *pClient, struct VideoMemory *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VideoMemory_RsResource.offset), pReference);
+}
+
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_VideoMemory = 
 {
@@ -222,55 +274,95 @@ __nvoc_ctor_VideoMemory_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_VideoMemory_1(VideoMemory *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // vidmemCheckCopyPermissions -- virtual override (mem) base (stdmem)
     pThis->__vidmemCheckCopyPermissions__ = &vidmemCheckCopyPermissions_IMPL;
+    pThis->__nvoc_base_StandardMemory.__nvoc_base_Memory.__memCheckCopyPermissions__ = &__nvoc_down_thunk_VideoMemory_memCheckCopyPermissions;
 
-    pThis->__nvoc_base_StandardMemory.__nvoc_base_Memory.__memCheckCopyPermissions__ = &__nvoc_thunk_VideoMemory_memCheckCopyPermissions;
+    // vidmemCanCopy -- virtual inherited (stdmem) base (stdmem)
+    pThis->__vidmemCanCopy__ = &__nvoc_up_thunk_StandardMemory_vidmemCanCopy;
 
-    pThis->__vidmemCheckMemInterUnmap__ = &__nvoc_thunk_Memory_vidmemCheckMemInterUnmap;
+    // vidmemIsDuplicate -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemIsDuplicate__ = &__nvoc_up_thunk_Memory_vidmemIsDuplicate;
 
-    pThis->__vidmemControl__ = &__nvoc_thunk_Memory_vidmemControl;
+    // vidmemGetMapAddrSpace -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemGetMapAddrSpace__ = &__nvoc_up_thunk_Memory_vidmemGetMapAddrSpace;
 
-    pThis->__vidmemUnmap__ = &__nvoc_thunk_Memory_vidmemUnmap;
+    // vidmemControl -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemControl__ = &__nvoc_up_thunk_Memory_vidmemControl;
 
-    pThis->__vidmemGetMemInterMapParams__ = &__nvoc_thunk_Memory_vidmemGetMemInterMapParams;
+    // vidmemMap -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemMap__ = &__nvoc_up_thunk_Memory_vidmemMap;
 
-    pThis->__vidmemGetMemoryMappingDescriptor__ = &__nvoc_thunk_Memory_vidmemGetMemoryMappingDescriptor;
+    // vidmemUnmap -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemUnmap__ = &__nvoc_up_thunk_Memory_vidmemUnmap;
 
-    pThis->__vidmemGetMapAddrSpace__ = &__nvoc_thunk_Memory_vidmemGetMapAddrSpace;
+    // vidmemGetMemInterMapParams -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemGetMemInterMapParams__ = &__nvoc_up_thunk_Memory_vidmemGetMemInterMapParams;
 
-    pThis->__vidmemShareCallback__ = &__nvoc_thunk_RmResource_vidmemShareCallback;
+    // vidmemCheckMemInterUnmap -- inline virtual inherited (mem) base (stdmem) body
+    pThis->__vidmemCheckMemInterUnmap__ = &__nvoc_up_thunk_Memory_vidmemCheckMemInterUnmap;
 
-    pThis->__vidmemControlFilter__ = &__nvoc_thunk_RsResource_vidmemControlFilter;
+    // vidmemGetMemoryMappingDescriptor -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_Memory_vidmemGetMemoryMappingDescriptor;
 
-    pThis->__vidmemAddAdditionalDependants__ = &__nvoc_thunk_RsResource_vidmemAddAdditionalDependants;
+    // vidmemIsReady -- virtual inherited (mem) base (stdmem)
+    pThis->__vidmemIsReady__ = &__nvoc_up_thunk_Memory_vidmemIsReady;
 
-    pThis->__vidmemGetRefCount__ = &__nvoc_thunk_RsResource_vidmemGetRefCount;
+    // vidmemIsGpuMapAllowed -- inline virtual inherited (mem) base (stdmem) body
+    pThis->__vidmemIsGpuMapAllowed__ = &__nvoc_up_thunk_Memory_vidmemIsGpuMapAllowed;
 
-    pThis->__vidmemMapTo__ = &__nvoc_thunk_RsResource_vidmemMapTo;
+    // vidmemIsExportAllowed -- inline virtual inherited (mem) base (stdmem) body
+    pThis->__vidmemIsExportAllowed__ = &__nvoc_up_thunk_Memory_vidmemIsExportAllowed;
 
-    pThis->__vidmemControl_Prologue__ = &__nvoc_thunk_RmResource_vidmemControl_Prologue;
+    // vidmemAccessCallback -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemAccessCallback__ = &__nvoc_up_thunk_RmResource_vidmemAccessCallback;
 
-    pThis->__vidmemCanCopy__ = &__nvoc_thunk_StandardMemory_vidmemCanCopy;
+    // vidmemShareCallback -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemShareCallback__ = &__nvoc_up_thunk_RmResource_vidmemShareCallback;
 
-    pThis->__vidmemIsReady__ = &__nvoc_thunk_Memory_vidmemIsReady;
+    // vidmemControlSerialization_Prologue -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_vidmemControlSerialization_Prologue;
 
-    pThis->__vidmemPreDestruct__ = &__nvoc_thunk_RsResource_vidmemPreDestruct;
+    // vidmemControlSerialization_Epilogue -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_vidmemControlSerialization_Epilogue;
 
-    pThis->__vidmemUnmapFrom__ = &__nvoc_thunk_RsResource_vidmemUnmapFrom;
+    // vidmemControl_Prologue -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemControl_Prologue__ = &__nvoc_up_thunk_RmResource_vidmemControl_Prologue;
 
-    pThis->__vidmemControl_Epilogue__ = &__nvoc_thunk_RmResource_vidmemControl_Epilogue;
+    // vidmemControl_Epilogue -- virtual inherited (rmres) base (stdmem)
+    pThis->__vidmemControl_Epilogue__ = &__nvoc_up_thunk_RmResource_vidmemControl_Epilogue;
 
-    pThis->__vidmemControlLookup__ = &__nvoc_thunk_RsResource_vidmemControlLookup;
+    // vidmemPreDestruct -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemPreDestruct__ = &__nvoc_up_thunk_RsResource_vidmemPreDestruct;
 
-    pThis->__vidmemMap__ = &__nvoc_thunk_Memory_vidmemMap;
+    // vidmemControlFilter -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemControlFilter__ = &__nvoc_up_thunk_RsResource_vidmemControlFilter;
 
-    pThis->__vidmemAccessCallback__ = &__nvoc_thunk_RmResource_vidmemAccessCallback;
-}
+    // vidmemIsPartialUnmapSupported -- inline virtual inherited (res) base (stdmem) body
+    pThis->__vidmemIsPartialUnmapSupported__ = &__nvoc_up_thunk_RsResource_vidmemIsPartialUnmapSupported;
 
+    // vidmemMapTo -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemMapTo__ = &__nvoc_up_thunk_RsResource_vidmemMapTo;
+
+    // vidmemUnmapFrom -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemUnmapFrom__ = &__nvoc_up_thunk_RsResource_vidmemUnmapFrom;
+
+    // vidmemGetRefCount -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemGetRefCount__ = &__nvoc_up_thunk_RsResource_vidmemGetRefCount;
+
+    // vidmemAddAdditionalDependants -- virtual inherited (res) base (stdmem)
+    pThis->__vidmemAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_vidmemAddAdditionalDependants;
+} // End __nvoc_init_funcTable_VideoMemory_1 with approximately 27 basic block(s).
+
+
+// Initialize vtable(s) for 26 virtual method(s).
 void __nvoc_init_funcTable_VideoMemory(VideoMemory *pThis) {
+
+    // Initialize vtable(s) with 26 per-object function pointer(s).
     __nvoc_init_funcTable_VideoMemory_1(pThis);
 }
 
@@ -287,18 +379,26 @@ void __nvoc_init_VideoMemory(VideoMemory *pThis) {
     __nvoc_init_funcTable_VideoMemory(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_VideoMemory(VideoMemory **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_VideoMemory(VideoMemory **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     VideoMemory *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(VideoMemory));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(VideoMemory), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(VideoMemory));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_VideoMemory);
 
+    pThis->__nvoc_base_StandardMemory.__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -313,12 +413,27 @@ NV_STATUS __nvoc_objCreate_VideoMemory(VideoMemory **ppThis, Dynamic *pParent, N
     status = __nvoc_ctor_VideoMemory(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_VideoMemory_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_VideoMemory_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_StandardMemory.__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(VideoMemory));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

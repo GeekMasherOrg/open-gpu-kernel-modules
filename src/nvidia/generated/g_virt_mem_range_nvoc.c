@@ -111,89 +111,138 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_VirtualMemoryRange =
     /*pExportInfo=*/        &__nvoc_export_info_VirtualMemoryRange
 };
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeCheckMemInterUnmap(struct VirtualMemoryRange *pMemory, NvBool bSubdeviceHandleProvided) {
-    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), bSubdeviceHandleProvided);
+// 26 up-thunk(s) defined to bridge methods in VirtualMemoryRange to superclasses
+
+// vmrangeMapTo: virtual inherited (virtmem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_VirtualMemory_vmrangeMapTo(struct VirtualMemoryRange *pVirtualMemory, struct RS_RES_MAP_TO_PARAMS *pParams) {
+    return virtmemMapTo((struct VirtualMemory *)(((unsigned char *) pVirtualMemory) + __nvoc_rtti_VirtualMemoryRange_VirtualMemory.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_VirtualMemory_vmrangeMapTo(struct VirtualMemoryRange *pVirtualMemory, struct RS_RES_MAP_TO_PARAMS *pParams) {
-    return virtmemMapTo((struct VirtualMemory *)(((unsigned char *)pVirtualMemory) + __nvoc_rtti_VirtualMemoryRange_VirtualMemory.offset), pParams);
+// vmrangeUnmapFrom: virtual inherited (virtmem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_VirtualMemory_vmrangeUnmapFrom(struct VirtualMemoryRange *pVirtualMemory, struct RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return virtmemUnmapFrom((struct VirtualMemory *)(((unsigned char *) pVirtualMemory) + __nvoc_rtti_VirtualMemoryRange_VirtualMemory.offset), pParams);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeControl(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return memControl((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pParams);
+// vmrangeIsPartialUnmapSupported: inline virtual inherited (virtmem) base (virtmem) body
+static NvBool __nvoc_up_thunk_VirtualMemory_vmrangeIsPartialUnmapSupported(struct VirtualMemoryRange *pVirtualMemory) {
+    return virtmemIsPartialUnmapSupported((struct VirtualMemory *)(((unsigned char *) pVirtualMemory) + __nvoc_rtti_VirtualMemoryRange_VirtualMemory.offset));
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeGetMemInterMapParams(struct VirtualMemoryRange *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return memGetMemInterMapParams((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pParams);
+// vmrangeCanCopy: virtual inherited (stdmem) base (virtmem)
+static NvBool __nvoc_up_thunk_StandardMemory_vmrangeCanCopy(struct VirtualMemoryRange *pStandardMemory) {
+    return stdmemCanCopy((struct StandardMemory *)(((unsigned char *) pStandardMemory) + __nvoc_rtti_VirtualMemoryRange_StandardMemory.offset));
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeUnmap(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
-    return memUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pCpuMapping);
+// vmrangeIsDuplicate: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeIsDuplicate(struct VirtualMemoryRange *pMemory, NvHandle hMemory, NvBool *pDuplicate) {
+    return memIsDuplicate((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), hMemory, pDuplicate);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeGetMapAddrSpace(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return memGetMapAddrSpace((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, mapFlags, pAddrSpace);
+// vmrangeGetMapAddrSpace: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeGetMapAddrSpace(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return memGetMapAddrSpace((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, mapFlags, pAddrSpace);
 }
 
-static NvBool __nvoc_thunk_RmResource_vmrangeShareCallback(struct VirtualMemoryRange *pResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return rmresShareCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+// vmrangeControl: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeControl(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return memControl((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeGetMemoryMappingDescriptor(struct VirtualMemoryRange *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
-    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), ppMemDesc);
+// vmrangeMap: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeMap(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
+    return memMap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pParams, pCpuMapping);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vmrangeControlFilter(struct VirtualMemoryRange *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset), pCallContext, pParams);
+// vmrangeUnmap: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeUnmap(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
+    return memUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pCpuMapping);
 }
 
-static NvU32 __nvoc_thunk_RsResource_vmrangeGetRefCount(struct VirtualMemoryRange *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset));
+// vmrangeGetMemInterMapParams: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeGetMemInterMapParams(struct VirtualMemoryRange *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return memGetMemInterMapParams((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pParams);
 }
 
-static void __nvoc_thunk_RsResource_vmrangeAddAdditionalDependants(struct RsClient *pClient, struct VirtualMemoryRange *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset), pReference);
+// vmrangeCheckMemInterUnmap: inline virtual inherited (mem) base (virtmem) body
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeCheckMemInterUnmap(struct VirtualMemoryRange *pMemory, NvBool bSubdeviceHandleProvided) {
+    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), bSubdeviceHandleProvided);
 }
 
-static NvBool __nvoc_thunk_StandardMemory_vmrangeCanCopy(struct VirtualMemoryRange *pStandardMemory) {
-    return stdmemCanCopy((struct StandardMemory *)(((unsigned char *)pStandardMemory) + __nvoc_rtti_VirtualMemoryRange_StandardMemory.offset));
+// vmrangeGetMemoryMappingDescriptor: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeGetMemoryMappingDescriptor(struct VirtualMemoryRange *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
+    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), ppMemDesc);
 }
 
-static NV_STATUS __nvoc_thunk_RmResource_vmrangeControl_Prologue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
+// vmrangeCheckCopyPermissions: inline virtual inherited (mem) base (virtmem) body
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeCheckCopyPermissions(struct VirtualMemoryRange *pMemory, struct OBJGPU *pDstGpu, struct Device *pDstDevice) {
+    return memCheckCopyPermissions((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pDstGpu, pDstDevice);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeIsReady(struct VirtualMemoryRange *pMemory) {
-    return memIsReady((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset));
+// vmrangeIsReady: virtual inherited (mem) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_Memory_vmrangeIsReady(struct VirtualMemoryRange *pMemory, NvBool bCopyConstructorContext) {
+    return memIsReady((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), bCopyConstructorContext);
 }
 
-static NV_STATUS __nvoc_thunk_VirtualMemory_vmrangeUnmapFrom(struct VirtualMemoryRange *pVirtualMemory, struct RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return virtmemUnmapFrom((struct VirtualMemory *)(((unsigned char *)pVirtualMemory) + __nvoc_rtti_VirtualMemoryRange_VirtualMemory.offset), pParams);
+// vmrangeIsGpuMapAllowed: inline virtual inherited (mem) base (virtmem) body
+static NvBool __nvoc_up_thunk_Memory_vmrangeIsGpuMapAllowed(struct VirtualMemoryRange *pMemory, struct OBJGPU *pGpu) {
+    return memIsGpuMapAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pGpu);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeCheckCopyPermissions(struct VirtualMemoryRange *pMemory, struct OBJGPU *pDstGpu, NvHandle hDstClientNvBool) {
-    return memCheckCopyPermissions((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pDstGpu, hDstClientNvBool);
+// vmrangeIsExportAllowed: inline virtual inherited (mem) base (virtmem) body
+static NvBool __nvoc_up_thunk_Memory_vmrangeIsExportAllowed(struct VirtualMemoryRange *pMemory) {
+    return memIsExportAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset));
 }
 
-static void __nvoc_thunk_RsResource_vmrangePreDestruct(struct VirtualMemoryRange *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset));
+// vmrangeAccessCallback: virtual inherited (rmres) base (virtmem)
+static NvBool __nvoc_up_thunk_RmResource_vmrangeAccessCallback(struct VirtualMemoryRange *pResource, RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
 }
 
-static void __nvoc_thunk_RmResource_vmrangeControl_Epilogue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
+// vmrangeShareCallback: virtual inherited (rmres) base (virtmem)
+static NvBool __nvoc_up_thunk_RmResource_vmrangeShareCallback(struct VirtualMemoryRange *pResource, RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return rmresShareCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
 }
 
-static NV_STATUS __nvoc_thunk_RsResource_vmrangeControlLookup(struct VirtualMemoryRange *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset), pParams, ppEntry);
+// vmrangeControlSerialization_Prologue: virtual inherited (rmres) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_RmResource_vmrangeControlSerialization_Prologue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
 }
 
-static NV_STATUS __nvoc_thunk_Memory_vmrangeMap(struct VirtualMemoryRange *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
-    return memMap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_VirtualMemoryRange_Memory.offset), pCallContext, pParams, pCpuMapping);
+// vmrangeControlSerialization_Epilogue: virtual inherited (rmres) base (virtmem)
+static void __nvoc_up_thunk_RmResource_vmrangeControlSerialization_Epilogue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
 }
 
-static NvBool __nvoc_thunk_RmResource_vmrangeAccessCallback(struct VirtualMemoryRange *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+// vmrangeControl_Prologue: virtual inherited (rmres) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_RmResource_vmrangeControl_Prologue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
 }
+
+// vmrangeControl_Epilogue: virtual inherited (rmres) base (virtmem)
+static void __nvoc_up_thunk_RmResource_vmrangeControl_Epilogue(struct VirtualMemoryRange *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RmResource.offset), pCallContext, pParams);
+}
+
+// vmrangePreDestruct: virtual inherited (res) base (virtmem)
+static void __nvoc_up_thunk_RsResource_vmrangePreDestruct(struct VirtualMemoryRange *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset));
+}
+
+// vmrangeControlFilter: virtual inherited (res) base (virtmem)
+static NV_STATUS __nvoc_up_thunk_RsResource_vmrangeControlFilter(struct VirtualMemoryRange *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset), pCallContext, pParams);
+}
+
+// vmrangeGetRefCount: virtual inherited (res) base (virtmem)
+static NvU32 __nvoc_up_thunk_RsResource_vmrangeGetRefCount(struct VirtualMemoryRange *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset));
+}
+
+// vmrangeAddAdditionalDependants: virtual inherited (res) base (virtmem)
+static void __nvoc_up_thunk_RsResource_vmrangeAddAdditionalDependants(struct RsClient *pClient, struct VirtualMemoryRange *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_VirtualMemoryRange_RsResource.offset), pReference);
+}
+
 
 const struct NVOC_EXPORT_INFO __nvoc_export_info_VirtualMemoryRange = 
 {
@@ -230,53 +279,94 @@ __nvoc_ctor_VirtualMemoryRange_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_VirtualMemoryRange_1(VirtualMemoryRange *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
-    pThis->__vmrangeCheckMemInterUnmap__ = &__nvoc_thunk_Memory_vmrangeCheckMemInterUnmap;
+    // vmrangeMapTo -- virtual inherited (virtmem) base (virtmem)
+    pThis->__vmrangeMapTo__ = &__nvoc_up_thunk_VirtualMemory_vmrangeMapTo;
 
-    pThis->__vmrangeMapTo__ = &__nvoc_thunk_VirtualMemory_vmrangeMapTo;
+    // vmrangeUnmapFrom -- virtual inherited (virtmem) base (virtmem)
+    pThis->__vmrangeUnmapFrom__ = &__nvoc_up_thunk_VirtualMemory_vmrangeUnmapFrom;
 
-    pThis->__vmrangeControl__ = &__nvoc_thunk_Memory_vmrangeControl;
+    // vmrangeIsPartialUnmapSupported -- inline virtual inherited (virtmem) base (virtmem) body
+    pThis->__vmrangeIsPartialUnmapSupported__ = &__nvoc_up_thunk_VirtualMemory_vmrangeIsPartialUnmapSupported;
 
-    pThis->__vmrangeGetMemInterMapParams__ = &__nvoc_thunk_Memory_vmrangeGetMemInterMapParams;
+    // vmrangeCanCopy -- virtual inherited (stdmem) base (virtmem)
+    pThis->__vmrangeCanCopy__ = &__nvoc_up_thunk_StandardMemory_vmrangeCanCopy;
 
-    pThis->__vmrangeUnmap__ = &__nvoc_thunk_Memory_vmrangeUnmap;
+    // vmrangeIsDuplicate -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeIsDuplicate__ = &__nvoc_up_thunk_Memory_vmrangeIsDuplicate;
 
-    pThis->__vmrangeGetMapAddrSpace__ = &__nvoc_thunk_Memory_vmrangeGetMapAddrSpace;
+    // vmrangeGetMapAddrSpace -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeGetMapAddrSpace__ = &__nvoc_up_thunk_Memory_vmrangeGetMapAddrSpace;
 
-    pThis->__vmrangeShareCallback__ = &__nvoc_thunk_RmResource_vmrangeShareCallback;
+    // vmrangeControl -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeControl__ = &__nvoc_up_thunk_Memory_vmrangeControl;
 
-    pThis->__vmrangeGetMemoryMappingDescriptor__ = &__nvoc_thunk_Memory_vmrangeGetMemoryMappingDescriptor;
+    // vmrangeMap -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeMap__ = &__nvoc_up_thunk_Memory_vmrangeMap;
 
-    pThis->__vmrangeControlFilter__ = &__nvoc_thunk_RsResource_vmrangeControlFilter;
+    // vmrangeUnmap -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeUnmap__ = &__nvoc_up_thunk_Memory_vmrangeUnmap;
 
-    pThis->__vmrangeGetRefCount__ = &__nvoc_thunk_RsResource_vmrangeGetRefCount;
+    // vmrangeGetMemInterMapParams -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeGetMemInterMapParams__ = &__nvoc_up_thunk_Memory_vmrangeGetMemInterMapParams;
 
-    pThis->__vmrangeAddAdditionalDependants__ = &__nvoc_thunk_RsResource_vmrangeAddAdditionalDependants;
+    // vmrangeCheckMemInterUnmap -- inline virtual inherited (mem) base (virtmem) body
+    pThis->__vmrangeCheckMemInterUnmap__ = &__nvoc_up_thunk_Memory_vmrangeCheckMemInterUnmap;
 
-    pThis->__vmrangeCanCopy__ = &__nvoc_thunk_StandardMemory_vmrangeCanCopy;
+    // vmrangeGetMemoryMappingDescriptor -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_Memory_vmrangeGetMemoryMappingDescriptor;
 
-    pThis->__vmrangeControl_Prologue__ = &__nvoc_thunk_RmResource_vmrangeControl_Prologue;
+    // vmrangeCheckCopyPermissions -- inline virtual inherited (mem) base (virtmem) body
+    pThis->__vmrangeCheckCopyPermissions__ = &__nvoc_up_thunk_Memory_vmrangeCheckCopyPermissions;
 
-    pThis->__vmrangeIsReady__ = &__nvoc_thunk_Memory_vmrangeIsReady;
+    // vmrangeIsReady -- virtual inherited (mem) base (virtmem)
+    pThis->__vmrangeIsReady__ = &__nvoc_up_thunk_Memory_vmrangeIsReady;
 
-    pThis->__vmrangeUnmapFrom__ = &__nvoc_thunk_VirtualMemory_vmrangeUnmapFrom;
+    // vmrangeIsGpuMapAllowed -- inline virtual inherited (mem) base (virtmem) body
+    pThis->__vmrangeIsGpuMapAllowed__ = &__nvoc_up_thunk_Memory_vmrangeIsGpuMapAllowed;
 
-    pThis->__vmrangeCheckCopyPermissions__ = &__nvoc_thunk_Memory_vmrangeCheckCopyPermissions;
+    // vmrangeIsExportAllowed -- inline virtual inherited (mem) base (virtmem) body
+    pThis->__vmrangeIsExportAllowed__ = &__nvoc_up_thunk_Memory_vmrangeIsExportAllowed;
 
-    pThis->__vmrangePreDestruct__ = &__nvoc_thunk_RsResource_vmrangePreDestruct;
+    // vmrangeAccessCallback -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeAccessCallback__ = &__nvoc_up_thunk_RmResource_vmrangeAccessCallback;
 
-    pThis->__vmrangeControl_Epilogue__ = &__nvoc_thunk_RmResource_vmrangeControl_Epilogue;
+    // vmrangeShareCallback -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeShareCallback__ = &__nvoc_up_thunk_RmResource_vmrangeShareCallback;
 
-    pThis->__vmrangeControlLookup__ = &__nvoc_thunk_RsResource_vmrangeControlLookup;
+    // vmrangeControlSerialization_Prologue -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_vmrangeControlSerialization_Prologue;
 
-    pThis->__vmrangeMap__ = &__nvoc_thunk_Memory_vmrangeMap;
+    // vmrangeControlSerialization_Epilogue -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_vmrangeControlSerialization_Epilogue;
 
-    pThis->__vmrangeAccessCallback__ = &__nvoc_thunk_RmResource_vmrangeAccessCallback;
-}
+    // vmrangeControl_Prologue -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeControl_Prologue__ = &__nvoc_up_thunk_RmResource_vmrangeControl_Prologue;
 
+    // vmrangeControl_Epilogue -- virtual inherited (rmres) base (virtmem)
+    pThis->__vmrangeControl_Epilogue__ = &__nvoc_up_thunk_RmResource_vmrangeControl_Epilogue;
+
+    // vmrangePreDestruct -- virtual inherited (res) base (virtmem)
+    pThis->__vmrangePreDestruct__ = &__nvoc_up_thunk_RsResource_vmrangePreDestruct;
+
+    // vmrangeControlFilter -- virtual inherited (res) base (virtmem)
+    pThis->__vmrangeControlFilter__ = &__nvoc_up_thunk_RsResource_vmrangeControlFilter;
+
+    // vmrangeGetRefCount -- virtual inherited (res) base (virtmem)
+    pThis->__vmrangeGetRefCount__ = &__nvoc_up_thunk_RsResource_vmrangeGetRefCount;
+
+    // vmrangeAddAdditionalDependants -- virtual inherited (res) base (virtmem)
+    pThis->__vmrangeAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_vmrangeAddAdditionalDependants;
+} // End __nvoc_init_funcTable_VirtualMemoryRange_1 with approximately 26 basic block(s).
+
+
+// Initialize vtable(s) for 26 virtual method(s).
 void __nvoc_init_funcTable_VirtualMemoryRange(VirtualMemoryRange *pThis) {
+
+    // Initialize vtable(s) with 26 per-object function pointer(s).
     __nvoc_init_funcTable_VirtualMemoryRange_1(pThis);
 }
 
@@ -294,18 +384,26 @@ void __nvoc_init_VirtualMemoryRange(VirtualMemoryRange *pThis) {
     __nvoc_init_funcTable_VirtualMemoryRange(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_VirtualMemoryRange(VirtualMemoryRange **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_VirtualMemoryRange(VirtualMemoryRange **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     VirtualMemoryRange *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(VirtualMemoryRange));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(VirtualMemoryRange), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(VirtualMemoryRange));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_VirtualMemoryRange);
 
+    pThis->__nvoc_base_VirtualMemory.__nvoc_base_StandardMemory.__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -320,12 +418,27 @@ NV_STATUS __nvoc_objCreate_VirtualMemoryRange(VirtualMemoryRange **ppThis, Dynam
     status = __nvoc_ctor_VirtualMemoryRange(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_VirtualMemoryRange_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_VirtualMemoryRange_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_VirtualMemory.__nvoc_base_StandardMemory.__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(VirtualMemoryRange));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

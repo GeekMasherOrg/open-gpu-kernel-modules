@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 1993-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 1993-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -22,7 +22,7 @@
  */
 
 
-/***************************** HW State Rotuines ***************************\
+/***************************** HW State Routines ***************************\
 *         Core Logic Object Function Definitions.                           *
 \***************************************************************************/
 
@@ -31,7 +31,7 @@
 #include "platform/platform.h"
 #include "platform/chipset/chipset_info.h"
 #include "os/os.h"
-#include "nvRmReg.h"
+#include "nvrm_registry.h"
 #include "nvpcie.h"
 #include "nv_ref.h"
 #include "kernel/gpu/bif/kernel_bif.h"
@@ -65,8 +65,6 @@ void
 clInitPropertiesFromRegistry_IMPL(OBJGPU *pGpu, OBJCL *pCl)
 {
     NvU32  data32;
-    OBJSYS *pSys = SYS_GET_INSTANCE();
-    OBJOS *pOS = SYS_GET_OS(pSys);
 
     if (osReadRegistryDword(pGpu, NV_REG_STR_RM_DISABLE_BR03_FLOW_CONTROL, &data32) == NV_OK
             && data32)
@@ -82,7 +80,13 @@ clInitPropertiesFromRegistry_IMPL(OBJGPU *pGpu, OBJCL *pCl)
         }
     }
 
-    pOS->osQADbgRegistryInit(pOS);
+    if ((osReadRegistryDword(pGpu, NV_REG_STR_RM_FORCE_DISABLE_IOMAP_WC, &data32) == NV_OK)
+            && (data32 == NV_REG_STR_RM_FORCE_DISABLE_IOMAP_WC_YES))
+    {
+        pCl->setProperty(pCl, PDB_PROP_CL_DISABLE_IOMAP_WC, NV_TRUE);
+    }
+
+    osQADbgRegistryInit();
 }
 
 static void
@@ -132,6 +136,9 @@ clInitMappingPciBusDevice_IMPL
     NvU8 device;
     NvU16 vendorID, deviceID;
     NvBool bFoundDevice = NV_FALSE;
+
+    if (IsT194(pGpu) || IsT234(pGpu))
+        return NV0000_CTRL_GPU_INVALID_ID;
 
     // do we already know our domain/bus/device?
     if (gpuGetDBDF(pGpu) == 0)
@@ -188,7 +195,7 @@ clInitMappingPciBusDevice_IMPL
 
     if (gpuGetDBDF(pGpu) == 0)
     {
-        if (!(IS_SIMULATION(pGpu)|| IS_SIM_MODS(GPU_GET_OS(pGpu))) 
+        if (!(IS_SIMULATION(pGpu)|| IS_SIM_MODS(GPU_GET_OS(pGpu)))
                || (bFoundDevice == NV_FALSE))
         {
             NV_PRINTF(LEVEL_ERROR,
@@ -207,7 +214,7 @@ clInitMappingPciBusDevice_IMPL
 static void getSubsystemFromPCIECapabilities
 (
     NvU32 domain,
-    NvU8 bus, 
+    NvU8 bus,
     NvU8 device,
     NvU8 func,
     NvU16 *subvendorID,
@@ -483,7 +490,7 @@ clFindFHBAndGetChipsetInfoIndex_IMPL
                     }
                 }
 
-                if (vendorID == PCI_INVALID_VENDORID)
+                if (!PCI_IS_VENDORID_VALID(vendorID))
                     break;           // skip to the next device
 
                 if ((osPciReadByte(handle, PCI_HEADER_TYPE0_BASECLASS)) != PCI_CLASS_BRIDGE_DEV)
@@ -602,40 +609,64 @@ clIsL1MaskEnabledForUpstreamPort_IMPL
     return bEnable;
 }
 
-//
-// return the First Host Bridge's handle, VendorID and DeviceID
-//
-NV_STATUS
-clGetFHBHandle_IMPL(
-    OBJCL *pCl,
-    void **Handle,
-    NvU16 *VendorID,
-    NvU16 *DeviceID
+/*!
+ * @brief Check if L0s mask is enabled for upstream component
+ *
+ * @param[in] pGpu GPU object pointer
+ * @param[in] pCl  CL  object pointer
+ *
+ * @return NV_TRUE if mask is enabled (implies L0s is disabled)
+ */
+NvBool
+clIsL0sMaskEnabledForUpstreamPort_IMPL
+(
+    OBJGPU *pGpu,
+    OBJCL  *pCl
 )
 {
-    NV_ASSERT(Handle && DeviceID && VendorID); // Avoid Null Pointer
+    NvU32  linkCtrl;
+    NvBool bEnable = NV_FALSE;
 
-    if (!pCl->FHBAddr.valid)
-        return NV_ERR_GENERIC;
-
-    *Handle   = pCl->FHBAddr.handle;
-    *DeviceID = pCl->FHBBusInfo.deviceID;
-    *VendorID = pCl->FHBBusInfo.vendorID;
-
-    // can this happen, should this be #if 0 out?
-    if (*Handle == NULL)
+    if (!pGpu->gpuClData.upstreamPort.addr.valid)
     {
-        *Handle = osPciInitHandle(pCl->FHBAddr.domain,
-                                  pCl->FHBAddr.bus,
-                                  pCl->FHBAddr.device,
-                                  pCl->FHBAddr.func,
-                                  VendorID,
-                                  DeviceID);
+        if (!pGpu->gpuClData.rootPort.addr.valid)
+        {
+            bEnable = NV_TRUE;
+        }
+        else
+        {
+            if (clPcieReadPortConfigReg(pGpu, pCl, &pGpu->gpuClData.rootPort,
+                CL_PCIE_LINK_CTRL_STATUS, &linkCtrl) != NV_OK)
+            {
+                bEnable = NV_TRUE;
+            }
+            else
+            {
+                if (!(linkCtrl & CL_PCIE_LINK_CTRL_STATUS_ASPM_L0S_BIT))
+                {
+                    bEnable = NV_TRUE;
+                }
+            }
+        }
+    }
+    else
+    {
+        if (clPcieReadPortConfigReg(pGpu, pCl, &pGpu->gpuClData.upstreamPort,
+            CL_PCIE_LINK_CTRL_STATUS, &linkCtrl) != NV_OK)
+        {
+            bEnable = NV_TRUE;
+        }
+        else
+        {
+            if (!(linkCtrl & CL_PCIE_LINK_CTRL_STATUS_ASPM_L0S_BIT))
+            {
+                bEnable = NV_TRUE;
+            }
+        }
     }
 
-    return (*Handle ? NV_OK : NV_ERR_GENERIC);
+    return bEnable;
 }
-
 
 NV_STATUS
 clInit_IMPL(
@@ -760,6 +791,7 @@ void clSyncWithGsp_IMPL(OBJCL *pCl, GspSystemInfo *pGSI)
     CL_SYNC_PDB(PDB_PROP_CL_ASPM_L1_CHIPSET_DISABLED);
     CL_SYNC_PDB(PDB_PROP_CL_ASPM_L0S_CHIPSET_ENABLED_MOBILE_ONLY);
     CL_SYNC_PDB(PDB_PROP_CL_ASPM_L1_CHIPSET_ENABLED_MOBILE_ONLY);
+    CL_SYNC_PDB(PDB_PROP_CL_ASPM_UPSTREAM_PORT_L1_MASK_ENABLED);
     CL_SYNC_PDB(PDB_PROP_CL_PCIE_GEN1_GEN2_SWITCH_CHIPSET_DISABLED);
     CL_SYNC_PDB(PDB_PROP_CL_PCIE_GEN1_GEN2_SWITCH_CHIPSET_DISABLED_GEFORCE);
     CL_SYNC_PDB(PDB_PROP_CL_EXTENDED_TAG_FIELD_NOT_CAPABLE);
@@ -776,13 +808,14 @@ void clSyncWithGsp_IMPL(OBJCL *pCl, GspSystemInfo *pGSI)
     CL_SYNC_PDB(PDB_PROP_CL_UPSTREAM_LTR_SUPPORTED);
     CL_SYNC_PDB(PDB_PROP_CL_BUG_1340801_DISABLE_GEN3_ON_GIGABYTE_SNIPER_3);
     CL_SYNC_PDB(PDB_PROP_CL_BUG_1681803_WAR_DISABLE_MSCG);
-    CL_SYNC_PDB(PDB_PROP_CL_ON_HASWELL_HOST_BRIDGE);
     CL_SYNC_PDB(PDB_PROP_CL_PCIE_NON_COHERENT_USE_TC0_ONLY);
     CL_SYNC_PDB(PDB_PROP_CL_UNSUPPORTED_CHIPSET);
     CL_SYNC_PDB(PDB_PROP_CL_IS_CHIPSET_IO_COHERENT);
     CL_SYNC_PDB(PDB_PROP_CL_DISABLE_IOMAP_WC);
     CL_SYNC_PDB(PDB_PROP_CL_HAS_RESIZABLE_BAR_ISSUE);
     CL_SYNC_PDB(PDB_PROP_CL_IS_EXTERNAL_GPU);
+    CL_SYNC_PDB(PDB_PROP_CL_BUG_3751839_GEN_SPEED_WAR);
+    CL_SYNC_PDB(PDB_PROP_CL_BUG_3562968_WAR_ALLOW_PCIE_ATOMICS);
 
 #undef CL_SYNC_PDB
 
@@ -790,5 +823,6 @@ void clSyncWithGsp_IMPL(OBJCL *pCl, GspSystemInfo *pGSI)
 
     pGSI->Chipset = pCl->Chipset;
     pGSI->FHBBusInfo = pCl->FHBBusInfo;
+    pGSI->chipsetIDInfo = pCl->chipsetIDInfo;
 
 }

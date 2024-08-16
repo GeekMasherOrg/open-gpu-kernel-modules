@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -51,6 +51,22 @@ kflcnIsRiscvActive_GA10X
     NvU32 val = kflcnRiscvRegRead_HAL(pGpu, pKernelFlcn, NV_PRISCV_RISCV_CPUCTL);
 
     return FLD_TEST_DRF(_PRISCV, _RISCV_CPUCTL, _ACTIVE_STAT, _ACTIVE, val);
+}
+
+/*!
+ * Reset falcon using secure reset, ready to run riscv.
+ */
+void
+kflcnResetIntoRiscv_GA102
+(
+    OBJGPU *pGpu,
+    KernelFalcon *pKernelFlcn
+)
+{
+    NV_ASSERT_OR_RETURN_VOID(kflcnPreResetWait_HAL(pGpu, pKernelFlcn) == NV_OK);
+    NV_ASSERT_OK(kflcnResetHw(pGpu, pKernelFlcn));
+    kflcnWaitForResetToFinish_HAL(pGpu, pKernelFlcn);
+    kflcnRiscvProgramBcr_HAL(pGpu, pKernelFlcn, NV_TRUE);
 }
 
 /*!
@@ -143,7 +159,9 @@ kflcnPreResetWait_GA10X
 {
     NvU32 hwcfg2;
     RMTIMEOUT timeout;
-    NvU32 flags = GPU_TIMEOUT_FLAGS_DEFAULT | GPU_TIMEOUT_FLAGS_BYPASS_JOURNAL_LOG;
+    NvU32 flags = (GPU_TIMEOUT_FLAGS_TMR |
+                   GPU_TIMEOUT_FLAGS_BYPASS_THREAD_STATE |
+                   GPU_TIMEOUT_FLAGS_BYPASS_JOURNAL_LOG);
 
     if (!IS_SILICON(pGpu) && !IS_EMULATION(pGpu))
     {
@@ -235,3 +253,4 @@ kflcnReadIntrStatus_GA102
              kflcnRiscvRegRead_HAL(pGpu, pKernelFlcn, NV_PRISCV_RISCV_IRQMASK) &
              kflcnRiscvRegRead_HAL(pGpu, pKernelFlcn, NV_PRISCV_RISCV_IRQDEST)));
 }
+

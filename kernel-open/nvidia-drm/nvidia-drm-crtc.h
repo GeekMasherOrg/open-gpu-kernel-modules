@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2016-2022, NVIDIA CORPORATION. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,37 +35,8 @@
 
 #include <drm/drm_crtc.h>
 
-#if defined(NV_DRM_ALPHA_BLENDING_AVAILABLE) || defined(NV_DRM_ROTATION_AVAILABLE)
-/* For DRM_ROTATE_* , DRM_REFLECT_* */
-#include <drm/drm_blend.h>
-#endif
-
-#if defined(NV_DRM_ROTATION_AVAILABLE)
-/* For DRM_MODE_ROTATE_* and DRM_MODE_REFLECT_* */
-#include <uapi/drm/drm_mode.h>
-#endif
-
 #include "nvtypes.h"
 #include "nvkms-kapi.h"
-
-#if defined(NV_DRM_ROTATION_AVAILABLE)
-/*
- * 19-05-2017 c2c446ad29437bb92b157423c632286608ebd3ec has added
- * DRM_MODE_ROTATE_* and DRM_MODE_REFLECT_* to UAPI and removed
- * DRM_ROTATE_* and DRM_MODE_REFLECT_*
- */
-#if !defined(DRM_MODE_ROTATE_0)
-#define DRM_MODE_ROTATE_0       DRM_ROTATE_0
-#define DRM_MODE_ROTATE_90      DRM_ROTATE_90
-#define DRM_MODE_ROTATE_180     DRM_ROTATE_180
-#define DRM_MODE_ROTATE_270     DRM_ROTATE_270
-#define DRM_MODE_REFLECT_X      DRM_REFLECT_X
-#define DRM_MODE_REFLECT_Y      DRM_REFLECT_Y
-#define DRM_MODE_ROTATE_MASK    DRM_ROTATE_MASK
-#define DRM_MODE_REFLECT_MASK   DRM_REFLECT_MASK
-#endif
-
-#endif //NV_DRM_ROTATION_AVAILABLE
 
 struct nv_drm_crtc {
     NvU32 head;
@@ -84,6 +55,13 @@ struct nv_drm_crtc {
      * Spinlock to protect @flip_list.
      */
     spinlock_t flip_list_lock;
+
+    /**
+     * @modeset_permission_filep:
+     *
+     * The filep using this crtc with DRM_IOCTL_NVIDIA_GRANT_PERMISSIONS.
+     */
+    struct drm_file *modeset_permission_filep;
 
     struct drm_crtc base;
 };
@@ -205,11 +183,20 @@ static inline struct nv_drm_plane *to_nv_plane(struct drm_plane *plane)
 struct nv_drm_plane_state {
     struct drm_plane_state base;
     s32 __user *fd_user_ptr;
+    enum NvKmsInputColorSpace input_colorspace;
+#if defined(NV_DRM_HAS_HDR_OUTPUT_METADATA)
+    struct drm_property_blob *hdr_output_metadata;
+#endif
 };
 
 static inline struct nv_drm_plane_state *to_nv_drm_plane_state(struct drm_plane_state *state)
 {
     return container_of(state, struct nv_drm_plane_state, base);
+}
+
+static inline const struct nv_drm_plane_state *to_nv_drm_plane_state_const(const struct drm_plane_state *state)
+{
+    return container_of(state, const struct nv_drm_plane_state, base);
 }
 
 static inline struct nv_drm_crtc *to_nv_crtc(struct drm_crtc *crtc)

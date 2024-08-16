@@ -159,7 +159,7 @@ namespace DisplayPort
             splitterUpReply(hal, timer),
             mergerUpRequest(hal, timer, Address(0), this),
             mergerDownReply(hal, timer, Address(0), this),
-            isBeingDestroyed(false)
+            isBeingDestroyed(false), isPaused(false)
         {
         }
 
@@ -236,6 +236,7 @@ namespace DisplayPort
             MessageManager * parent;
             bool             transmitReply;
             bool             bTransmitted;
+            bool             bBusyWaiting;
             unsigned         requestIdentifier;
             unsigned         messagePriority;
             unsigned         sinkPort;
@@ -261,6 +262,7 @@ namespace DisplayPort
                   parent(0),
                   transmitReply(false),
                   bTransmitted(false),
+                  bBusyWaiting(false),
                   requestIdentifier(requestIdentifier),
                   messagePriority(messagePriority),
                   sinkPort(0xFF)

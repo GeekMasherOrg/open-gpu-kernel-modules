@@ -27,12 +27,10 @@
 
 //
 // This file was generated with FINN, an NVIDIA coding tool.
-// Source file: ctrl/ctrl2080/ctrl2080fifo.finn
+// Source file:      ctrl/ctrl2080/ctrl2080fifo.finn
 //
 
-
-
-
+#include "nvcfg_sdk.h"
 #include "ctrl/ctrl2080/ctrl2080base.h"
 
 /*
@@ -216,10 +214,7 @@ typedef struct NV2080_CTRL_FIFO_GET_PHYSICAL_CHANNEL_COUNT_PARAMS {
  *     This index can be used too get channel groups currently in use per engine/runlist.
  *
  */
-typedef struct NV2080_CTRL_FIFO_INFO {
-    NvU32 index;
-    NvU32 data;
-} NV2080_CTRL_FIFO_INFO;
+typedef NVXXXX_CTRL_XXX_INFO NV2080_CTRL_FIFO_INFO;
 
 /* valid fifo info index values */
 #define NV2080_CTRL_FIFO_INFO_INDEX_INSTANCE_TOTAL                       (0x000000000)
@@ -472,12 +467,100 @@ typedef struct NV2080_CTRL_CMD_FIFO_GET_USERD_LOCATION_PARAMS {
 #define NV2080_CTRL_CMD_FIFO_GET_USERD_LOCATION_ATTRIBUTE_WRITECOMBINED 0X00000002
 
 
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_UNKNOWN                   0
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_OTHER                     1
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_BEST_EFFORT               2
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_EQUAL_SHARE               3
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_FIXED_SHARE               4
+
+// Count of the supported vGPU scheduler policies
+#define NV2080_CTRL_CMD_SUPPORTED_VGPU_SCHEDULER_POLICY_COUNT           3
+
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_ARR_DEFAULT                      0
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_ARR_DISABLE                      1
+#define NV2080_CTRL_CMD_VGPU_SCHEDULER_ARR_ENABLE                       2
+
+/*
+ * NV2080_CTRL_CMD_FIFO_OBJSCHED_SW_GET_LOG
+ *
+ * This command returns the OBJSCHED_SW log enties.
+ *
+ *   engineId
+ *     This field specifies the NV2080_ENGINE_TYPE_* engine whose SW runlist log
+ *     entries are to be fetched.
+ *
+ *   count
+ *     This field returns the count of log entries fetched.
+ *
+ *   entry
+ *     The array of SW runlist log entries.
+ *
+ *       timestampNs
+ *         Timestamp in ns when this SW runlist was preeempted.
+ *
+ *       timeRunTotalNs
+ *         Total time in ns this SW runlist has run as compared to others.
+ *
+ *       timeRunNs
+ *         Time in ns this SW runlist ran before preemption.
+ *
+ *       swrlId
+ *         SW runlist Id.
+ *
+ *   schedPolicy
+ *     This field returns the runlist scheduling policy. It specifies the
+ *     NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_* scheduling policy.
+ *
+ *   arrEnabled
+ *     This field returns if Adaptive round robin scheduler
+ *     is enabled/disabled.
+ *
+ *   arrAvgFactor
+ *     This field returns the average factor to be used in compensating the timeslice
+ *     for Adaptive scheduler mode.
+ *
+ *  targetTimesliceNs
+ *      This field returns the target timeslice duration in ns for each SW runlist
+ *      as configured by the user or the default value otherwise.
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ *   NV_ERR_INVALID_ARGUMENT
+*/
+
+#define NV2080_CTRL_CMD_FIFO_OBJSCHED_SW_GET_LOG                        (0x2080110e) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_OBJSCHED_SW_COUNT                              32
+#define NV2080_CTRL_FIFO_OBJSCHED_SW_NCOUNTERS                          8
+#define NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_ENTRIES                    200
+
+#define NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_PARAMS_MESSAGE_ID (0xEU)
+
+typedef struct NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_PARAMS {
+    NvU32 engineId;
+    NvU32 count;
+    struct {
+        NV_DECLARE_ALIGNED(NvU64 timestampNs, 8);
+        NV_DECLARE_ALIGNED(NvS64 timeRunTotalNs, 8);
+        NvU32 timeRunNs;
+        NvU32 swrlId;
+        NvU32 targetTimeSlice;
+        NV_DECLARE_ALIGNED(NvU64 cumulativePreemptionTime, 8);
+        NV_DECLARE_ALIGNED(NvU64 counters[NV2080_CTRL_FIFO_OBJSCHED_SW_NCOUNTERS], 8);
+    } entry[NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_ENTRIES];
+    NvU32 schedPolicy;
+    NvU32 arrEnabled;
+    NvU32 arrAvgFactor;
+    NvU32 targetTimesliceNs;
+} NV2080_CTRL_FIFO_OBJSCHED_SW_GET_LOG_PARAMS;
+
+
 
 /*
  *  NV2080_CTRL_CMD_FIFO_GET_DEVICE_INFO_TABLE
  *
  *  This command retrieves entries from the SW encoded GPU device info table
- *  from Host RM. 
+ *  from Host RM.
  *
  *  Parameters:
  *
@@ -520,7 +603,7 @@ typedef struct NV2080_CTRL_CMD_FIFO_GET_USERD_LOCATION_PARAMS {
  *   pbdmaFaultIds
  *     List of pbdma fault ids associated with engine
  *   numPbdmas
- *     Number of pbdmas 
+ *     Number of pbdmas
  *   engineName
  *     Name of the engine
  */
@@ -646,8 +729,8 @@ typedef struct NV2080_CTRL_CMD_FIFO_CLEAR_FAULTED_BIT_PARAMS {
  *          description for more details.
  *      - NV2080_CTRL_FIFO_RUNLIST_SCHED_POLICY_CHANNEL_INTERLEAVED_WDDM
  *          This scheduling policy will make channels to be scheduled according
- *          to their interleave level per WDDM policy. 
- *          See NVA06C_CTRL_CMD_SET_INTERLEAVE_LEVEL description for more details.       
+ *          to their interleave level per WDDM policy.
+ *          See NVA06C_CTRL_CMD_SET_INTERLEAVE_LEVEL description for more details.
  *
  * Possible status values returned are:
  *   NV_OK
@@ -737,10 +820,10 @@ typedef struct NV2080_CTRL_FIFO_DISABLE_USERMODE_CHANNELS_PARAMS {
  *
  * When a VF subcontext is marked as a zombie, host RM points its PDB to a dummy
  * page allocated by guest RM in GPA space. This command provides the parameters
- * of the guest RMs memory descriptor to be able to create a corresponding 
+ * of the guest RMs memory descriptor to be able to create a corresponding
  * memory descriptor on the host RM. Host RM uses this to program the PDB of a
  * zombie subcontext.
- * 
+ *
  *  Parameters:
  *  Input parameters to describe the memory descriptor
  *     [in] base
@@ -758,5 +841,248 @@ typedef struct NV2080_CTRL_FIFO_SETUP_VF_ZOMBIE_SUBCTX_PDB_PARAMS {
     NvU32 addressSpace;
     NvU32 cacheAttrib;
 } NV2080_CTRL_FIFO_SETUP_VF_ZOMBIE_SUBCTX_PDB_PARAMS;
+
+/*
+ * NV2080_CTRL_CMD_FIFO_GET_ALLOCATED_CHANNELS
+ *
+ * Get's a bitmask of allocated channels. No guarantees are made about
+ * synchronization. A channel returned as allocated by this ctrl cmd might have
+ * already been destructed.
+ *
+ * Parameters:
+ * [in]     runlistId
+ * [in,out] bitMask   A 1 bit indicates that a channel with this index/id is
+ *                    allocated. This field is a multiple of 32 bits and each 32
+ *                    bit group must be accessed as a platform 32 bit int to
+ *                    correctly map channel IDs.
+ *
+ */
+#define NV2080_CTRL_CMD_FIFO_GET_ALLOCATED_CHANNELS          (0x20801119) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_PARAMS_MESSAGE_ID" */
+
+/*
+ * The maximum number than can be returned by
+ * NV2080_CTRL_CMD_INTERNAL_FIFO_GET_NUM_CHANNELS
+ */
+#define NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_MAX_CHANNELS 4096
+
+#define NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_PARAMS_MESSAGE_ID (0x19U)
+
+typedef struct NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_PARAMS {
+    NvU32 runlistId;
+    NvU32 bitMask[NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_MAX_CHANNELS / 32];
+} NV2080_CTRL_FIFO_GET_ALLOCATED_CHANNELS_PARAMS;
+
+/*
+ * NV2080_CTRL_CMD_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION
+ *
+ * This command will disable and preempt channels described in the
+ * list provided and mark them ready for key rotation.
+ * hClient <-> hChannel pairs should use the same index in the arrays.
+ *
+ *  numChannels
+ *      The number of valid entries in hChannelList array.
+ *  hClientList
+ *      An array of NvHandle listing the client handles
+ *  hChannelList
+ *      An array of NvHandle listing the channel handles
+ *      to be stopped.
+ *  bEnableAfterKeyRotation
+ *      This determines if channel is enabled by RM after it completes key rotation.
+ * Possible status values returned are:
+ *    NV_OK
+ *    NVOS_INVALID_STATE
+ */
+#define NV2080_CTRL_CMD_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION         (0x2080111a) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_MAX_ENTRIES (64)
+
+#define NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_PARAMS_MESSAGE_ID (0x1AU)
+
+typedef struct NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_PARAMS {
+    NvU32    numChannels;
+    NvHandle hClientList[NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_MAX_ENTRIES];
+    NvHandle hChannelList[NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_MAX_ENTRIES];
+    NvBool   bEnableAfterKeyRotation;
+} NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_PARAMS;
+
+/*
+ * NV2080_CTRL_CMD_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2
+ *
+ * This command does the same thing as @ref NV2080_CTRL_CMD_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION.
+ * The difference is that it doesn't take a list of clients and instead all channels belong
+ * to the client on which this control call is made.
+ *
+ *  numChannels
+ *      The number of valid entries in hChannelList array.
+ *  hChannelList
+ *      An array of NvHandle listing the channel handles
+ *      to be stopped.
+ *  bEnableAfterKeyRotation
+ *      This determines if channel is enabled by RM after it completes key rotation.
+ * Possible status values returned are:
+ *    NV_OK
+ *    NVOS_INVALID_STATE
+ */
+#define NV2080_CTRL_CMD_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2 (0x2080111b) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2_PARAMS_MESSAGE_ID (0x1BU)
+
+typedef struct NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2_PARAMS {
+    NvU32    numChannels;
+    NvHandle hChannelList[NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_MAX_ENTRIES];
+    NvBool   bEnableAfterKeyRotation;
+} NV2080_CTRL_FIFO_DISABLE_CHANNELS_FOR_KEY_ROTATION_V2_PARAMS;
+
+
+
+/*
+ * NV2080_CTRL_CMD_FIFO_OBJSCHED_GET_STATE
+ *
+ * This command returns the vGPU schedular state.
+ *
+ *   engineId
+ *     This field specifies the NV2080_ENGINE_TYPE_* engine whose SW runlist log
+ *     entries are to be fetched.
+ *
+ *   schedPolicy
+ *     This field returns the runlist scheduling policy. It specifies the
+ *     NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_* scheduling policy.
+ *
+ *   arrEnabled
+ *     This field returns if Adaptive round robin scheduler
+ *     is enabled/disabled.
+ *
+ *  targetTimesliceNs
+ *      This field returns the target timeslice duration in ns for each SW runlist
+ *      as configured by the user or the default value otherwise.
+ *
+ *   arrAvgFactor
+ *     This field returns the average factor to be used in compensating the timeslice
+ *     for Adaptive scheduler mode.
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ *   NV_ERR_INVALID_ARGUMENT
+ */
+
+#define NV2080_CTRL_CMD_FIFO_OBJSCHED_GET_STATE (0x20801120) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_OBJSCHED_GET_STATE_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_OBJSCHED_GET_STATE_PARAMS_MESSAGE_ID (0x20U)
+
+typedef struct NV2080_CTRL_FIFO_OBJSCHED_GET_STATE_PARAMS {
+    NvU32 engineId;
+    NvU32 schedPolicy;
+    NvU32 arrEnabled;
+    NvU32 targetTimesliceNs;
+    NvU32 arrAvgFactor;
+} NV2080_CTRL_FIFO_OBJSCHED_GET_STATE_PARAMS;
+
+/*
+ * NV2080_CTRL_CMD_FIFO_OBJSCHED_SET_STATE
+ *
+ * This command set the vGPU schedular state.
+ *
+ *  engineId
+ *     This field specifies the NV2080_ENGINE_TYPE_* engine.
+ *
+ *  schedPolicy
+ *    This field sets the runlist scheduling policy. It specifies the
+ *    NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_* scheduling policy.
+ *
+ *  enableArr 
+ *    This field sets the Adaptive round robin scheduler
+ *    is enabled/disabled.
+ *
+ *  timesliceTargetNs
+ *    This field sets the time slice target time in ns.
+ *
+ *  frequencyForARR
+ *    This field sets the scheduling frequency for Adaptive round robin scheduler mode.
+ *
+ *  avgFactorForARR
+ *    This field sets the average factor to be used in compensating the timeslice
+ *    for Adaptive scheduler mode.
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ *   NV_ERR_INVALID_DEVICE
+ *   NV_ERR_INVALID_STATE
+ *   NV_ERR_NOT_SUPPORTED
+ *   NV_ERR_INSUFFICIENT_PERMISSIONS
+ *   NV_ERR_INVALID_ARGUMENT
+ *   NV_ERR_INVALID_PARAM_STRUCT
+ */
+
+#define NV2080_CTRL_CMD_FIFO_OBJSCHED_SET_STATE (0x20801121) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_OBJSCHED_SET_STATE_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_OBJSCHED_SET_STATE_PARAMS_MESSAGE_ID (0x21U)
+
+typedef struct NV2080_CTRL_FIFO_OBJSCHED_SET_STATE_PARAMS {
+    NvU32 engineId;
+    NvU32 schedPolicy;
+    NvU32 enableArr;
+    NvU32 timesliceTargetNs;
+    NvU32 frequencyForARR;
+    NvU32 avgFactorForARR;
+} NV2080_CTRL_FIFO_OBJSCHED_SET_STATE_PARAMS;
+
+/*
+ * NV2080_CTRL_CMD_FIFO_OBJSCHED_GET_CAPS
+ *
+ * This command returns the vGPU schedular capabilities.
+ *
+ *   engineId [in]
+ *     This field specifies the NV2080_ENGINE_TYPE_* engine whose SW runlist log
+ *     entries are to be fetched.
+ *
+ *   supportedSchedulers [out]
+ *     This field returns the supported runlist scheduling policies on the device.
+ *     It specifies the NV2080_CTRL_CMD_VGPU_SCHEDULER_POLICY_* scheduling policy.
+ *
+ *   bIsArrModeSupported [out]
+ *     This field returns if Adaptive scheduler mode is enabled/disabled.
+ *
+ *   maxTimesliceNs [out]
+ *      This field returns the maximum time slice value in ns.
+ *
+ *   minTimesliceNs [out]
+ *     This field returns the minimum time slice value in ns.
+ *
+ *   maxFrequencyForARR [out]
+ *     This field returns the maximum scheduling frequency for
+ *     Adaptive round robin scheduler mode.
+ *
+ *   minFrequencyForARR [out]
+ *     This field returns the minimum scheduling frequency for
+ *     Adaptive round robin scheduler mode.
+ *
+ *   maxAvgFactorForARR [out]
+ *     This field returns the maximum average factor in compensating
+ *     the timeslice for Adaptive scheduler mode.
+ *
+ *   minAvgFactorForARR [out]
+ *     This field returns the minimum average factor in compensating
+ *     the timeslice for Adaptive scheduler mode.
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ *   NV_ERR_INVALID_ARGUMENT
+ */
+
+#define NV2080_CTRL_CMD_FIFO_OBJSCHED_GET_CAPS (0x20801122) /* finn: Evaluated from "(FINN_NV20_SUBDEVICE_0_FIFO_INTERFACE_ID << 8) | NV2080_CTRL_FIFO_OBJSCHED_GET_CAPS_PARAMS_MESSAGE_ID" */
+
+#define NV2080_CTRL_FIFO_OBJSCHED_GET_CAPS_PARAMS_MESSAGE_ID (0x22U)
+
+typedef struct NV2080_CTRL_FIFO_OBJSCHED_GET_CAPS_PARAMS {
+    NvU32  engineId;
+    NvU32  supportedSchedulers[NV2080_CTRL_CMD_SUPPORTED_VGPU_SCHEDULER_POLICY_COUNT];
+    NvBool bIsArrModeSupported;
+    NvU32  maxTimesliceNs;
+    NvU32  minTimesliceNs;
+    NvU32  maxFrequencyForARR;
+    NvU32  minFrequencyForARR;
+    NvU32  maxAvgFactorForARR;
+    NvU32  minAvgFactorForARR;
+} NV2080_CTRL_FIFO_OBJSCHED_GET_CAPS_PARAMS;
 
 /* _ctrl2080fifo_h_ */

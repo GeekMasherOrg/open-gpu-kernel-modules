@@ -93,90 +93,6 @@ const struct NVOC_CLASS_DEF __nvoc_class_def_MemoryFabric =
     /*pExportInfo=*/        &__nvoc_export_info_MemoryFabric
 };
 
-static NvBool __nvoc_thunk_MemoryFabric_resCanCopy(struct RsResource *pMemoryFabric) {
-    return memoryfabricCanCopy((struct MemoryFabric *)(((unsigned char *)pMemoryFabric) - __nvoc_rtti_MemoryFabric_RsResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_MemoryFabric_memControl(struct Memory *pMemoryFabric, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return memoryfabricControl((struct MemoryFabric *)(((unsigned char *)pMemoryFabric) - __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricCheckMemInterUnmap(struct MemoryFabric *pMemory, NvBool bSubdeviceHandleProvided) {
-    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), bSubdeviceHandleProvided);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricUnmap(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
-    return memUnmap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pCpuMapping);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricGetMemInterMapParams(struct MemoryFabric *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
-    return memGetMemInterMapParams((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pParams);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricGetMemoryMappingDescriptor(struct MemoryFabric *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
-    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), ppMemDesc);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricGetMapAddrSpace(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
-    return memGetMapAddrSpace((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, mapFlags, pAddrSpace);
-}
-
-static NvBool __nvoc_thunk_RmResource_memoryfabricShareCallback(struct MemoryFabric *pResource, struct RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
-    return rmresShareCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_memoryfabricControlFilter(struct MemoryFabric *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return resControlFilter((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pCallContext, pParams);
-}
-
-static void __nvoc_thunk_RsResource_memoryfabricAddAdditionalDependants(struct RsClient *pClient, struct MemoryFabric *pResource, RsResourceRef *pReference) {
-    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pReference);
-}
-
-static NvU32 __nvoc_thunk_RsResource_memoryfabricGetRefCount(struct MemoryFabric *pResource) {
-    return resGetRefCount((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_memoryfabricMapTo(struct MemoryFabric *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
-    return resMapTo((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pParams);
-}
-
-static NV_STATUS __nvoc_thunk_RmResource_memoryfabricControl_Prologue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    return rmresControl_Prologue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricIsReady(struct MemoryFabric *pMemory) {
-    return memIsReady((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset));
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricCheckCopyPermissions(struct MemoryFabric *pMemory, struct OBJGPU *pDstGpu, NvHandle hDstClientNvBool) {
-    return memCheckCopyPermissions((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pDstGpu, hDstClientNvBool);
-}
-
-static void __nvoc_thunk_RsResource_memoryfabricPreDestruct(struct MemoryFabric *pResource) {
-    resPreDestruct((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset));
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_memoryfabricUnmapFrom(struct MemoryFabric *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
-    return resUnmapFrom((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pParams);
-}
-
-static void __nvoc_thunk_RmResource_memoryfabricControl_Epilogue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
-    rmresControl_Epilogue((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
-}
-
-static NV_STATUS __nvoc_thunk_RsResource_memoryfabricControlLookup(struct MemoryFabric *pResource, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams, const struct NVOC_EXPORTED_METHOD_DEF **ppEntry) {
-    return resControlLookup((struct RsResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pParams, ppEntry);
-}
-
-static NV_STATUS __nvoc_thunk_Memory_memoryfabricMap(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
-    return memMap((struct Memory *)(((unsigned char *)pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pParams, pCpuMapping);
-}
-
-static NvBool __nvoc_thunk_RmResource_memoryfabricAccessCallback(struct MemoryFabric *pResource, struct RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
-    return rmresAccessCallback((struct RmResource *)(((unsigned char *)pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
-}
-
 #if !defined(NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG)
 #define NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(x)      (0)
 #endif
@@ -184,12 +100,12 @@ static NvBool __nvoc_thunk_RmResource_memoryfabricAccessCallback(struct MemoryFa
 static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_MemoryFabric[] = 
 {
     {               /*  [0] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x850u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) memoryfabricCtrlGetInfo_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x850u)
-        /*flags=*/      0x850u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
+        /*flags=*/      0x118u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0xf80101u,
         /*paramSize=*/  sizeof(NV00F8_CTRL_GET_INFO_PARAMS),
@@ -199,12 +115,12 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_MemoryFa
 #endif
     },
     {               /*  [1] */
-#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x2840u)
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x318u)
         /*pFunc=*/      (void (*)(void)) NULL,
 #else
         /*pFunc=*/      (void (*)(void)) memoryfabricCtrlCmdDescribe_IMPL,
-#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x2840u)
-        /*flags=*/      0x2840u,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x318u)
+        /*flags=*/      0x318u,
         /*accessRight=*/0x0u,
         /*methodId=*/   0xf80102u,
         /*paramSize=*/  sizeof(NV00F8_CTRL_DESCRIBE_PARAMS),
@@ -213,12 +129,223 @@ static const struct NVOC_EXPORTED_METHOD_DEF __nvoc_exported_method_def_MemoryFa
         /*func=*/       "memoryfabricCtrlCmdDescribe"
 #endif
     },
+    {               /*  [2] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) memoryfabricCtrlAttachMem_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+        /*flags=*/      0x908u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0xf80103u,
+        /*paramSize=*/  sizeof(NV00F8_CTRL_ATTACH_MEM_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_MemoryFabric.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "memoryfabricCtrlAttachMem"
+#endif
+    },
+    {               /*  [3] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) memoryfabricCtrlDetachMem_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+        /*flags=*/      0x908u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0xf80104u,
+        /*paramSize=*/  sizeof(NV00F8_CTRL_DETACH_MEM_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_MemoryFabric.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "memoryfabricCtrlDetachMem"
+#endif
+    },
+    {               /*  [4] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) memoryfabricCtrlGetNumAttachedMem_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
+        /*flags=*/      0x118u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0xf80105u,
+        /*paramSize=*/  sizeof(NV00F8_CTRL_GET_NUM_ATTACHED_MEM_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_MemoryFabric.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "memoryfabricCtrlGetNumAttachedMem"
+#endif
+    },
+    {               /*  [5] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x108u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) memoryfabricCtrlGetAttachedMem_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x108u)
+        /*flags=*/      0x108u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0xf80106u,
+        /*paramSize=*/  sizeof(NV00F8_CTRL_GET_ATTACHED_MEM_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_MemoryFabric.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "memoryfabricCtrlGetAttachedMem"
+#endif
+    },
+    {               /*  [6] */
+#if NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x110u)
+        /*pFunc=*/      (void (*)(void)) NULL,
+#else
+        /*pFunc=*/      (void (*)(void)) memoryfabricCtrlGetPageLevelInfo_IMPL,
+#endif // NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x110u)
+        /*flags=*/      0x110u,
+        /*accessRight=*/0x0u,
+        /*methodId=*/   0xf80107u,
+        /*paramSize=*/  sizeof(NV00F8_CTRL_GET_PAGE_LEVEL_INFO_PARAMS),
+        /*pClassInfo=*/ &(__nvoc_class_def_MemoryFabric.classInfo),
+#if NV_PRINTF_STRINGS_ALLOWED
+        /*func=*/       "memoryfabricCtrlGetPageLevelInfo"
+#endif
+    },
 
 };
 
+// 2 down-thunk(s) defined to bridge methods in MemoryFabric from superclasses
+
+// memoryfabricCanCopy: virtual override (res) base (mem)
+static NvBool __nvoc_down_thunk_MemoryFabric_resCanCopy(struct RsResource *pMemoryFabric) {
+    return memoryfabricCanCopy((struct MemoryFabric *)(((unsigned char *) pMemoryFabric) - __nvoc_rtti_MemoryFabric_RsResource.offset));
+}
+
+// memoryfabricControl: virtual override (res) base (mem)
+static NV_STATUS __nvoc_down_thunk_MemoryFabric_memControl(struct Memory *pMemoryFabric, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return memoryfabricControl((struct MemoryFabric *)(((unsigned char *) pMemoryFabric) - __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pParams);
+}
+
+
+// 24 up-thunk(s) defined to bridge methods in MemoryFabric to superclasses
+
+// memoryfabricIsDuplicate: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricIsDuplicate(struct MemoryFabric *pMemory, NvHandle hMemory, NvBool *pDuplicate) {
+    return memIsDuplicate((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), hMemory, pDuplicate);
+}
+
+// memoryfabricGetMapAddrSpace: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricGetMapAddrSpace(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, NvU32 mapFlags, NV_ADDRESS_SPACE *pAddrSpace) {
+    return memGetMapAddrSpace((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, mapFlags, pAddrSpace);
+}
+
+// memoryfabricMap: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricMap(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, struct RS_CPU_MAP_PARAMS *pParams, RsCpuMapping *pCpuMapping) {
+    return memMap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pParams, pCpuMapping);
+}
+
+// memoryfabricUnmap: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricUnmap(struct MemoryFabric *pMemory, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping) {
+    return memUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pCallContext, pCpuMapping);
+}
+
+// memoryfabricGetMemInterMapParams: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricGetMemInterMapParams(struct MemoryFabric *pMemory, RMRES_MEM_INTER_MAP_PARAMS *pParams) {
+    return memGetMemInterMapParams((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pParams);
+}
+
+// memoryfabricCheckMemInterUnmap: inline virtual inherited (mem) base (mem) body
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricCheckMemInterUnmap(struct MemoryFabric *pMemory, NvBool bSubdeviceHandleProvided) {
+    return memCheckMemInterUnmap((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), bSubdeviceHandleProvided);
+}
+
+// memoryfabricGetMemoryMappingDescriptor: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricGetMemoryMappingDescriptor(struct MemoryFabric *pMemory, MEMORY_DESCRIPTOR **ppMemDesc) {
+    return memGetMemoryMappingDescriptor((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), ppMemDesc);
+}
+
+// memoryfabricCheckCopyPermissions: inline virtual inherited (mem) base (mem) body
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricCheckCopyPermissions(struct MemoryFabric *pMemory, struct OBJGPU *pDstGpu, struct Device *pDstDevice) {
+    return memCheckCopyPermissions((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pDstGpu, pDstDevice);
+}
+
+// memoryfabricIsReady: virtual inherited (mem) base (mem)
+static NV_STATUS __nvoc_up_thunk_Memory_memoryfabricIsReady(struct MemoryFabric *pMemory, NvBool bCopyConstructorContext) {
+    return memIsReady((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), bCopyConstructorContext);
+}
+
+// memoryfabricIsGpuMapAllowed: inline virtual inherited (mem) base (mem) body
+static NvBool __nvoc_up_thunk_Memory_memoryfabricIsGpuMapAllowed(struct MemoryFabric *pMemory, struct OBJGPU *pGpu) {
+    return memIsGpuMapAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset), pGpu);
+}
+
+// memoryfabricIsExportAllowed: inline virtual inherited (mem) base (mem) body
+static NvBool __nvoc_up_thunk_Memory_memoryfabricIsExportAllowed(struct MemoryFabric *pMemory) {
+    return memIsExportAllowed((struct Memory *)(((unsigned char *) pMemory) + __nvoc_rtti_MemoryFabric_Memory.offset));
+}
+
+// memoryfabricAccessCallback: virtual inherited (rmres) base (mem)
+static NvBool __nvoc_up_thunk_RmResource_memoryfabricAccessCallback(struct MemoryFabric *pResource, RsClient *pInvokingClient, void *pAllocParams, RsAccessRight accessRight) {
+    return rmresAccessCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pInvokingClient, pAllocParams, accessRight);
+}
+
+// memoryfabricShareCallback: virtual inherited (rmres) base (mem)
+static NvBool __nvoc_up_thunk_RmResource_memoryfabricShareCallback(struct MemoryFabric *pResource, RsClient *pInvokingClient, struct RsResourceRef *pParentRef, RS_SHARE_POLICY *pSharePolicy) {
+    return rmresShareCallback((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pInvokingClient, pParentRef, pSharePolicy);
+}
+
+// memoryfabricControlSerialization_Prologue: virtual inherited (rmres) base (mem)
+static NV_STATUS __nvoc_up_thunk_RmResource_memoryfabricControlSerialization_Prologue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControlSerialization_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
+}
+
+// memoryfabricControlSerialization_Epilogue: virtual inherited (rmres) base (mem)
+static void __nvoc_up_thunk_RmResource_memoryfabricControlSerialization_Epilogue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControlSerialization_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
+}
+
+// memoryfabricControl_Prologue: virtual inherited (rmres) base (mem)
+static NV_STATUS __nvoc_up_thunk_RmResource_memoryfabricControl_Prologue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return rmresControl_Prologue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
+}
+
+// memoryfabricControl_Epilogue: virtual inherited (rmres) base (mem)
+static void __nvoc_up_thunk_RmResource_memoryfabricControl_Epilogue(struct MemoryFabric *pResource, CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    rmresControl_Epilogue((struct RmResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RmResource.offset), pCallContext, pParams);
+}
+
+// memoryfabricPreDestruct: virtual inherited (res) base (mem)
+static void __nvoc_up_thunk_RsResource_memoryfabricPreDestruct(struct MemoryFabric *pResource) {
+    resPreDestruct((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset));
+}
+
+// memoryfabricControlFilter: virtual inherited (res) base (mem)
+static NV_STATUS __nvoc_up_thunk_RsResource_memoryfabricControlFilter(struct MemoryFabric *pResource, struct CALL_CONTEXT *pCallContext, struct RS_RES_CONTROL_PARAMS_INTERNAL *pParams) {
+    return resControlFilter((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pCallContext, pParams);
+}
+
+// memoryfabricIsPartialUnmapSupported: inline virtual inherited (res) base (mem) body
+static NvBool __nvoc_up_thunk_RsResource_memoryfabricIsPartialUnmapSupported(struct MemoryFabric *pResource) {
+    return resIsPartialUnmapSupported((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset));
+}
+
+// memoryfabricMapTo: virtual inherited (res) base (mem)
+static NV_STATUS __nvoc_up_thunk_RsResource_memoryfabricMapTo(struct MemoryFabric *pResource, RS_RES_MAP_TO_PARAMS *pParams) {
+    return resMapTo((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pParams);
+}
+
+// memoryfabricUnmapFrom: virtual inherited (res) base (mem)
+static NV_STATUS __nvoc_up_thunk_RsResource_memoryfabricUnmapFrom(struct MemoryFabric *pResource, RS_RES_UNMAP_FROM_PARAMS *pParams) {
+    return resUnmapFrom((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pParams);
+}
+
+// memoryfabricGetRefCount: virtual inherited (res) base (mem)
+static NvU32 __nvoc_up_thunk_RsResource_memoryfabricGetRefCount(struct MemoryFabric *pResource) {
+    return resGetRefCount((struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset));
+}
+
+// memoryfabricAddAdditionalDependants: virtual inherited (res) base (mem)
+static void __nvoc_up_thunk_RsResource_memoryfabricAddAdditionalDependants(struct RsClient *pClient, struct MemoryFabric *pResource, RsResourceRef *pReference) {
+    resAddAdditionalDependants(pClient, (struct RsResource *)(((unsigned char *) pResource) + __nvoc_rtti_MemoryFabric_RsResource.offset), pReference);
+}
+
+
 const struct NVOC_EXPORT_INFO __nvoc_export_info_MemoryFabric = 
 {
-    /*numEntries=*/     2,
+    /*numEntries=*/     7,
     /*pExportEntries=*/ __nvoc_exported_method_def_MemoryFabric
 };
 
@@ -252,67 +379,134 @@ __nvoc_ctor_MemoryFabric_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_MemoryFabric_1(MemoryFabric *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
+    // memoryfabricCanCopy -- virtual override (res) base (mem)
     pThis->__memoryfabricCanCopy__ = &memoryfabricCanCopy_IMPL;
+    pThis->__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__resCanCopy__ = &__nvoc_down_thunk_MemoryFabric_resCanCopy;
 
+    // memoryfabricCopyConstruct -- virtual override (mem) base (mem)
     pThis->__memoryfabricCopyConstruct__ = &memoryfabricCopyConstruct_IMPL;
 
+    // memoryfabricControl -- virtual override (res) base (mem)
     pThis->__memoryfabricControl__ = &memoryfabricControl_IMPL;
+    pThis->__nvoc_base_Memory.__memControl__ = &__nvoc_down_thunk_MemoryFabric_memControl;
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x850u)
+    // memoryfabricCtrlGetInfo -- exported (id=0xf80101)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
     pThis->__memoryfabricCtrlGetInfo__ = &memoryfabricCtrlGetInfo_IMPL;
 #endif
 
-#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x2840u)
+    // memoryfabricCtrlCmdDescribe -- exported (id=0xf80102)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x318u)
     pThis->__memoryfabricCtrlCmdDescribe__ = &memoryfabricCtrlCmdDescribe_IMPL;
 #endif
 
-    pThis->__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__resCanCopy__ = &__nvoc_thunk_MemoryFabric_resCanCopy;
+    // memoryfabricCtrlAttachMem -- exported (id=0xf80103)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+    pThis->__memoryfabricCtrlAttachMem__ = &memoryfabricCtrlAttachMem_IMPL;
+#endif
 
-    pThis->__nvoc_base_Memory.__memControl__ = &__nvoc_thunk_MemoryFabric_memControl;
+    // memoryfabricCtrlDetachMem -- exported (id=0xf80104)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x908u)
+    pThis->__memoryfabricCtrlDetachMem__ = &memoryfabricCtrlDetachMem_IMPL;
+#endif
 
-    pThis->__memoryfabricCheckMemInterUnmap__ = &__nvoc_thunk_Memory_memoryfabricCheckMemInterUnmap;
+    // memoryfabricCtrlGetNumAttachedMem -- exported (id=0xf80105)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x118u)
+    pThis->__memoryfabricCtrlGetNumAttachedMem__ = &memoryfabricCtrlGetNumAttachedMem_IMPL;
+#endif
 
-    pThis->__memoryfabricUnmap__ = &__nvoc_thunk_Memory_memoryfabricUnmap;
+    // memoryfabricCtrlGetAttachedMem -- exported (id=0xf80106)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x108u)
+    pThis->__memoryfabricCtrlGetAttachedMem__ = &memoryfabricCtrlGetAttachedMem_IMPL;
+#endif
 
-    pThis->__memoryfabricGetMemInterMapParams__ = &__nvoc_thunk_Memory_memoryfabricGetMemInterMapParams;
+    // memoryfabricCtrlGetPageLevelInfo -- exported (id=0xf80107)
+#if !NVOC_EXPORTED_METHOD_DISABLED_BY_FLAG(0x110u)
+    pThis->__memoryfabricCtrlGetPageLevelInfo__ = &memoryfabricCtrlGetPageLevelInfo_IMPL;
+#endif
 
-    pThis->__memoryfabricGetMemoryMappingDescriptor__ = &__nvoc_thunk_Memory_memoryfabricGetMemoryMappingDescriptor;
+    // memoryfabricIsDuplicate -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricIsDuplicate__ = &__nvoc_up_thunk_Memory_memoryfabricIsDuplicate;
 
-    pThis->__memoryfabricGetMapAddrSpace__ = &__nvoc_thunk_Memory_memoryfabricGetMapAddrSpace;
+    // memoryfabricGetMapAddrSpace -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricGetMapAddrSpace__ = &__nvoc_up_thunk_Memory_memoryfabricGetMapAddrSpace;
 
-    pThis->__memoryfabricShareCallback__ = &__nvoc_thunk_RmResource_memoryfabricShareCallback;
+    // memoryfabricMap -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricMap__ = &__nvoc_up_thunk_Memory_memoryfabricMap;
 
-    pThis->__memoryfabricControlFilter__ = &__nvoc_thunk_RsResource_memoryfabricControlFilter;
+    // memoryfabricUnmap -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricUnmap__ = &__nvoc_up_thunk_Memory_memoryfabricUnmap;
 
-    pThis->__memoryfabricAddAdditionalDependants__ = &__nvoc_thunk_RsResource_memoryfabricAddAdditionalDependants;
+    // memoryfabricGetMemInterMapParams -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricGetMemInterMapParams__ = &__nvoc_up_thunk_Memory_memoryfabricGetMemInterMapParams;
 
-    pThis->__memoryfabricGetRefCount__ = &__nvoc_thunk_RsResource_memoryfabricGetRefCount;
+    // memoryfabricCheckMemInterUnmap -- inline virtual inherited (mem) base (mem) body
+    pThis->__memoryfabricCheckMemInterUnmap__ = &__nvoc_up_thunk_Memory_memoryfabricCheckMemInterUnmap;
 
-    pThis->__memoryfabricMapTo__ = &__nvoc_thunk_RsResource_memoryfabricMapTo;
+    // memoryfabricGetMemoryMappingDescriptor -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricGetMemoryMappingDescriptor__ = &__nvoc_up_thunk_Memory_memoryfabricGetMemoryMappingDescriptor;
 
-    pThis->__memoryfabricControl_Prologue__ = &__nvoc_thunk_RmResource_memoryfabricControl_Prologue;
+    // memoryfabricCheckCopyPermissions -- inline virtual inherited (mem) base (mem) body
+    pThis->__memoryfabricCheckCopyPermissions__ = &__nvoc_up_thunk_Memory_memoryfabricCheckCopyPermissions;
 
-    pThis->__memoryfabricIsReady__ = &__nvoc_thunk_Memory_memoryfabricIsReady;
+    // memoryfabricIsReady -- virtual inherited (mem) base (mem)
+    pThis->__memoryfabricIsReady__ = &__nvoc_up_thunk_Memory_memoryfabricIsReady;
 
-    pThis->__memoryfabricCheckCopyPermissions__ = &__nvoc_thunk_Memory_memoryfabricCheckCopyPermissions;
+    // memoryfabricIsGpuMapAllowed -- inline virtual inherited (mem) base (mem) body
+    pThis->__memoryfabricIsGpuMapAllowed__ = &__nvoc_up_thunk_Memory_memoryfabricIsGpuMapAllowed;
 
-    pThis->__memoryfabricPreDestruct__ = &__nvoc_thunk_RsResource_memoryfabricPreDestruct;
+    // memoryfabricIsExportAllowed -- inline virtual inherited (mem) base (mem) body
+    pThis->__memoryfabricIsExportAllowed__ = &__nvoc_up_thunk_Memory_memoryfabricIsExportAllowed;
 
-    pThis->__memoryfabricUnmapFrom__ = &__nvoc_thunk_RsResource_memoryfabricUnmapFrom;
+    // memoryfabricAccessCallback -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricAccessCallback__ = &__nvoc_up_thunk_RmResource_memoryfabricAccessCallback;
 
-    pThis->__memoryfabricControl_Epilogue__ = &__nvoc_thunk_RmResource_memoryfabricControl_Epilogue;
+    // memoryfabricShareCallback -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricShareCallback__ = &__nvoc_up_thunk_RmResource_memoryfabricShareCallback;
 
-    pThis->__memoryfabricControlLookup__ = &__nvoc_thunk_RsResource_memoryfabricControlLookup;
+    // memoryfabricControlSerialization_Prologue -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricControlSerialization_Prologue__ = &__nvoc_up_thunk_RmResource_memoryfabricControlSerialization_Prologue;
 
-    pThis->__memoryfabricMap__ = &__nvoc_thunk_Memory_memoryfabricMap;
+    // memoryfabricControlSerialization_Epilogue -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricControlSerialization_Epilogue__ = &__nvoc_up_thunk_RmResource_memoryfabricControlSerialization_Epilogue;
 
-    pThis->__memoryfabricAccessCallback__ = &__nvoc_thunk_RmResource_memoryfabricAccessCallback;
-}
+    // memoryfabricControl_Prologue -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricControl_Prologue__ = &__nvoc_up_thunk_RmResource_memoryfabricControl_Prologue;
 
+    // memoryfabricControl_Epilogue -- virtual inherited (rmres) base (mem)
+    pThis->__memoryfabricControl_Epilogue__ = &__nvoc_up_thunk_RmResource_memoryfabricControl_Epilogue;
+
+    // memoryfabricPreDestruct -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricPreDestruct__ = &__nvoc_up_thunk_RsResource_memoryfabricPreDestruct;
+
+    // memoryfabricControlFilter -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricControlFilter__ = &__nvoc_up_thunk_RsResource_memoryfabricControlFilter;
+
+    // memoryfabricIsPartialUnmapSupported -- inline virtual inherited (res) base (mem) body
+    pThis->__memoryfabricIsPartialUnmapSupported__ = &__nvoc_up_thunk_RsResource_memoryfabricIsPartialUnmapSupported;
+
+    // memoryfabricMapTo -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricMapTo__ = &__nvoc_up_thunk_RsResource_memoryfabricMapTo;
+
+    // memoryfabricUnmapFrom -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricUnmapFrom__ = &__nvoc_up_thunk_RsResource_memoryfabricUnmapFrom;
+
+    // memoryfabricGetRefCount -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricGetRefCount__ = &__nvoc_up_thunk_RsResource_memoryfabricGetRefCount;
+
+    // memoryfabricAddAdditionalDependants -- virtual inherited (res) base (mem)
+    pThis->__memoryfabricAddAdditionalDependants__ = &__nvoc_up_thunk_RsResource_memoryfabricAddAdditionalDependants;
+} // End __nvoc_init_funcTable_MemoryFabric_1 with approximately 36 basic block(s).
+
+
+// Initialize vtable(s) for 34 virtual method(s).
 void __nvoc_init_funcTable_MemoryFabric(MemoryFabric *pThis) {
+
+    // Initialize vtable(s) with 34 per-object function pointer(s).
     __nvoc_init_funcTable_MemoryFabric_1(pThis);
 }
 
@@ -328,18 +522,26 @@ void __nvoc_init_MemoryFabric(MemoryFabric *pThis) {
     __nvoc_init_funcTable_MemoryFabric(pThis);
 }
 
-NV_STATUS __nvoc_objCreate_MemoryFabric(MemoryFabric **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams) {
+NV_STATUS __nvoc_objCreate_MemoryFabric(MemoryFabric **ppThis, Dynamic *pParent, NvU32 createFlags, CALL_CONTEXT * arg_pCallContext, struct RS_RES_ALLOC_PARAMS_INTERNAL * arg_pParams)
+{
     NV_STATUS status;
-    Object *pParentObj;
+    Object *pParentObj = NULL;
     MemoryFabric *pThis;
 
-    pThis = portMemAllocNonPaged(sizeof(MemoryFabric));
-    if (pThis == NULL) return NV_ERR_NO_MEMORY;
+    // Assign `pThis`, allocating memory unless suppressed by flag.
+    status = __nvoc_handleObjCreateMemAlloc(createFlags, sizeof(MemoryFabric), (void**)&pThis, (void**)ppThis);
+    if (status != NV_OK)
+        return status;
 
+    // Zero is the initial value for everything.
     portMemSet(pThis, 0, sizeof(MemoryFabric));
 
+    // Initialize runtime type information.
     __nvoc_initRtti(staticCast(pThis, Dynamic), &__nvoc_class_def_MemoryFabric);
 
+    pThis->__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object.createFlags = createFlags;
+
+    // Link the child into the parent if there is one unless flagged not to do so.
     if (pParent != NULL && !(createFlags & NVOC_OBJ_CREATE_FLAGS_PARENT_HALSPEC_ONLY))
     {
         pParentObj = dynamicCast(pParent, Object);
@@ -354,12 +556,27 @@ NV_STATUS __nvoc_objCreate_MemoryFabric(MemoryFabric **ppThis, Dynamic *pParent,
     status = __nvoc_ctor_MemoryFabric(pThis, arg_pCallContext, arg_pParams);
     if (status != NV_OK) goto __nvoc_objCreate_MemoryFabric_cleanup;
 
+    // Assignment has no effect if NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT is set.
     *ppThis = pThis;
+
     return NV_OK;
 
 __nvoc_objCreate_MemoryFabric_cleanup:
-    // do not call destructors here since the constructor already called them
-    portMemFree(pThis);
+
+    // Unlink the child from the parent if it was linked above.
+    if (pParentObj != NULL)
+        objRemoveChild(pParentObj, &pThis->__nvoc_base_Memory.__nvoc_base_RmResource.__nvoc_base_RsResource.__nvoc_base_Object);
+
+    // Do not call destructors here since the constructor already called them.
+    if (createFlags & NVOC_OBJ_CREATE_FLAGS_IN_PLACE_CONSTRUCT)
+        portMemSet(pThis, 0, sizeof(MemoryFabric));
+    else
+    {
+        portMemFree(pThis);
+        *ppThis = NULL;
+    }
+
+    // coverity[leaked_storage:FALSE]
     return status;
 }
 

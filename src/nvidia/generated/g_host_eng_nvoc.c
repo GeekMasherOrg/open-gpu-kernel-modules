@@ -33,6 +33,7 @@ static const struct NVOC_CASTINFO __nvoc_castinfo_OBJHOSTENG = {
     },
 };
 
+// Not instantiable because it's not derived from class "Object"
 const struct NVOC_CLASS_DEF __nvoc_class_def_OBJHOSTENG = 
 {
     /*classInfo=*/ {
@@ -72,17 +73,19 @@ __nvoc_ctor_OBJHOSTENG_exit:
     return status;
 }
 
+// Vtable initialization
 static void __nvoc_init_funcTable_OBJHOSTENG_1(OBJHOSTENG *pThis) {
     PORT_UNREFERENCED_VARIABLE(pThis);
 
-    pThis->__hostengHaltEngine__ = &hostengHaltEngine_IMPL;
-
+    // hostengHaltAndReset -- virtual
     pThis->__hostengHaltAndReset__ = &hostengHaltAndReset_IMPL;
+} // End __nvoc_init_funcTable_OBJHOSTENG_1 with approximately 1 basic block(s).
 
-    pThis->__hostengReset__ = &hostengReset_IMPL;
-}
 
+// Initialize vtable(s) for 1 virtual method(s).
 void __nvoc_init_funcTable_OBJHOSTENG(OBJHOSTENG *pThis) {
+
+    // Initialize vtable(s) with 1 per-object function pointer(s).
     __nvoc_init_funcTable_OBJHOSTENG_1(pThis);
 }
 

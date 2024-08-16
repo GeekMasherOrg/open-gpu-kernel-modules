@@ -56,7 +56,7 @@ typedef enum
     NVHDMIPKT_TIMEOUT                = 4,
     NVHDMIPKT_ERR_GENERAL            = 5,
     NVHDMIPKT_INSUFFICIENT_BANDWIDTH = 6,
-    NVHDMIPKT_RETRY                  = 7
+    NVHDMIPKT_RETRY                  = 7,
 } NVHDMIPKT_RESULT;
 
 // NVHDMIPKT_TYPE: HDMI Packet Enums
@@ -69,8 +69,13 @@ typedef enum _NVHDMIPKT_TYPE
     NVHDMIPKT_TYPE_GENERAL_CONTROL            = 3,  // GCP
     NVHDMIPKT_TYPE_VENDOR_SPECIFIC_INFOFRAME  = 4,  // VSI
     NVHDMIPKT_TYPE_AUDIO_INFOFRAME            = 5,  // Audio InfoFrame
-    NVHDMIPKT_TYPE_EXTENDED_METADATA_PACKET   = 6,  // Extended Metadata Packet (HDMI 2.1)
-    NVHDMIPKT_INVALID_PKT_TYPE                = 13
+    NVHDMIPKT_TYPE_SHARED_GENERIC1            = 6,  // ADA+ Specifc shared generic infoframe 1~6
+    NVHDMIPKT_TYPE_SHARED_GENERIC2            = 7,
+    NVHDMIPKT_TYPE_SHARED_GENERIC3            = 8,
+    NVHDMIPKT_TYPE_SHARED_GENERIC4            = 9,
+    NVHDMIPKT_TYPE_SHARED_GENERIC5            = 10,
+    NVHDMIPKT_TYPE_SHARED_GENERIC6            = 11,
+    NVHDMIPKT_INVALID_PKT_TYPE                = 12
 } NVHDMIPKT_TYPE;
 
 // Hdmi packet TransmitControl defines. These definitions reflect the
@@ -99,6 +104,11 @@ typedef enum _NVHDMIPKT_TYPE
 #define NV_HDMI_PKT_TRANSMIT_CTRL_VIDEO_FMT_SW_CTRL     0x00000000
 #define NV_HDMI_PKT_TRANSMIT_CTRL_VIDEO_FMT_HW_CTRL     0x00000001
 
+#define NV_HDMI_PKT_TRANSMIT_CTRL_LOC                   7:6
+#define NV_HDMI_PKT_TRANSMIT_CTRL_LOC_VBLANK            0x00000000
+#define NV_HDMI_PKT_TRANSMIT_CTRL_LOC_VSYNC             0x00000001
+#define NV_HDMI_PKT_TRANSMIT_CTRL_LOC_LOADV             0x00000002
+
 // NVHDMIPKT_TC: HDMI Packet Transmit Control
 // NOTE: Client should use these defines below for transmit control, and avoid using the ones
 //       above. Use only if client knows and wants fine control. And in that case the value
@@ -117,6 +127,12 @@ typedef enum _NVHDMIPKT_TC
      DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _SINGLE,    _DIS)  |
      DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _CHKSUM_HW, _EN)),
 
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME_SW_CHECKSUM =
+    (DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _ENABLE,    _EN)   |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _OTHER,     _DIS)  |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _SINGLE,    _DIS)  |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _CHKSUM_HW, _DIS)),
+
     NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME         =
     (DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _ENABLE,    _EN)   |
      DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _OTHER,     _DIS)  |
@@ -132,6 +148,29 @@ typedef enum _NVHDMIPKT_TC
     NVHDMIPKT_TRANSMIT_CONTROL_VIDEO_FMT_HW_CTRL           =
     (DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _VIDEO_FMT, _HW_CTRL)),
 
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME_LOC_LOADV=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME   |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _LOADV)),
+
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME_LOC_LOADV=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME  |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _LOADV)),
+
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME_LOC_VSYNC=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME   |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _VSYNC)),
+
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME_LOC_VSYNC=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME  |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _VSYNC)),
+
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME_LOC_VBLANK=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_EVERY_FRAME   |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _VBLANK)),
+
+    NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME_LOC_VBLANK=
+    (NVHDMIPKT_TRANSMIT_CONTROL_ENABLE_SINGLE_FRAME  |
+     DRF_DEF(_HDMI_PKT, _TRANSMIT_CTRL, _LOC, _VBLANK)),
 } NVHDMIPKT_TC;
 
 // RM client handles. Used when client chooses that hdmi library make RM calls.
@@ -220,6 +259,7 @@ typedef struct _tagNVHDMIPKT_CALLBACK
                         NvBool             expression);
 } NVHDMIPKT_CALLBACK;
 
+
 /*********************** HDMI Library interface to write hdmi ctrl/packet ***********************/
 typedef void* NvHdmiPkt_Handle;
 #define NVHDMIPKT_INVALID_HANDLE ((NvHdmiPkt_Handle)0)
@@ -265,6 +305,7 @@ NvHdmiPkt_PacketWrite(NvHdmiPkt_Handle   libHandle,
                       NVHDMIPKT_TC       transmitControl,
                       NvU32              packetLen,
                       NvU8 const *const  pPacket);
+
 
 /***************************** Interface to initialize HDMI Library *****************************/
 

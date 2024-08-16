@@ -70,9 +70,25 @@ $(foreach _module, $(NV_KERNEL_MODULES), \
 
 EXTRA_CFLAGS += -I$(src)/common/inc
 EXTRA_CFLAGS += -I$(src)
-EXTRA_CFLAGS += -Wall -MD $(DEFINES) $(INCLUDES) -Wno-cast-qual -Wno-error -Wno-format-extra-args
+EXTRA_CFLAGS += -Wall $(DEFINES) $(INCLUDES) -Wno-cast-qual -Wno-format-extra-args
 EXTRA_CFLAGS += -D__KERNEL__ -DMODULE -DNVRM
-EXTRA_CFLAGS += -DNV_VERSION_STRING=\"515.43.04\"
+EXTRA_CFLAGS += -DNV_VERSION_STRING=\"560.31.02\"
+
+ifneq ($(SYSSRCHOST1X),)
+ EXTRA_CFLAGS += -I$(SYSSRCHOST1X)
+endif
+
+# Some Android kernels prohibit driver use of filesystem functions like
+# filp_open() and kernel_read(). Disable the NV_FILESYSTEM_ACCESS_AVAILABLE
+# functionality that uses those functions when building for Android.
+
+PLATFORM_IS_ANDROID ?= 0
+
+ifeq ($(PLATFORM_IS_ANDROID),1)
+ EXTRA_CFLAGS += -DNV_FILESYSTEM_ACCESS_AVAILABLE=0
+else
+ EXTRA_CFLAGS += -DNV_FILESYSTEM_ACCESS_AVAILABLE=1
+endif
 
 EXTRA_CFLAGS += -Wno-unused-function
 
@@ -87,13 +103,14 @@ ifeq ($(ARCH),arm64)
 endif
 
 ifeq ($(NV_BUILD_TYPE),debug)
- EXTRA_CFLAGS += -g -gsplit-dwarf
+ EXTRA_CFLAGS += -g
 endif
 
 EXTRA_CFLAGS += -ffreestanding
 
 ifeq ($(ARCH),arm64)
  EXTRA_CFLAGS += -mgeneral-regs-only -march=armv8-a
+ EXTRA_CFLAGS += $(call cc-option,-mno-outline-atomics,)
 endif
 
 ifeq ($(ARCH),x86_64)
@@ -101,7 +118,7 @@ ifeq ($(ARCH),x86_64)
 endif
 
 ifeq ($(ARCH),powerpc)
- EXTRA_CFLAGS += -mlittle-endian -mno-strict-align -mno-altivec
+ EXTRA_CFLAGS += -mlittle-endian -mno-strict-align
 endif
 
 EXTRA_CFLAGS += -DNV_UVM_ENABLE
@@ -117,6 +134,16 @@ ifneq ($(wildcard /proc/sgi_uv),)
  EXTRA_CFLAGS += -DNV_CONFIG_X86_UV
 endif
 
+ifdef VGX_FORCE_VFIO_PCI_CORE
+ EXTRA_CFLAGS += -DNV_VGPU_FORCE_VFIO_PCI_CORE
+endif
+
+WARNINGS_AS_ERRORS ?=
+ifeq ($(WARNINGS_AS_ERRORS),1)
+ ccflags-y += -Werror
+else
+ ccflags-y += -Wno-error
+endif
 
 #
 # The conftest.sh script tests various aspects of the target kernel.
@@ -143,6 +170,10 @@ NV_CONFTEST_CMD := /bin/sh $(NV_CONFTEST_SCRIPT) \
 NV_CFLAGS_FROM_CONFTEST := $(shell $(NV_CONFTEST_CMD) build_cflags)
 
 NV_CONFTEST_CFLAGS = $(NV_CFLAGS_FROM_CONFTEST) $(EXTRA_CFLAGS) -fno-pie
+NV_CONFTEST_CFLAGS += $(call cc-disable-warning,pointer-sign)
+NV_CONFTEST_CFLAGS += $(call cc-option,-fshort-wchar,)
+NV_CONFTEST_CFLAGS += $(call cc-option,-Werror=incompatible-pointer-types,)
+NV_CONFTEST_CFLAGS += -Wno-error
 
 NV_CONFTEST_COMPILE_TEST_HEADERS := $(obj)/conftest/macros.h
 NV_CONFTEST_COMPILE_TEST_HEADERS += $(obj)/conftest/functions.h
@@ -202,9 +233,25 @@ $(obj)/conftest/patches.h: $(NV_CONFTEST_SCRIPT)
 	@mkdir -p $(obj)/conftest
 	@$(NV_CONFTEST_CMD) patch_check > $@
 
-$(obj)/conftest/headers.h: $(NV_CONFTEST_SCRIPT)
-	@mkdir -p $(obj)/conftest
-	@$(NV_CONFTEST_CMD) test_kernel_headers '$(NV_CONFTEST_CFLAGS)' > $@
+include $(src)/header-presence-tests.mk
+
+# Filename to store the define for the header in $(1); this is only consumed by
+# the rule below that concatenates all of these together.
+NV_HEADER_PRESENCE_PART = $(addprefix $(obj)/conftest/header_presence/,$(addsuffix .part,$(1)))
+
+# Define a rule to check the header $(1).
+define NV_HEADER_PRESENCE_CHECK
+ $$(call NV_HEADER_PRESENCE_PART,$(1)): $$(NV_CONFTEST_SCRIPT) $(obj)/conftest/uts_release
+	@mkdir -p $$(dir $$@)
+	@$$(NV_CONFTEST_CMD) test_kernel_header '$$(NV_CONFTEST_CFLAGS)' '$(1)' > $$@
+endef
+
+# Evaluate the rule above for each header in the list.
+$(foreach header,$(NV_HEADER_PRESENCE_TESTS),$(eval $(call NV_HEADER_PRESENCE_CHECK,$(header))))
+
+# Concatenate all of the parts into headers.h.
+$(obj)/conftest/headers.h: $(call NV_HEADER_PRESENCE_PART,$(NV_HEADER_PRESENCE_TESTS))
+	@cat $^ > $@
 
 clean-dirs := $(obj)/conftest
 

@@ -21,6 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#pragma once
 #include "g_rs_resource_nvoc.h"
 
 #ifndef _RS_RESOURCE_H_
@@ -90,6 +91,7 @@ struct RS_RES_ALLOC_PARAMS_INTERNAL
     API_SECURITY_INFO      *pSecInfo;
 
     void                   *pAllocParams;     ///< [in] Copied-in allocation parameters
+    NvU32                   paramsSize;       ///< [in] Copied-in allocation parameters size
 
     // ... Dupe alloc
     RsClient               *pSrcClient;       ///< The client that is sharing the resource
@@ -140,6 +142,7 @@ struct RS_RES_FREE_PARAMS_INTERNAL
 
     // Internal use only
     NvBool             bHiPriOnly;      ///< [in] Only free if this is a high priority resources
+    NvBool             bDisableOnly;    ///< [in] Disable the target instead of freeing it (only applies to clients)
     RS_LOCK_INFO      *pLockInfo;       ///< [inout] Locking flags and state
     NvU32              freeFlags;       ///< [in] Flags for the free operation
     NvU32              freeState;       ///< [inout] Free state
@@ -234,6 +237,11 @@ public:
     virtual NvBool resCanCopy(RsResource *pResource);
 
     /**
+     * Returns TRUE if the resources are duplicates
+     */
+    virtual NV_STATUS resIsDuplicate(RsResource *pResource, NvHandle hMemory, NvBool *pDuplicate);
+
+    /**
      * Resource destructor
      * @param[in]   pResource Resource object to destruct
      */
@@ -268,9 +276,9 @@ public:
      * @param[in]       pParams
      * @param[out]      ppEntry
      */
-    virtual NV_STATUS resControlLookup(RsResource *pResource,
-                                       RS_RES_CONTROL_PARAMS_INTERNAL *pParams,
-                                       const struct NVOC_EXPORTED_METHOD_DEF **ppEntry);
+    NV_STATUS resControlLookup(RsResource *pResource,
+                               RS_RES_CONTROL_PARAMS_INTERNAL *pParams,
+                               const struct NVOC_EXPORTED_METHOD_DEF **ppEntry);
 
     /**
      * Dispatch resource control call
@@ -290,6 +298,30 @@ public:
      */
     virtual NV_STATUS resControlFilter(RsResource *pResource, CALL_CONTEXT *pCallContext,
                                        RS_RES_CONTROL_PARAMS_INTERNAL *pParams);
+
+    /**
+     * Serialize the control parameters if they are going to GSP/Host, not serialized, and support serialization
+     * Or
+     * Deserialize the control parameters if necessary and replace the inner params pointer with the deserialized params
+     *
+     * @param[in]   pResource
+     * @param[in]   pCallContext
+     * @param[in]   pParams
+     */
+    virtual NV_STATUS resControlSerialization_Prologue(RsResource *pResource, CALL_CONTEXT *pCallContext,
+                                                       RS_RES_CONTROL_PARAMS_INTERNAL *pParams);
+
+    /**
+     * Deserialize the parameters returned from GSP if client did not pass serialized params
+     * Or
+     * Serialize the control parameters if client expects it and restore the original inner params pointer
+     *
+     * @param[in]   pResource
+     * @param[in]   pCallContext
+     * @param[in]   pParams
+     */
+    virtual void resControlSerialization_Epilogue(RsResource *pResource, CALL_CONTEXT *pCallContext,
+                                                  RS_RES_CONTROL_PARAMS_INTERNAL *pParams);
 
     /**
      * Operations performed right before the control call is executed. Default stubbed.
@@ -337,6 +369,12 @@ public:
      * @param[in]   pCpuMapping
      */
     virtual NV_STATUS resUnmap(RsResource *pResource, CALL_CONTEXT *pCallContext, RsCpuMapping *pCpuMapping);
+
+    /**
+     * Returns true if partial unmap is supported by the resource
+     * If true, resUnmapFrom() can be called to unmap a mapping partially
+     */
+    virtual NvBool resIsPartialUnmapSupported(RsResource *pResource) { return NV_FALSE; }
 
      /**
      * Maps to this resource from another resource
@@ -465,6 +503,7 @@ struct RS_CPU_UNMAP_PARAMS
     NvP64                   pLinearAddress; ///< [in] Address of mapped memory
     NvU32                   flags;          ///< [in] Resource-specific flags
     NvU32                   processId;
+    NvBool                  bTeardown;      ///< [in] Unmap operation is due to client teardown
 
     /// [in] hContext Handle of resource that provides a context for the mapping (e.g., subdevice for channel map)
     NvHandle                hContext;
@@ -515,13 +554,14 @@ struct RS_INTER_UNMAP_PARAMS
 {
     NvHandle        hClient;
     NvHandle        hMapper;
-    NvHandle        hMappable;
     NvHandle        hDevice;
     NvU32           flags;
     NvU64           dmaOffset;              ///< [in] RS-TODO rename this
-    void           *pMemDesc;               ///< MEMORY_DESCRIPTOR *
+    NvU64           size;
 
     // Internal use only
+    NvHandle        hMappable;
+    void           *pMemDesc;               ///< MEMORY_DESCRIPTOR *
     RS_LOCK_INFO   *pLockInfo;              ///< [inout] Locking flags and state
     API_SECURITY_INFO *pSecInfo;            ///< [in] Security Info
 
@@ -539,6 +579,7 @@ struct RsInterMapping
     RsResourceRef *pContextRef;      ///< A resource used to provide additional context for the mapping (e.g. hDevice)
     NvU32 flags;                     ///< Flags passed when mapping, same flags also passed when unmapping
     NvU64 dmaOffset;
+    NvU64 size;
     void *pMemDesc;
 };
 MAKE_LIST(RsInterMappingList, RsInterMapping);
@@ -782,7 +823,7 @@ NV_STATUS refAddDependant(RsResourceRef *pResourceRef, RsResourceRef *pDependant
 /**
  * Remove the dependency between this resource reference and a dependent resource reference.
  */
-NV_STATUS refRemoveDependant(RsResourceRef *pResourceRef, RsResourceRef *pDependantRef);
+void refRemoveDependant(RsResourceRef *pResourceRef, RsResourceRef *pDependantRef);
 
 /**
  * Find, Add, or Remove an inter-mapping between two resources to the Mapper's list of inter-mappings
@@ -796,7 +837,6 @@ NV_STATUS refRemoveDependant(RsResourceRef *pResourceRef, RsResourceRef *pDepend
  * @param[inout] ppMapping Writes the resulting inter-mapping, if successfully created (Add) or found (Find)
  * @param[in] pMapping The inter-mapping to remove (Remove)
  */
-NV_STATUS refFindInterMapping(RsResourceRef *pMapperRef, RsResourceRef *pMappableRef, RsResourceRef *pContextRef, NvU64 dmaOffset, RsInterMapping **ppMapping);
 NV_STATUS refAddInterMapping(RsResourceRef *pMapperRef, RsResourceRef *pMappableRef, RsResourceRef *pContextRef, RsInterMapping **ppMapping);
 void      refRemoveInterMapping(RsResourceRef *pMapperRef, RsInterMapping *pMapping);
 

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2005-2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2005-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,13 +27,13 @@
 
 //
 // This file was generated with FINN, an NVIDIA coding tool.
-// Source file: ctrl/ctrl0073/ctrl0073dp.finn
+// Source file:      ctrl/ctrl0073/ctrl0073dp.finn
 //
 
-
-
-
 #include "ctrl/ctrl0073/ctrl0073base.h"
+#include "ctrl/ctrl0073/ctrl0073common.h"
+
+#include "nvcfg_sdk.h"
 
 /* NV04_DISPLAY_COMMON dfp-display-specific control commands and parameters */
 
@@ -731,7 +731,11 @@ typedef struct NV0073_CTRL_DP_LANE_DATA_PARAMS {
  *
  */
 
-#define NV0073_CTRL_CMD_DP_GET_LANE_DATA             (0x731345U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | 0x45" */
+#define NV0073_CTRL_CMD_DP_GET_LANE_DATA             (0x731345U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_GET_LANE_DATA_PARAMS_MESSAGE_ID" */
+
+#define NV0073_CTRL_DP_GET_LANE_DATA_PARAMS_MESSAGE_ID (0x45U)
+
+typedef NV0073_CTRL_DP_LANE_DATA_PARAMS NV0073_CTRL_DP_GET_LANE_DATA_PARAMS;
 
 
 /*
@@ -758,46 +762,60 @@ typedef struct NV0073_CTRL_DP_LANE_DATA_PARAMS {
  *
  */
 
-#define NV0073_CTRL_CMD_DP_SET_LANE_DATA             (0x731346U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | 0x46" */
+#define NV0073_CTRL_CMD_DP_SET_LANE_DATA (0x731346U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_SET_LANE_DATA_PARAMS_MESSAGE_ID" */
+
+#define NV0073_CTRL_DP_SET_LANE_DATA_PARAMS_MESSAGE_ID (0x46U)
+
+typedef NV0073_CTRL_DP_LANE_DATA_PARAMS NV0073_CTRL_DP_SET_LANE_DATA_PARAMS;
 
 /*
  * NV0073_CTRL_DP_CSTM
  *
- * This structure specifies the 80 bit DP CSTM Test Pattern data
- * The fields of this structure are to be specified as follows:
- *      lower   takes bits 31:0
- *      middle  takes bits 63:32
- *      upper   takes bits 79:64
- *
+ * This structure specifies -
+ * A) 80 bit DP CSTM Test Pattern data for DP1.x (HBR2 + 8b/10b channel coding)
+ *      The fields of this structure are to be specified as follows:
+ *        field_31_0   takes bits 31:0
+ *        field_63_32  takes bits 63:32
+ *        field_95_64  takes bits 79:64
+ * B) 264 bit DP CSTM Test Pattern data for DP2.x (128b/132b channel coding)
+ *      The fields of this structure are to be specified as follows:
+ *        field_31_0     contains bits 31:0
+ *        field_63_32    contains bits 63:32
+ *        field_95_64    contains bits 95:64
+ *        field_127_95   contains bits 127:95
+ *        field_159_128  contains bits 159:128
+ *        field_191_160  contains bits 191:160
+ *        field_223_192  contains bits 223:192
+ *        field_255_224  contains bits 255:224
+ *        field_263_256  contains bits 263:256
  */
 typedef struct NV0073_CTRL_DP_CSTM {
-    NvU32 lower;
-    NvU32 middle;
-    NvU32 upper;
+    NvU32 field_31_0;
+    NvU32 field_63_32;
+    NvU32 field_95_64;
+    NvU32 field_127_95;
+    NvU32 field_159_128;
+    NvU32 field_191_160;
+    NvU32 field_223_192;
+    NvU32 field_255_224;
+    NvU32 field_263_256;
 } NV0073_CTRL_DP_CSTM;
+
+#define NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_CSTM2    15:0
+#define NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_CSTM8     7:0
+
 
 /*
  * NV0073_CTRL_DP_TESTPATTERN
  *
- * This structure specifies the possible test patterns available in
- * display port. The field testPattern can be one of the following
- * values.
- *          NV0073_CTRL_DP_SET_TESTPATTERN_DATA_NONE
- *              No test pattern on the main link
- *          NV0073_CTRL_DP_SET_TESTPATTERN_DATA_D10_2
- *              D10.2 pattern on the main link
- *          NV0073_CTRL_DP_SET_TESTPATTERN_DATA_SERMP
- *              SERMP pattern on main link
- *          NV0073_CTRL_DP_SET_TESTPATTERN_DATA_PRBS_7
- *              PRBS7 pattern on the main link
- *
+ * This structure specifies the possible test patterns available in display port.
  */
 
 typedef struct NV0073_CTRL_DP_TESTPATTERN {
     NvU32 testPattern;
 } NV0073_CTRL_DP_TESTPATTERN;
 
-#define NV0073_CTRL_DP_TESTPATTERN_DATA                              2:0
+#define NV0073_CTRL_DP_TESTPATTERN_DATA                              4:0
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_NONE           (0x00000000U)
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_D10_2          (0x00000001U)
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_SERMP          (0x00000002U)
@@ -805,6 +823,20 @@ typedef struct NV0073_CTRL_DP_TESTPATTERN {
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_CSTM           (0x00000004U)
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_HBR2COMPLIANCE (0x00000005U)
 #define NV0073_CTRL_DP_TESTPATTERN_DATA_CP2520PAT3     (0x00000006U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_TRAINING1      (0x00000007U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_TRAINING2      (0x00000008U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_TRAINING3      (0x00000009U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_TRAINING4      (0x0000000AU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_CP2520PAT1     (0x0000000BU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_128B132B_TPS1  (0x0000000CU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_128B132B_TPS2  (0x0000000DU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_PRBS_9         (0x0000000EU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_PRBS_11        (0x0000000FU)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_PRBS_15        (0x00000010U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_PRBS_23        (0x00000011U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_PRBS_31        (0x00000012U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_SQNUM          (0x00000013U)
+#define NV0073_CTRL_DP_TESTPATTERN_DATA_CSTM_264       (0x00000014U)
 
 /*
  * NV0073_CTRL_CMD_DP_SET_TESTPATTERN
@@ -871,10 +903,6 @@ typedef struct NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS {
 } NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS;
 
 #define NV0073_CTRL_CMD_DP_SET_TESTPATTERN (0x731347U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_MESSAGE_ID" */
-
-#define NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_CSTM0    31:0
-#define NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_CSTM1    63:32
-#define NV0073_CTRL_DP_SET_TESTPATTERN_PARAMS_CSTM2    15:0
 
 /*
  * NV0073_CTRL_CMD_GET_DP_TESTPATTERN
@@ -1074,61 +1102,6 @@ typedef struct NV0073_CTRL_DP_MAIN_LINK_CTRL_PARAMS {
 #define NV0073_CTRL_DP_MAIN_LINK_CTRL_POWER_STATE_POWERDOWN (0x00000000U)
 #define NV0073_CTRL_DP_MAIN_LINK_CTRL_POWER_STATE_POWERUP   (0x00000001U)
 
-
-
-/*
- * NV0073_CTRL_CMD_DP_GET_AUDIO_MUTESTREAM
- *
- * This command returns the current audio mute state on the main link of Display Port
- *
- * The command takes a NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS structure as the
- * argument with the appropriate subDeviceInstance, displayId as inputs and returns the
- * current mute status in mute field of the structure.
- *
- *   subDeviceInstance
- *     This parameter specifies the subdevice instance within the
- *     NV04_DISPLAY_COMMON parent device to which the operation should be
- *     directed. This parameter must specify a value between zero and the
- *     total number of subdevices within the parent device.  This parameter
- *     should be set to zero for default behavior.
- *   displayId
- *     This parameter specifies the ID of the display for which the audio stream
- *     state should be returned.  The display ID must a DP display.
- *     If the display ID is invalid or if it is not a DP display,
- *     this call will return NV_ERR_INVALID_ARGUMENT.
- *   mute
- *     This parameter will return one of the following values:
- *       NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_DISABLE
- *         Audio mute is currently disabled.
- *       NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_ENABLE
- *         Audio mute is currently enabled.
- *       NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_AUTO
- *         Audio mute is automatically controlled by hardware.
- *       NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_UNKNOWN
- *         Audio mute is currently in an unknown state.
- *
- * Possible status values returned are:
- *   NV_OK
- *   NV_ERR_INVALID_PARAM_STRUCT
- *   NV_ERR_INVALID_ARGUMENT
- *
- *
- */
-#define NV0073_CTRL_CMD_DP_GET_AUDIO_MUTESTREAM                        (0x731358U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS_MESSAGE_ID" */
-
-#define NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS_MESSAGE_ID (0x58U)
-
-typedef struct NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS {
-    NvU32 subDeviceInstance;
-    NvU32 displayId;
-    NvU32 mute;
-} NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS;
-
-#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_DISABLE (0x00000000U)
-#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_ENABLE  (0x00000001U)
-#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_AUTO    (0x00000002U)
-#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_UNKNOWN (0x00000003U)
-
 /*
  * NV0073_CTRL_CMD_DP_SET_AUDIO_MUTESTREAM
  *
@@ -1169,7 +1142,7 @@ typedef struct NV0073_CTRL_DP_GET_AUDIO_MUTESTREAM_PARAMS {
  *
  *
  */
-#define NV0073_CTRL_CMD_DP_SET_AUDIO_MUTESTREAM      (0x731359U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS_MESSAGE_ID" */
+#define NV0073_CTRL_CMD_DP_SET_AUDIO_MUTESTREAM             (0x731359U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS_MESSAGE_ID" */
 
 #define NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS_MESSAGE_ID (0x59U)
 
@@ -1178,6 +1151,10 @@ typedef struct NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS {
     NvU32 displayId;
     NvU32 mute;
 } NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS;
+
+#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_DISABLE (0x00000000U)
+#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_ENABLE  (0x00000001U)
+#define NV0073_CTRL_DP_AUDIO_MUTESTREAM_MUTE_AUTO    (0x00000002U)
 
 /*
  * NV0073_CTRL_CMD_DP_ASSR_CTRL
@@ -1243,7 +1220,7 @@ typedef struct NV0073_CTRL_DP_SET_AUDIO_MUTESTREAM_PARAMS {
  *   NV_ERR_INVALID_ARGUMENT
  *
  */
-#define NV0073_CTRL_CMD_DP_ASSR_CTRL (0x73135aU) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_ASSR_CTRL_PARAMS_MESSAGE_ID" */
+#define NV0073_CTRL_CMD_DP_ASSR_CTRL                 (0x73135aU) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_ASSR_CTRL_PARAMS_MESSAGE_ID" */
 
 #define NV0073_CTRL_DP_ASSR_CTRL_PARAMS_MESSAGE_ID (0x5AU)
 
@@ -1362,8 +1339,6 @@ typedef struct NV0073_CTRL_CMD_DP_TOPOLOGY_FREE_DISPLAYID_PARAMS {
     NvU32 displayId;
 } NV0073_CTRL_CMD_DP_TOPOLOGY_FREE_DISPLAYID_PARAMS;
 
-
-
 /*
  * NV0073_CTRL_CMD_DP_GET_LINK_CONFIG
  *
@@ -1386,6 +1361,12 @@ typedef struct NV0073_CTRL_CMD_DP_TOPOLOGY_FREE_DISPLAYID_PARAMS {
  *   linkBW
  *     The BW of each lane that the DP transmitter hardware is set up to drive.
  *     The values returned will be according to the DP specifications.
+ *   dp2LinkBW
+ *     Current BW of each lane that the DP transmitter hardware is set up to drive is UHBR.
+ *     The values returned will be using 10M convention.
+ *
+ *   Note:
+ *   linkBW and dp2LinkBw are mutual exclusive. Only one of the value will be non-zero.
  *
  */
 #define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG (0x731360U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_GET_LINK_CONFIG_PARAMS_MESSAGE_ID" */
@@ -1397,16 +1378,35 @@ typedef struct NV0073_CTRL_DP_GET_LINK_CONFIG_PARAMS {
     NvU32 displayId;
     NvU32 laneCount;
     NvU32 linkBW;
+    NvU32 dp2LinkBW;
 } NV0073_CTRL_DP_GET_LINK_CONFIG_PARAMS;
 
 #define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT                          3:0
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_0     (0x00000000U)
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_1     (0x00000001U)
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_2     (0x00000002U)
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_4     (0x00000004U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_0        (0x00000000U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_1        (0x00000001U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_2        (0x00000002U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LANE_COUNT_4        (0x00000004U)
 #define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW                             3:0
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_1_62GBPS (0x00000006U)
-#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_2_70GBPS (0x0000000aU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_1_62GBPS    (0x00000006U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_2_70GBPS    (0x0000000aU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_5_40GBPS    (0x00000014U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_8_10GBPS    (0x0000001EU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_2_16GBPS    (0x00000008U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_2_43GBPS    (0x00000009U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_3_24GBPS    (0x0000000CU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_4_32GBPS    (0x00000010U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_LINK_BW_6_75GBPS    (0x00000019U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW                         15:0
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_1_62GBPS (0x000000A2U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_2_70GBPS (0x0000010EU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_5_40GBPS (0x0000021CU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_8_10GBPS (0x0000032AU)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_2_16GBPS (0x000000D8U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_2_43GBPS (0x000000F3U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_3_24GBPS (0x00000114U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_4_32GBPS (0x000001B0U)
+#define NV0073_CTRL_CMD_DP_GET_LINK_CONFIG_DP2LINK_BW_6_75GBPS (0x000002A3U)
+
 
 /*
  * NV0073_CTRL_CMD_DP_GET_EDP_DATA
@@ -1447,7 +1447,7 @@ typedef struct NV0073_CTRL_DP_GET_LINK_CONFIG_PARAMS {
  *            NV0073_CTRL_DP_GET_EDP_DATA_DPCD_SET_POWER_D3
  *              This eDP panel is current standby.
  */
-#define NV0073_CTRL_CMD_DP_GET_EDP_DATA                     (0x731361U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_GET_EDP_DATA_PARAMS_MESSAGE_ID" */
+#define NV0073_CTRL_CMD_DP_GET_EDP_DATA                        (0x731361U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_DP_GET_EDP_DATA_PARAMS_MESSAGE_ID" */
 
 #define NV0073_CTRL_DP_GET_EDP_DATA_PARAMS_MESSAGE_ID (0x61U)
 
@@ -1507,15 +1507,6 @@ typedef struct NV0073_CTRL_DP_GET_EDP_DATA_PARAMS {
  *          Specifies TU size value
  *      watermark
  *          Specifies stream watermark.
- *      linkClkFreqHz -- moving to MvidWarParams. Use that instead.
- *          Specifies the link freq in Hz. Note that this is the byte clock.
- *          eg: = (5.4 Ghz / 10)
- *      actualPclkHz; -- moving to MvidWarParams. Use that instead.
- *          Specifies the actual pclk freq in Hz.
- *      mvidWarEnabled
- *          Specifies whether MVID WAR is enabled.
- *      MvidWarParams
- *          Is valid if mvidWarEnabled is true.
  *      bEnableTwoHeadOneOr
  *          Whether two head one OR is enabled. If this is set then RM will
  *          replicate SF settings of Master head on Slave head. Head index
@@ -1559,19 +1550,7 @@ typedef struct NV0073_CTRL_CMD_DP_CONFIG_STREAM_PARAMS {
         NvBool bEnhancedFraming;
         NvU32  tuSize;
         NvU32  waterMark;
-        NvU32  actualPclkHz;     // deprecated  -Use MvidWarParams
-        NvU32  linkClkFreqHz;    // deprecated  -Use MvidWarParams
         NvBool bEnableAudioOverRightPanel;
-        struct {
-            NvU32  activeCnt;
-            NvU32  activeFrac;
-            NvU32  activePolarity;
-            NvBool mvidWarEnabled;
-            struct {
-                NvU32 actualPclkHz;
-                NvU32 linkClkFreqHz;
-            } MvidWarParams;
-        } Legacy;
     } SST;
 } NV0073_CTRL_CMD_DP_CONFIG_STREAM_PARAMS;
 
@@ -1741,8 +1720,10 @@ typedef struct NV0073_CTRL_CMD_DP_SEND_ACT_PARAMS {
  *     should be set to zero for default behavior.
  *   sorIndex
  *     Specifies the SOR index.
- *   bIsDp12Supported
- *     Returns NV_TRUE if DP1.2 is supported by the GPU else NV_FALSE
+ *   dpVersionsSupported
+ *     Specified the DP versions supported by the GPU
+ *   UHBRSupportedByGpu
+ *     Bitmask to specify the UHBR link rates supported by the GPU.
  *   bIsMultistreamSupported
  *     Returns NV_TRUE if MST is supported by the GPU else NV_FALSE
  *   bIsSCEnabled
@@ -1760,30 +1741,12 @@ typedef struct NV0073_CTRL_CMD_DP_SEND_ACT_PARAMS {
  *     Returns NV_TRUE if LTTPR Link Training feature is set
  *   bOverrideLinkBw
  *     Returns NV_TRUE if DFP limits defined in DCB have to be honored, else NV_FALSE
+ *   bUseRgFlushSequence
+ *     Returns NV_TRUE if GPU uses the new RG flush design
+ *   bSupportDPDownSpread
+ *     Returns NV_TRUE if GPU support downspread.
  *
- *   DSC caps -
- *      bDscSupported
- *          If GPU supports DSC or not
- *
- *      encoderColorFormatMask
- *          Mask of all color formats for which DSC
- *          encoding is supported by GPU
- *
- *      lineBufferSizeKB
- *          Size of line buffer.
- *
- *      rateBufferSizeKB
- *          Size of rate buffer per slice.
- *
- *      bitsPerPixelPrecision
- *          Bits per pixel precision for DSC e.g. 1/16, 1/8, 1/4, 1/2, 1bpp
- *
- *      maxNumHztSlices
- *          Maximum number of horizontal slices supported by DSC encoder
- *
- *      lineBufferBitDepth
- *          Bit depth used by the GPU to store the reconstructed pixels within
- *          the line buffer
+ *  DSC caps
  *
  * Possible status values returned are:
  *      NV_OK
@@ -1791,35 +1754,37 @@ typedef struct NV0073_CTRL_CMD_DP_SEND_ACT_PARAMS {
  *      NV_ERR_NOT_SUPPORTED
  *
  */
+
 #define NV0073_CTRL_CMD_DP_GET_CAPS   (0x731369U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS_MESSAGE_ID" */
 
 #define NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS_MESSAGE_ID (0x69U)
 
 typedef struct NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS {
-    NvU32  subDeviceInstance;
-    NvU32  sorIndex;
-    NvU32  maxLinkRate;
-    NvBool bIsDp12Supported;
-    NvBool bIsDp14Supported;
-    NvBool bIsMultistreamSupported;
-    NvBool bIsSCEnabled;
-    NvBool bHasIncreasedWatermarkLimits;
-    NvBool bIsPC2Disabled;
-    NvBool isSingleHeadMSTSupported;
-    NvBool bFECSupported;
-    NvBool bIsTrainPhyRepeater;
-    NvBool bOverrideLinkBw;
-
-    struct {
-        NvBool bDscSupported;
-        NvU32  encoderColorFormatMask;
-        NvU32  lineBufferSizeKB;
-        NvU32  rateBufferSizeKB;
-        NvU32  bitsPerPixelPrecision;
-        NvU32  maxNumHztSlices;
-        NvU32  lineBufferBitDepth;
-    } DSC;
+    NvU32                          subDeviceInstance;
+    NvU32                          sorIndex;
+    NvU32                          maxLinkRate;
+    NvU32                          dpVersionsSupported;
+    NvU32                          UHBRSupportedByGpu;
+    NvBool                         bIsMultistreamSupported;
+    NvBool                         bIsSCEnabled;
+    NvBool                         bHasIncreasedWatermarkLimits;
+    NvBool                         bIsPC2Disabled;
+    NvBool                         isSingleHeadMSTSupported;
+    NvBool                         bFECSupported;
+    NvBool                         bIsTrainPhyRepeater;
+    NvBool                         bOverrideLinkBw;
+    NvBool                         bUseRgFlushSequence;
+    NvBool                         bSupportDPDownSpread;
+    NV0073_CTRL_CMD_DSC_CAP_PARAMS DSC;
 } NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS;
+
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_2                0:0
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_2_NO              (0x00000000U)
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_2_YES             (0x00000001U)
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_4                1:1
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_4_NO              (0x00000000U)
+#define NV0073_CTRL_CMD_DP_GET_CAPS_DP_VERSIONS_SUPPORTED_DP1_4_YES             (0x00000001U)
+
 
 #define NV0073_CTRL_CMD_DP_GET_CAPS_MAX_LINK_RATE                           2:0
 #define NV0073_CTRL_CMD_DP_GET_CAPS_MAX_LINK_RATE_NONE                          (0x00000000U)
@@ -1827,6 +1792,7 @@ typedef struct NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS {
 #define NV0073_CTRL_CMD_DP_GET_CAPS_MAX_LINK_RATE_2_70                          (0x00000002U)
 #define NV0073_CTRL_CMD_DP_GET_CAPS_MAX_LINK_RATE_5_40                          (0x00000003U)
 #define NV0073_CTRL_CMD_DP_GET_CAPS_MAX_LINK_RATE_8_10                          (0x00000004U)
+
 
 #define NV0073_CTRL_CMD_DP_GET_CAPS_DSC_ENCODER_COLOR_FORMAT_RGB                (0x00000001U)
 #define NV0073_CTRL_CMD_DP_GET_CAPS_DSC_ENCODER_COLOR_FORMAT_Y_CB_CR_444        (0x00000002U)
@@ -1839,40 +1805,6 @@ typedef struct NV0073_CTRL_CMD_DP_GET_CAPS_PARAMS {
 #define NV0073_CTRL_CMD_DP_GET_CAPS_DSC_BITS_PER_PIXEL_PRECISION_1_2            (0x00000004U)
 #define NV0073_CTRL_CMD_DP_GET_CAPS_DSC_BITS_PER_PIXEL_PRECISION_1              (0x00000005U)
 
-/*
- * NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES
- *
- * This command returns the following info
- *
- *   subDeviceInstance
- *     This parameter specifies the subdevice instance within the
- *     NV04_DISPLAY_COMMON parent device to which the operation should be
- *     directed. This parameter must specify a value between zero and the
- *     total number of subdevices within the parent device.  This parameter
- *     should be set to zero for default behavior.
- *   displayId
- *     should be for DP only
- *   bEnableMSA
- *     To enable or disable MSA
- *   bStereoPhaseInverse
- *     To enable or disable Stereo Phase Inverse value
- *   bCacheMsaOverrideForNextModeset
- *     Cache the values and don't apply them until next modeset
- *   featureMask
- *     Enable/Disable mask of individual MSA property
- *   featureValues
- *     MSA property value to write
- *   pFeatureDebugValues
- *     It will actual MSA property value being written on HW.
- *     If its NULL then no error but return nothing
- *
- * Possible status values returned are:
- *      NV_OK
- *      NV_ERR_INVALID_ARGUMENT
- *      NV_ERR_NOT_SUPPORTED
- *      NV_ERR_TIMEOUT
- *
- */
 #define NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES                                   (0x73136aU) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_PARAMS_MESSAGE_ID" */
 
 #define NV0073_CTRL_CMD_DP_MSA_PROPERTIES_SYNC_POLARITY_LOW                     (0U)
@@ -2259,7 +2191,7 @@ typedef struct NV0073_CTRL_CMD_DP_GET_AUXLOGGER_BUFFER_DATA_PARAMS {
  * linkRateTbl
  *    Link rates in 200KHz as native granularity from eDP 1.4
  * linkBwTbl
- *    Link rates in 270MHz and valid for client to apply to
+ *    Link rates valid for client to apply to
  * linkBwCount
  *    Total valid link rates
  *
@@ -2282,7 +2214,7 @@ typedef struct NV0073_CTRL_CMD_DP_CONFIG_INDEXED_LINK_RATES_PARAMS {
     NvU16 linkRateTbl[NV0073_CTRL_DP_MAX_INDEXED_LINK_RATES];
 
     // Out
-    NvU8  linkBwTbl[NV0073_CTRL_DP_MAX_INDEXED_LINK_RATES];
+    NvU16 linkBwTbl[NV0073_CTRL_DP_MAX_INDEXED_LINK_RATES];
     NvU8  linkBwCount;
 } NV0073_CTRL_CMD_DP_CONFIG_INDEXED_LINK_RATES_PARAMS;
 
@@ -2730,8 +2662,6 @@ typedef struct NV0073_CTRL_CMD_DP_AUXCH_OD_CTRL_PARAMS {
     NvBool bOdStatus;
 } NV0073_CTRL_CMD_DP_AUXCH_OD_CTRL_PARAMS;
 
-/* _ctrl0073dp_h_ */
-
 /* valid commands */
 #define NV0073_CTRL_CMD_DP_AUXCHQUERY_OD_CAPABLE       0x00000000
 #define NV0073_CTRL_CMD_DP_AUXCHQUERY_OD_CTL_CAPABLE   0x00000001
@@ -2742,3 +2672,119 @@ typedef struct NV0073_CTRL_CMD_DP_AUXCH_OD_CTRL_PARAMS {
 #define NV0073_CTRL_CMD_DP_AUXCH_OD_CTL_SET_AUTONOMOUS 0x00000000
 #define NV0073_CTRL_CMD_DP_AUXCH_OD_CTL_SET_DISABLE_OD 0x00000002
 #define NV0073_CTRL_CMD_DP_AUXCH_OD_CTL_SET_ENABLE_OD  0x00000003
+
+/*
+ * NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES
+ *
+ * This command returns the following info
+ *
+ *   subDeviceInstance
+ *     This parameter specifies the subdevice instance within the
+ *     NV04_DISPLAY_COMMON parent device to which the operation should be
+ *     directed. This parameter must specify a value between zero and the
+ *     total number of subdevices within the parent device.  This parameter
+ *     should be set to zero for default behavior.
+ *   displayId
+ *     should be for DP only
+ *   bEnableMSA
+ *     To enable or disable MSA
+ *   bStereoPhaseInverse
+ *     To enable or disable Stereo Phase Inverse value
+ *   bCacheMsaOverrideForNextModeset
+ *     Cache the values and don't apply them until next modeset
+ *   featureMask
+ *     Enable/Disable mask of individual MSA property
+ *   featureValues
+ *     MSA property value to write
+ *   bDebugValues
+ *     To inform whether actual MSA values need to be returned
+ *   pFeatureDebugValues
+ *     It will actual MSA property value being written on HW.
+ *     If its NULL then no error but return nothing
+ *
+ * Possible status values returned are:
+ *      NV_OK
+ *      NV_ERR_INVALID_ARGUMENT
+ *      NV_ERR_NOT_SUPPORTED
+ *      NV_ERR_TIMEOUT
+ *
+ */
+#define NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_V2 (0x731381U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_V2_PARAMS_MESSAGE_ID" */
+
+#define NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_V2_PARAMS_MESSAGE_ID (0x81U)
+
+typedef struct NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_V2_PARAMS {
+    NvU32                                subDeviceInstance;
+    NvU32                                displayId;
+    NvBool                               bEnableMSA;
+    NvBool                               bStereoPhaseInverse;
+    NvBool                               bCacheMsaOverrideForNextModeset;
+    NV0073_CTRL_DP_MSA_PROPERTIES_MASK   featureMask;
+    NV0073_CTRL_DP_MSA_PROPERTIES_VALUES featureValues;
+    NvBool                               bDebugValues;
+    NV0073_CTRL_DP_MSA_PROPERTIES_VALUES featureDebugValues;
+} NV0073_CTRL_CMD_DP_SET_MSA_PROPERTIES_V2_PARAMS;
+
+
+
+/*
+ * NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL
+ *
+ * This command is used to query VBL capability and status as well as
+ * control enable/disable of VBL feature of eDP LCD panels.
+ *
+ *   subDeviceInstance [in]
+ *     This parameter specifies the subdevice instance within the
+ *     NV04_DISPLAY_COMMON parent device to which the operation should be
+ *     directed. This parameter must specify a value between zero and the
+ *     total number of subdevices within the parent device.  This parameter
+ *     should be set to zero for default behavior.
+ *   displayId [in]
+ *     This parameter specifies the ID of the DP display which owns
+ *     the Main Link to be adjusted.  The display ID must a DP display
+ *     as determined with the NV0073_CTRL_CMD_SPECIFIC_GET_TYPE command.
+ *     If more than one displayId bit is set or the displayId is not a DP,
+ *     this call will return NV_ERR_INVALID_ARGUMENT.
+ *   cmd [in]
+ *     This parameter is an input to this command.  The cmd parameter tells
+ *     whether we have to get the value of a specific field or set the
+ *     value in case of a writeable field.
+ *   control [in]
+ *     This parameter is input by the user. It is used by the user to decide the control
+ *     value to be written to the VBL control field. The command to write is
+ *     the NV0073_CTRL_CMD_DP_AUXCH_VBL_CTL_SET command.
+ *   bVblControlCapable [out]
+ *     This parameter reflects the VBL control capability of the Sink which can be
+ *     fetched by using the NV0073_CTRL_CMD_DP_AUXCH_VBL_CTL_CAPABLE_QUERY command.
+ *   bVblStatus [out]
+ *     This parameter reflects the Sink VBL status which can be
+ *     fetched by using the NV0073_CTRL_CMD_DP_AUXCH_VBL_STATUS_QUERY command.
+ *
+ * Possible status values returned are:
+ *   NV_OK
+ *   NV_ERR_INVALID_ARGUMENT
+ *   NV_ERR_NOT_SUPPORTED
+ */
+
+#define NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL (0x731386U) /* finn: Evaluated from "(FINN_NV04_DISPLAY_COMMON_DP_INTERFACE_ID << 8) | NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL_PARAMS_MESSAGE_ID" */
+
+/* valid commands */
+#define NV0073_CTRL_CMD_DP_AUXCH_QUERY_VBL_CTL_CAPABLE   0x00000000
+#define NV0073_CTRL_CMD_DP_AUXCH_QUERY_VBL_STATUS        0x00000001
+#define NV0073_CTRL_CMD_DP_AUXCH_SET_VBL_CTL             0x00000002
+
+/* valid state values */
+#define NV0073_CTRL_CMD_DP_AUXCH_SET_VBL_CTL_DISABLE     0x00000000
+#define NV0073_CTRL_CMD_DP_AUXCH_SET_VBL_CTL_ENABLE      0x00000001
+
+#define NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL_PARAMS_MESSAGE_ID (0x86U)
+
+typedef struct NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL_PARAMS {
+    NvU32  subDeviceInstance;
+    NvU32  displayId;
+    NvU8   cmd;
+    NvU8   control;
+    NvBool bVblControlCapable;
+    NvBool bVblStatus;
+} NV0073_CTRL_CMD_DP_AUXCH_VBL_CTRL_PARAMS;
+/* _ctrl0073dp_h_ */

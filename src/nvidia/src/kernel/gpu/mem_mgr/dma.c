@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 1993-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 1993-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,7 +31,6 @@
 #include "core/core.h"
 #include "gpu/gpu.h"
 #include "gpu/mem_mgr/virt_mem_allocator.h"
-#include "lib/base_utils.h"
 #include "rmapi/control.h"
 #include "gpu/mem_mgr/virt_mem_allocator_common.h"
 #include "os/os.h"
@@ -48,10 +47,13 @@
 #include "ctrl/ctrl208f/ctrl208fdma.h"
 #include "vgpu/rpc.h"
 #include "core/locks.h"
+#include "virtualization/kernel_hostvgpudeviceapi.h"
 #include "gpu/subdevice/subdevice_diag.h"
 #include "gpu/device/device.h"
 #include "gpu/subdevice/subdevice.h"
 #include "gpu/bus/kern_bus.h"
+#include "platform/sli/sli.h"
+#include "containers/eheap_old.h"
 
 /*!
  * @brief Allocate mapping.
@@ -96,10 +98,12 @@ dmaAllocMap_IMPL
     p2p = DRF_VAL(OS46, _FLAGS, _P2P_ENABLE, pDmaMappingInfo->Flags);
 
     //
-    // By default ADDR_FABRIC_V2 should be mapped as peer memory. So, don't honor
+    // By default any fabric memory should be mapped as peer memory. So, don't honor
     // any P2P flags.
     //
-    if (memdescGetAddressSpace(pDmaMappingInfo->pMemDesc) == ADDR_FABRIC_V2)
+    if (
+        (memdescGetAddressSpace(pDmaMappingInfo->pMemDesc) == ADDR_FABRIC_MC) ||
+        (memdescGetAddressSpace(pDmaMappingInfo->pMemDesc) == ADDR_FABRIC_V2))
     {
         p2p  = 0;
     }
@@ -155,10 +159,14 @@ dmaAllocMap_IMPL
 
     if ((pKernelMIGManager != NULL) && kmigmgrIsMIGMemPartitioningEnabled(pGpu, pKernelMIGManager))
     {
-        NvHandle hClient = RES_GET_CLIENT_HANDLE(pVirtualMemory);
+        RsClient *pClient = RES_GET_CLIENT(pVirtualMemory);
+        NvHandle hDevice = RES_GET_PARENT_HANDLE(pVirtualMemory);
         MIG_INSTANCE_REF ref;
+        Device *pDevice;
 
-        NV_ASSERT_OK_OR_RETURN(kmigmgrGetInstanceRefFromClient(pGpu, pKernelMIGManager, hClient, &ref));
+        NV_ASSERT_OK_OR_RETURN(deviceGetByHandle(pClient, hDevice, &pDevice));
+
+        NV_ASSERT_OK_OR_RETURN(kmigmgrGetInstanceRefFromDevice(pGpu, pKernelMIGManager, pDevice, &ref));
         swizzId = ref.pKernelMIGGpuInstance->swizzId;
     }
 
@@ -262,7 +270,7 @@ deviceCtrlCmdDmaGetPteInfo_IMPL
     CALL_CONTEXT   *pCallContext = resservGetTlsCallContext();
     RmCtrlParams   *pRmCtrlParams = pCallContext->pControlParams->pLegacyParams;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     NV_CHECK_OK_OR_RETURN(LEVEL_WARNING,
                           vaspaceGetByHandleOrDeviceDefault(RES_GET_CLIENT(pDevice), pRmCtrlParams->hObject,
@@ -296,12 +304,11 @@ deviceCtrlCmdDmaUpdatePde2_IMPL
     NvBool       bBcState   = NV_TRUE;
     CALL_CONTEXT *pCallContext = resservGetTlsCallContext();
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
-    if (
-        (pCallContext->secInfo.privLevel < RS_PRIV_LEVEL_KERNEL))
+    if (pCallContext->secInfo.privLevel < RS_PRIV_LEVEL_KERNEL)
     {
-        return NV_ERR_INSUFFICIENT_PERMISSIONS;
+            return NV_ERR_INSUFFICIENT_PERMISSIONS;
     }
 
     if (IS_VIRTUAL_WITHOUT_SRIOV(pGpu))
@@ -365,7 +372,7 @@ deviceCtrlCmdDmaSetVASpaceSize_IMPL
     OBJGPU          *pGpu    = GPU_RES_GET_GPU(pDevice);
     OBJVASPACE      *pVAS    = NULL;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     NV_CHECK_OK_OR_RETURN(LEVEL_WARNING,
                           vaspaceGetByHandleOrDeviceDefault(RES_GET_CLIENT(pDevice), RES_GET_HANDLE(pDevice),
@@ -424,7 +431,7 @@ deviceCtrlCmdDmaSetPageDirectory_IMPL
     NV_STATUS       status      = NV_OK;
     NvBool          bBcState    = NV_FALSE;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     if (IS_VIRTUAL(pGpu) || IS_GSP_CLIENT(pGpu))
     {
@@ -522,7 +529,7 @@ deviceCtrlCmdDmaUnsetPageDirectory_IMPL
     NvBool          bBcState      = NV_FALSE;
     NV_STATUS       status        = NV_OK;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     if (IS_VIRTUAL_WITHOUT_SRIOV(pGpu))
     {
@@ -607,7 +614,7 @@ deviceCtrlCmdDmaSetPteInfo_IMPL
     OBJVASPACE *pVAS    = NULL;
     NV_STATUS   status  = NV_OK;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     NV_CHECK_OK_OR_RETURN(LEVEL_WARNING,
                           vaspaceGetByHandleOrDeviceDefault(RES_GET_CLIENT(pDevice), RES_GET_HANDLE(pDevice),
@@ -642,7 +649,7 @@ deviceCtrlCmdDmaFlush_IMPL
     FB_CACHE_OP         cacheOp     = FB_CACHE_OP_UNDEFINED;
     NV_STATUS           status      = NV_OK;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     NV_PRINTF(LEVEL_INFO, "Flush op invoked with target Unit 0x%x\n",
               flushParams->targetUnit);
@@ -689,7 +696,7 @@ deviceCtrlCmdDmaFlush_IMPL
     if (FLD_TEST_DRF(0080, _CTRL_DMA_FLUSH_TARGET_UNIT, _FB, _ENABLE,
                      flushParams->targetUnit))
     {
-        status = kbusFlush_HAL(pGpu, pKernelBus, BUS_FLUSH_VIDEO_MEMORY);
+        status = kbusSendSysmembar(pGpu, pKernelBus);
     }
 
     return status;
@@ -714,7 +721,7 @@ deviceCtrlCmdDmaAdvSchedGetVaCaps_IMPL
     const MEMORY_SYSTEM_STATIC_CONFIG *pMemorySystemConfig =
         kmemsysGetStaticConfig(pGpu, GPU_GET_KERNEL_MEMORY_SYSTEM(pGpu));
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner());
 
     NV_CHECK_OK_OR_RETURN(LEVEL_WARNING,
         vaspaceGetByHandleOrDeviceDefault(RES_GET_CLIENT(pDevice), RES_GET_HANDLE(pDevice),
@@ -748,7 +755,7 @@ deviceCtrlCmdDmaGetPdeInfo_IMPL
     CALL_CONTEXT   *pCallContext    = resservGetTlsCallContext();
     RmCtrlParams   *pRmCtrlParams   = pCallContext->pControlParams->pLegacyParams;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     //
     // vGPU:
@@ -793,7 +800,7 @@ deviceCtrlCmdDmaSetDefaultVASpace_IMPL
     OBJGPU   *pGpu   = GPU_RES_GET_GPU(pDevice);
     NV_STATUS status = NV_OK;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     NV_ASSERT_OK_OR_RETURN(
         deviceSetDefaultVASpace(
@@ -883,7 +890,7 @@ subdeviceCtrlCmdDmaGetInfo_IMPL
     NvU32       i;
     NvU32       data;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     // error checck
     if (pDmaInfoParams->dmaInfoTblSize > NV2080_CTRL_DMA_GET_INFO_MAX_ENTRIES)
@@ -933,7 +940,7 @@ deviceCtrlCmdDmaInvalidateTLB_IMPL
     OBJGPU      *pGpu    = GPU_RES_GET_GPU(pDevice);
     OBJVASPACE  *pVAS    = NULL;
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     //
     // vGPU:
@@ -995,7 +1002,7 @@ deviceCtrlCmdDmaGetCaps_IMPL
     OBJGPU     *pGpu = GPU_RES_GET_GPU(pDevice);
     VirtMemAllocator *pDma = GPU_GET_DMA(pGpu);
 
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner());
 
     // sanity check array size
     if (pDmaCapsParams->capsTblSize != NV0080_CTRL_DMA_CAPS_TBL_SIZE)
@@ -1041,7 +1048,7 @@ deviceCtrlCmdDmaEnablePrivilegedRange_IMPL
     NV0080_CTRL_DMA_ENABLE_PRIVILEGED_RANGE_PARAMS *pParams
 )
 {
-    LOCK_ASSERT_AND_RETURN(rmApiLockIsOwner() && rmGpuLockIsOwner());
+    LOCK_ASSERT_AND_RETURN(rmapiLockIsOwner() && rmGpuLockIsOwner());
 
     if (pParams->hVASpace != NV01_NULL_OBJECT)
     {
@@ -1131,6 +1138,23 @@ dmaPageArrayInit
 }
 
 /*!
+ * Initialize an abstracted page array with opaque page array data.
+ *
+ *  TODO: Deprecate dmaPageArrayInit once moving all the use cases.
+ */
+void
+dmaPageArrayInitWithFlags
+(
+    DMA_PAGE_ARRAY *pPageArray,    //!< [out] Abstracted page array.
+    void           *pPageData,     //!< [in] Opaque page array data.
+    NvU32           pageCount,     //!< [in] Number of pages represented
+    NvU64           pageArrayFlags //!< [in] Flags of type DMA_PAGE_ARRARY_FLAGS
+)
+{
+    dmaPageArrayInit(pPageArray, pPageData, pageCount);
+}
+
+/*!
  * Initialize an abstracted page array from a memory descriptor.
  */
 void
@@ -1171,62 +1195,16 @@ dmaPageArrayGetPhysAddr
 
     if (pPageArray->bOsFormat)
     {
-        OBJSYS *pSys = SYS_GET_INSTANCE();
-        OBJOS *pOS = SYS_GET_OS(pSys);
-        addr = pOS->osPageArrayGetPhysAddr(pPageArray->pOsGpuInfo,
+        addr = osPageArrayGetPhysAddr(pPageArray->pOsGpuInfo,
             pPageArray->pData, pPageArray->startIndex + pageIndex);
     }
     else
     {
         RmPhysAddr *pPteArray = pPageArray->pData;
-        addr = pPteArray[pPageArray->startIndex + pageIndex];
+        {
+            addr = pPteArray[pPageArray->startIndex + pageIndex];
+        }
     }
-
-    addr |= pPageArray->orMask;
 
     return addr;
-}
-
-/*!
- * Determine if the upper half for the comptag can be used for this page.
- *
- * @param[in] pDma      VirtMemAllocator object pointer
- * @param[in] pteIndex  PTE index
- * @param[in] pageSize  Page size
- *
- * @returns Whether the upper half can be used or not.
- */
-NvBool
-dmaUseCompTagLineUpperHalf_IMPL(VirtMemAllocator *pDma, NvU32 pteIndex, NvU32 pageSize)
-{
-    NvBool bUseUpperHalf = NV_FALSE;
-    OBJGPU *pGpu = ENG_GET_GPU(pDma);
-    const MEMORY_SYSTEM_STATIC_CONFIG *pMemorySystemConfig =
-        kmemsysGetStaticConfig(pGpu, GPU_GET_KERNEL_MEMORY_SYSTEM(pGpu));
-
-    if (pDma->getProperty(pDma, PDB_PROP_DMA_ENABLE_FULL_COMP_TAG_LINE))
-    {
-        NvU32 subIndexShift;
-
-        if (pMemorySystemConfig->comprPageShift >= NvU64_LO32(nvLogBase2(pageSize)))
-        {
-            subIndexShift = pMemorySystemConfig->comprPageShift - NvU64_LO32(nvLogBase2(pageSize));
-        }
-        else
-        {
-            NV_ASSERT_OR_RETURN(0, NV_FALSE);
-        }
-
-        //
-        // (SubIndexShift - 1) is half the compression page size (64 KB).
-        // Shifting by that gives the number of PTEs that span a 64 KB page.
-        // The 0th bit gives comptag subindex.
-        //
-        if (subIndexShift)
-        {
-            bUseUpperHalf = !!((pteIndex >> (subIndexShift - 1)) & 1);
-        }
-    }
-
-    return bUseUpperHalf;
 }

@@ -39,10 +39,12 @@
 namespace DisplayPort
 {
     #define PREDEFINED_DSC_MST_BPPX16 160;
+    #define MAX_DSC_COMPRESSION_BPPX16 128;
     #define HDCP_BCAPS_DDC_OFFSET 0x40
     #define HDCP_BCAPS_DDC_EN_BIT 0x80
     #define HDCP_BCAPS_DP_EN_BIT  0x01
     #define HDCP_I2C_CLIENT_ADDR  0x74
+    #define DEVICE_OUI_SIZE       3
 
     struct GroupImpl;
     struct ConnectorImpl;
@@ -76,7 +78,7 @@ namespace DisplayPort
         {
             struct _Enum_Path
             {
-                unsigned total, free;
+                unsigned availableStreams, total, free;
                 bool     bPathFECCapable;
                 bool     dataValid;                     // Is the cache valid?
             } enum_path;
@@ -122,6 +124,8 @@ namespace DisplayPort
         ConnectorType     connectorType;
         Address           address;
         GUID              guid;
+        GUID              guid2;
+        bool              bVirtualPeerDevice;
         NvU8              peerDevice;
         NvU8              dpcdRevisionMajor;
         NvU8              dpcdRevisionMinor;
@@ -165,12 +169,13 @@ namespace DisplayPort
         NvU8    rawDscCaps[16];
         DscCaps dscCaps;
 
-        // Panel replay Caps 
+        // Panel replay Caps
         PanelReplayCaps prCaps;
-
         bool bIsFakedMuxDevice;
         bool bIsPreviouslyFakedMuxDevice;
         bool bisMarkedForDeletion;
+        bool bIgnoreMsaCap;
+        bool bIgnoreMsaCapCached;
 
         //
         // Device doing the DSC decompression for this device. This could be device itself
@@ -191,7 +196,11 @@ namespace DisplayPort
         bool bFECParitySupported;
 
         TriState bSdpExtCapable;
+        TriState bAsyncSDPCapable;
         bool bMSAOverMSTCapable;
+        bool bDscPassThroughColorFormatWar;
+
+        NvU64 maxModeBwRequired;
 
         DeviceImpl(DPCDHAL * hal, ConnectorImpl * connector, DeviceImpl * parent);
         ~DeviceImpl();
@@ -248,13 +257,13 @@ namespace DisplayPort
 
         virtual bool isLoop()
         {
-            DP_LOG(("isLoop implementation is pending (bug 791059)"));
+           // implementation is pending (bug 791059)
             return false;
         }
 
         virtual bool isRedundant()
         {
-            DP_LOG(("isRedundant implementation is pending (bug 791059)"));
+            // implementation is pending (bug 791059)
             return false;
         }
 
@@ -347,17 +356,42 @@ namespace DisplayPort
             return true;
         }
 
-        bool getIgnoreMSACap()
+        bool getIgnoreMSACap();
+
+        AuxRetry::status setIgnoreMSAEnable(bool msaTimingParamIgnoreEn);
+
+        bool isVirtualPeerDevice()
         {
-            return hal->getMsaTimingparIgnored();
+            return bVirtualPeerDevice;
         }
 
-        AuxRetry::status setIgnoreMSAEnable(bool msaTimingParamIgnoreEn)
+        bool isBranchDevice()
         {
-            return hal->setIgnoreMSATimingParamters(msaTimingParamIgnoreEn);
+            return !isVideoSink() && !isAudioSink();
         }
+
+        bool  isAtLeastVersion(unsigned major, unsigned minor)
+        {
+            if (dpcdRevisionMajor > major)
+                return true;
+
+            if (dpcdRevisionMajor < major)
+                return false;
+
+            return dpcdRevisionMinor >= minor;
+        }
+
+        NvU64 getMaxModeBwRequired()
+        {
+            return maxModeBwRequired;
+        }
+
+        virtual void queryGUID2();
 
         virtual bool getSDPExtnForColorimetrySupported();
+        virtual bool getAsyncSDPSupported();
+
+        virtual bool getPanelFwRevision(NvU16 *revision);
 
         virtual bool isPowerSuspended();
 
@@ -417,16 +451,24 @@ namespace DisplayPort
         bool isPanelReplaySupported(void);
         void getPanelReplayCaps(void);
         bool setPanelReplayConfig(panelReplayConfig prcfg);
+        bool getPanelReplayConfig(panelReplayConfig *pPrcfg);
+        bool getPanelReplayStatus(PanelReplayStatus *pPrStatus);
 
         NvBool getDSCSupport();
         bool getFECSupport();
         NvBool isDSCPassThroughSupported();
+        NvBool isDynamicPPSSupported();
+        NvBool isDynamicDscToggleSupported();
         NvBool isDSCSupported();
+        NvBool isDSCDecompressionSupported();
         NvBool isDSCPossible();
         bool isFECSupported();
         bool readAndParseDSCCaps();
+        bool readAndParseBranchSpecificDSCCaps();
         bool parseDscCaps(const NvU8 *buffer, NvU32 bufferSize);
+        bool parseBranchSpecificDscCaps(const NvU8 *buffer, NvU32 bufferSize);
         bool setDscEnable(bool enable);
+        bool setDscEnableDPToHDMIPCON(bool bDscEnable, bool bEnablePassThroughForPCON);
         bool getDscEnable(bool *pEnable);
         unsigned getDscVersionMajor();
         unsigned getDscVersionMinor();
@@ -445,6 +487,12 @@ namespace DisplayPort
         unsigned getDscPeakThroughputModel();
         unsigned getDscMaxSliceWidth();
         unsigned getDscDecoderColorDepthSupportMask();
+        void setDscDecompressionDevice(bool bDscCapBasedOnParent);
+        virtual bool getDeviceSpecificData(NvU8 *oui, NvU8 *deviceIdString, 
+                                           NvU8 *hwRevision, NvU8 *swMajorRevision, 
+                                           NvU8 *swMinorRevision);
+
+        virtual bool setModeList(DisplayPort::DpModesetParams *pModeList, unsigned numModes);
     };
     class DeviceHDCPDetection : public Object, MessageManager::Message::MessageEventSink, Timer::TimerCallback
     {

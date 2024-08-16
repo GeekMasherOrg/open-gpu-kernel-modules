@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,19 +23,20 @@
 
 #include "kernel/gpu/rc/kernel_rc.h"
 
+#include "kernel/core/locks.h"
 #include "kernel/core/system.h"
 #include "kernel/gpu/bif/kernel_bif.h"
 #include "kernel/gpu/mig_mgr/kernel_mig_manager.h"
+#include "kernel/gpu/timer/objtmr.h"
 #include "kernel/os/os.h"
 #include "kernel/platform/chipset/chipset.h"
 #include "kernel/rmapi/client.h"
 
 
 #include "libraries/utils/nvprintf.h"
-#include "nvRmReg.h"
+#include "nvrm_registry.h"
 #include "nverror.h"
 #include "nvtypes.h"
-#include "objtmr.h"
 
 
 static void _krcInitRegistryOverrides(OBJGPU *pGpu, KernelRc *pKernelRc);
@@ -180,12 +181,14 @@ _krcInitRegistryOverrides
             pKernelRc->watchdog.flags |= WATCHDOG_FLAGS_DISABLED;
         }
     }
-    else if (IS_GSP_CLIENT(pGpu) || IS_EMULATION(pGpu) || IS_SIMULATION(pGpu))
+    else if (IS_EMULATION(pGpu) || IS_SIMULATION(pGpu))
     {
-        // GSPTODO: need to sort out RC watchdog for GSP
         pKernelRc->watchdog.flags |= WATCHDOG_FLAGS_DISABLED;
     }
-
+    else if (gpuIsCCFeatureEnabled(pGpu))
+    {
+        pKernelRc->watchdog.flags |= WATCHDOG_FLAGS_DISABLED;
+    }
 
     dword = 0;
     if (osReadRegistryDword(pGpu, NV_REG_STR_RM_DO_LOG_RC_EVENTS, &dword) ==
@@ -201,6 +204,13 @@ _krcInitRegistryOverrides
 #endif
         }
     }
+
+    //
+    // Do RC on BAR faults by default (For bug 1842228).
+    // Only applicable to Volta+ chips.
+    //
+    pKernelRc->bRcOnBar2Fault = NV_TRUE;
+
 }
 
 
@@ -283,6 +293,7 @@ krcReportXid_IMPL
         NvU16          gpuPartitionId;
         NvU16          computeInstanceId;
         KernelChannel *pKernelChannel = krcGetChannelInError(pKernelRc);
+        char          *current_procname = NULL;
 
         // Channels are populated with osGetCurrentProcessName() and pid of
         // their process at creation-time. If no channel was found, mark unknown
@@ -290,15 +301,31 @@ krcReportXid_IMPL
         char pid_string[12] = "'<unknown>'";
 
         //
-        // Get PID of channel creator if available, otherwise default to
-        // whatever the kernel can tell us at the moment (likely pid 0)
+        // Get PID of channel creator if available, or get the current PID for
+        // exception types that never have an associated channel
         //
-        if (pKernelChannel != NULL)
+        // Check for API lock since this can be called from parallel init
+        // path without API lock, and RES_GET_CLIENT requires API lock
+        //
+        if (rmapiLockIsOwner() && (pKernelChannel != NULL))
         {
             RsClient *pClient = RES_GET_CLIENT(pKernelChannel);
             RmClient *pRmClient = dynamicCast(pClient, RmClient);
             procname = pRmClient->name;
             nvDbgSnprintf(pid_string, sizeof(pid_string), "%u", pKernelChannel->ProcessID);
+        }
+        else if (exceptType == GSP_RPC_TIMEOUT)
+        {
+            NvU32 current_pid = osGetCurrentProcess();
+
+            nvDbgSnprintf(pid_string, sizeof(pid_string), "%u", current_pid);
+
+            current_procname = portMemAllocNonPaged(NV_PROC_NAME_MAX_LENGTH);
+            if (current_procname != NULL)
+            {
+                osGetCurrentProcessName(current_procname, NV_PROC_NAME_MAX_LENGTH);
+                procname = current_procname;
+            }
         }
 
         _krcLogUuidOnce(pGpu, pKernelRc);
@@ -343,6 +370,8 @@ krcReportXid_IMPL
                 procname,
                 pMsg != NULL ? pMsg : "");
         }
+
+        portMemFree(current_procname);
     }
 }
 
@@ -499,4 +528,14 @@ krcCheckBusError_KERNEL
     }
 
     return NV_OK;
+}
+
+KernelChannel *
+krcGetChannelInError_FWCLIENT
+(
+    KernelRc *pKernelRc
+)
+{
+    NV_ASSERT_OR_RETURN(IS_GSP_CLIENT(ENG_GET_GPU(pKernelRc)), NULL);
+    return pKernelRc->pPreviousChannelInError;
 }
