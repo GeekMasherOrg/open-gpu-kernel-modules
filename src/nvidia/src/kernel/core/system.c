@@ -97,6 +97,7 @@ static sysChildObject sysChildObjects[] =
 static void
 _sysDestroyMemExportCache(OBJSYS *pSys)
 {
+    // Lets see if this works
     if (pSys->pSysMemExportModuleLock != NULL)
     {
         portSyncRwLockDestroy(pSys->pSysMemExportModuleLock);
